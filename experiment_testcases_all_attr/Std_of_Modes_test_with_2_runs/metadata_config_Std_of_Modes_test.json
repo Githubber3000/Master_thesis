@@ -1,0 +1,26 @@
+{
+    "config_descr": "Std_of_Modes_test",
+    "runs": 2,
+    "varying_attribute": "std_of_modes",
+    "varying_values": [
+        1,
+        2,
+        3
+    ],
+    "mode_means": [
+        3,
+        -3
+    ],
+    "std_of_modes": "varies",
+    "num_samples": 100,
+    "num_chains": 4,
+    "samples_per_chain": 25,
+    "weights": [
+        1,
+        1
+    ],
+    "init_scheme": "None",
+    "chain_initialization": null,
+    "base_random_seed": 42,
+    "git_tag": "v1.1-1-g3eda06b"
+}
