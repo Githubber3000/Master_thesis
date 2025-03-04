@@ -1,0 +1,25 @@
+{
+    "config_descr": "Init_Scheme_test",
+    "runs": 2,
+    "varying_attribute": "init_scheme",
+    "varying_values": [
+        "half_per_mode",
+        "all_in_middle"
+    ],
+    "mode_means": [
+        3,
+        -3
+    ],
+    "std_of_modes": 1,
+    "num_samples": 100,
+    "num_chains": 4,
+    "samples_per_chain": 25,
+    "weights": [
+        1,
+        1
+    ],
+    "init_scheme": "varies",
+    "chain_initialization": "varies",
+    "base_random_seed": 42,
+    "git_tag": "v1.3-2-gc6bef23"
+}

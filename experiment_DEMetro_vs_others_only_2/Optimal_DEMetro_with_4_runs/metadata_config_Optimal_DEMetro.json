@@ -1,0 +1,36 @@
+{
+    "config_descr": "Optimal_DEMetro",
+    "runs": 4,
+    "varying_attribute": "mode_means",
+    "varying_values": [
+        [
+            0,
+            8
+        ],
+        [
+            0,
+            10
+        ],
+        [
+            0,
+            15
+        ],
+        [
+            0,
+            20
+        ]
+    ],
+    "mode_means": "varies",
+    "std_of_modes": 1,
+    "num_samples": 10000,
+    "num_chains": 4,
+    "samples_per_chain": 2500,
+    "weights": [
+        1,
+        8
+    ],
+    "init_scheme": "half_per_mode",
+    "chain_initialization": "half_per_mode",
+    "base_random_seed": 42,
+    "git_tag": "v1.3-2-gc6bef23"
+}
