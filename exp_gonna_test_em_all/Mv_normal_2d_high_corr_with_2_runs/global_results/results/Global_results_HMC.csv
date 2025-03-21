@@ -1,0 +1,2 @@
+num_samples,global_avg_wasserstein_distance,global_avg_r_hat,global_avg_ess,global_avg_runtime,global_avg_wasserstein_distance_std,global_avg_r_hat_std,global_avg_ess_std,global_avg_runtime_std
+1000,0.09945045450413209,1.0215644265567685,199.17675963277725,3.307661771774292,0.0025523651022797394,0.01678655860558986,45.7373567790895,0.11023019324581608

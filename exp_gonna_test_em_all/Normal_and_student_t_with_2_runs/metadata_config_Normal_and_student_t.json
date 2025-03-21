@@ -1,0 +1,36 @@
+{
+    "config_descr": "Normal_and_student_t",
+    "runs": 2,
+    "posterior_type": "Mixture",
+    "varying_attribute": "nu",
+    "varying_values": [
+        1,
+        2,
+        5
+    ],
+    "num_samples": 1000,
+    "num_chains": 4,
+    "samples_per_chain": 250,
+    "init_scheme": null,
+    "base_random_seed": 42,
+    "git_tag": "v1.5-2-g06fb046",
+    "component_types": [
+        "Normal",
+        "StudentT"
+    ],
+    "component_params": [
+        {
+            "mu": 0,
+            "sigma": 1
+        },
+        {
+            "nu": 5,
+            "mu": 10,
+            "sigma": 2
+        }
+    ],
+    "weights": [
+        0.6,
+        0.4
+    ]
+}
