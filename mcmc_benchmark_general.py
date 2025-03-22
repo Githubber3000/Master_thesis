@@ -955,10 +955,10 @@ def validate_config(config):
     #return pm.math.logsumexp([np.log(w1) + log_like1, np.log(w2) + log_like2])
 
 # default attributes
-default_num_samples = 1000
-default_num_chains = 4
+default_num_samples = 10000
+default_num_chains = 10
 default_base_random_seed = 42
-default_runs = 1
+default_runs = 10
 
 unimodal = [
 
@@ -970,7 +970,7 @@ unimodal = [
         "num_chains": default_num_chains,
         "base_random_seed": default_base_random_seed,
         "varying_attribute": "mu",
-        "varying_values": [0, 4],
+        "varying_values": [0, 2, 5, 10],
         "sigma": 1
     },
 
@@ -982,7 +982,7 @@ unimodal = [
         "num_chains":  default_num_chains,
         "base_random_seed": default_base_random_seed,
         "varying_attribute": "nu",
-        "varying_values": [1, 3],
+        "varying_values": [1, 2, 3, 5, 30],
         "mu": 0,
         "sigma": 1,
     },
@@ -995,7 +995,7 @@ unimodal = [
         "num_chains": default_num_chains,
         "base_random_seed": default_base_random_seed,
         "varying_attribute": "b",
-        "varying_values": [2, 20],
+        "varying_values": [0.5, 1, 2, 5],
         "mu": 0,
     },
 ]
@@ -1010,7 +1010,12 @@ high_dim_and_correlated = [
         "num_chains": default_num_chains,
         "base_random_seed": default_base_random_seed,
         "varying_attribute": "mu",
-        "varying_values": [(-50, 0, 50), (43, 21, 1500)],
+        "varying_values": [
+            (-5, 0, 5),
+            (0, 0, 0),
+            (-10, 20, -30),
+            (50, -50, 100)
+        ],
         "cov": [[1, 0.9, 0.85], 
               [0.9, 1, 0.88], 
               [0.85, 0.88, 1]]
@@ -1024,31 +1029,46 @@ high_dim_and_correlated = [
         "num_chains": default_num_chains,
         "base_random_seed": default_base_random_seed,
         "varying_attribute": "mu",
-        "varying_values": [(10, -20), (50, -50)],
+        "varying_values": [
+            (0, 0),
+            (-10, 10),
+            (20, -20),
+            (50, -50)
+        ],
         "cov": [[1, 0.1], [0.1, 1]]
     },
 
     {
         "config_descr": "Mv_normal_2d_high_corr",
         "posterior_type": "MvNormal",
+        "num_samples": default_num_samples,
         "runs": default_runs,
         "num_chains": default_num_chains,
         "base_random_seed": default_base_random_seed,
-        "varying_attribute": "num_samples",
-        "varying_values": [1000],
-        "mu": [10, -20],
+        "varying_attribute": "mu",
+        "varying_values": [
+            (0, 0),
+            (-10, 10),
+            (20, -20),
+            (50, -50)
+        ],
         "cov": [[1, 0.95], [0.95, 1]] 
     },
 
     {
         "config_descr": "Mv_normal_3d_low_corr",
         "posterior_type": "MvNormal",
+        "num_samples": default_num_samples,
         "runs": default_runs,
         "num_chains": default_num_chains,
         "base_random_seed": default_base_random_seed,
-        "varying_attribute": "num_samples",
-        "varying_values": [1000],
-        "mu":  [-50, 0, 50],
+        "varying_attribute": "mu",
+        "varying_values": [
+            (-5, 0, 5),
+            (0, 0, 0),
+            (-10, 20, -30),
+            (50, -50, 100)
+        ],
         "cov": [[1, 0.2, 0.1], 
                 [0.2, 1, 0.15], 
                 [0.1, 0.15, 1]]  
@@ -1065,7 +1085,7 @@ multimodal = [
         "num_chains": default_num_chains,
         "base_random_seed": default_base_random_seed,
         "varying_attribute": "mu",
-        "varying_values": [(10,-30), (20, 1000)],
+        "varying_values": [(5, 5), (10, -10), (20, 20), (50, -50)],
         "varying_component": 1,
         "component_types": ["MvNormal", "MvNormal", "MvNormal"],
         "component_params": [
@@ -1084,7 +1104,7 @@ multimodal = [
         "num_chains": default_num_chains,
         "base_random_seed": default_base_random_seed,
         "varying_attribute": "nu",
-        "varying_values": [1, 2, 5],
+        "varying_values": [1, 2, 5, 10],
         "varying_component": 1,
         "component_params": [{"mu": 0, "sigma": 1}, {"nu": 3, "mu": 10, "sigma": 2}],
         "weights": [0.6, 0.4]
@@ -1102,28 +1122,28 @@ difficult_geometries = [
         "num_chains": default_num_chains,
         "base_random_seed": default_base_random_seed,
         "varying_attribute": "a",
-        "varying_values": [1, 2],
+        "varying_values": [0, 1, 3, 5],
         "b": 1,
-        "mu": 1,
+        "mu": 0,
         "sigma": 1,
     },
     {
-            "config_descr": "Mixture_of_SkewStudentT",
-            "posterior_type": "Mixture",
-            "runs": default_runs,
-            "num_chains": default_num_chains,
-            "base_random_seed": default_base_random_seed,
-            "num_samples": default_num_samples,
-            "varying_attribute": "mu",
-            "varying_values": [1, 10],
-            "varying_component": 0,
-            "component_types": ["SkewStudentT", "SkewStudentT"],
-            "component_params": [
-                {"a": 3, "b": 1, "sigma": 1},
-                {"a": 9, "b": 3, "mu": 3, "sigma": 4}
-            ],
-            "weights": [0.5, 0.5]
-        }
+        "config_descr": "Mixture_of_SkewStudentT",
+        "posterior_type": "Mixture",
+        "runs": default_runs,
+        "num_chains": default_num_chains,
+        "base_random_seed": default_base_random_seed,
+        "num_samples": default_num_samples,
+        "varying_attribute": "mu",
+        "varying_values": [0, 3, 6, 10],
+        "varying_component": 0,
+        "component_types": ["SkewStudentT", "SkewStudentT"],
+        "component_params": [
+            {"a": 3, "b": 1, "sigma": 1},
+            {"a": 9, "b": 3, "mu": 3, "sigma": 4}
+        ],
+        "weights": [0.5, 0.5]
+    }
 ]
 
 
@@ -1131,9 +1151,7 @@ difficult_geometries = [
 
 categories = [unimodal, high_dim_and_correlated, multimodal, difficult_geometries]
 
-category = categories[0]
-
-experiment_name = "exp_pyth_test"
+experiment_name = "First_experiment_run_for_all_categories"
 
 # Define the root directory for all experiments
 experiment_root_folder = f"exp_{experiment_name}"
@@ -1162,26 +1180,27 @@ plot_traces_in_notebook = False
 #print("All configurations are valid. Starting experiments...")
 
 
-for config in category:
-    try:
-        run_experiment(
-            plot_traces_in_notebook=plot_traces_in_notebook,
-            posterior_type=config["posterior_type"],
-            config_descr=config["config_descr"],
-            runs=config["runs"],
-            varying_attribute=config["varying_attribute"],
-            varying_values=config["varying_values"],
-            init_scheme="varies" if config["varying_attribute"] == "init_scheme" else config.get("init_scheme", None),
-            num_samples="varies" if config["varying_attribute"] == "num_samples" else config["num_samples"],
-            num_chains="varies" if config["varying_attribute"] == "num_chains" else config["num_chains"],
-            base_random_seed=config.get("base_random_seed", None),
-            **{k: v for k, v in config.items() if k not in [
-                "config_descr", "runs", "varying_attribute", "varying_values", 
-                "num_samples", "num_chains", "init_scheme", 
-                "base_random_seed", "posterior_type"
-            ]}  # Pass remaining keys as posterior_kwargs
-        )
-    except Exception as e:
-        print(f"❌ Error in config '{config['config_descr']}': {e}")
+for experiment in categories:
+    for config in experiment:
+        try:
+            run_experiment(
+                plot_traces_in_notebook=plot_traces_in_notebook,
+                posterior_type=config["posterior_type"],
+                config_descr=config["config_descr"],
+                runs=config["runs"],
+                varying_attribute=config["varying_attribute"],
+                varying_values=config["varying_values"],
+                init_scheme="varies" if config["varying_attribute"] == "init_scheme" else config.get("init_scheme", None),
+                num_samples="varies" if config["varying_attribute"] == "num_samples" else config["num_samples"],
+                num_chains="varies" if config["varying_attribute"] == "num_chains" else config["num_chains"],
+                base_random_seed=config.get("base_random_seed", None),
+                **{k: v for k, v in config.items() if k not in [
+                    "config_descr", "runs", "varying_attribute", "varying_values", 
+                    "num_samples", "num_chains", "init_scheme", 
+                    "base_random_seed", "posterior_type"
+                ]}  # Pass remaining keys as posterior_kwargs
+            )
+        except Exception as e:
+            print(f"❌ Error in config '{config['config_descr']}': {e}")
 
 print("All experiments completed successfully!")
