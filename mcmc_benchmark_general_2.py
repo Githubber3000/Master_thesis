@@ -1160,7 +1160,7 @@ difficult_geometries = [
 
 asymmetric_weights_mixture = [
         {
-        "config_descr": "Mv_normal_2d_mixture_3_comp",
+        "config_descr": "Mv_normal_2d_mixture_3_comp_demetro",
         "posterior_type": "Mixture",
         "runs": default_runs,
         "num_samples": default_num_samples,
@@ -1182,7 +1182,7 @@ asymmetric_weights_mixture = [
 
 symmetric_weights_mixture = [
         {
-        "config_descr": "Mv_normal_2d_mixture_3_comp",
+        "config_descr": "Mv_normal_2d_mixture_3_comp_fair",
         "posterior_type": "Mixture",
         "runs": default_runs,
         "num_samples": default_num_samples,
@@ -1204,7 +1204,9 @@ symmetric_weights_mixture = [
 
 
 
-categories = [unimodal, high_dim_and_correlated, multimodal, difficult_geometries, asymmetric_weights_mixture, symmetric_weights_mixture]
+categories = [asymmetric_weights_mixture, symmetric_weights_mixture]
+
+#unimodal, high_dim_and_correlated, multimodal, difficult_geometries, 
 
 experiment_name = "Second_experiment_20_chains_plus_DEMetropolis_testcases"
 
