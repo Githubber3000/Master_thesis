@@ -1208,7 +1208,7 @@ categories = [asymmetric_weights_mixture, symmetric_weights_mixture]
 
 #unimodal, high_dim_and_correlated, multimodal, difficult_geometries, 
 
-experiment_name = "Second_experiment_20_chains_plus_DEMetropolis_testcases"
+experiment_name = "Second_experiment_20_chains_falied_cases"
 
 # Define the root directory for all experiments
 experiment_root_folder = f"exp_{experiment_name}"
