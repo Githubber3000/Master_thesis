@@ -1,0 +1,16 @@
+
+============================
+Experiment Summary
+============================
+Started at:               2025-03-24 02:28:39
+Finished at:              2025-03-24 06:58:43
+Total duration:           270.07 minutes (16203.9 seconds)
+Output folder:            exp_Second_experiment_20_chains_plus_DEMetropolis_testcases
+Output folder size:       16.2 MB
+Total configurations:     13
+Successful runs:          11
+Failed configurations:    2
+
+ Failed Configurations:
+ - Mv_normal_2d_mixture_3_comp: [Errno 17] File exists: 'exp_Second_experiment_20_chains_plus_DEMetropolis_testcases/Mv_normal_2d_mixture_3_comp_with_10_runs'
+ - Mv_normal_2d_mixture_3_comp: [Errno 17] File exists: 'exp_Second_experiment_20_chains_plus_DEMetropolis_testcases/Mv_normal_2d_mixture_3_comp_with_10_runs'

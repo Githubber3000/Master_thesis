@@ -1,0 +1,20 @@
+{
+    "config_descr": "Laplace_test",
+    "runs": 10,
+    "posterior_type": "Laplace",
+    "varying_attribute": "b",
+    "varying_values": [
+        0.5,
+        1,
+        2,
+        5
+    ],
+    "num_samples": 40000,
+    "num_chains": 20,
+    "samples_per_chain": 2000,
+    "init_scheme": null,
+    "base_random_seed": 42,
+    "git_tag": "v1.5-10-g36034d6",
+    "mu": 0,
+    "b": 5
+}
