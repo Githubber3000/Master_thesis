@@ -1202,8 +1202,6 @@ symmetric_weights_mixture = [
 
 ]
 
-
-
 categories = [asymmetric_weights_mixture, symmetric_weights_mixture]
 
 #unimodal, high_dim_and_correlated, multimodal, difficult_geometries, 

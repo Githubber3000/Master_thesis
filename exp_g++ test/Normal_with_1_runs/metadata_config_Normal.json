@@ -1,0 +1,20 @@
+{
+    "config_descr": "Normal",
+    "runs": 1,
+    "posterior_type": "Normal",
+    "varying_attribute": "mu",
+    "varying_values": [
+        0,
+        2,
+        5,
+        10
+    ],
+    "num_samples": 4000,
+    "num_chains": 4,
+    "samples_per_chain": 1000,
+    "init_scheme": null,
+    "base_random_seed": 42,
+    "git_tag": "v1.5-13-gb86e1d8",
+    "mu": 10,
+    "sigma": 1
+}
