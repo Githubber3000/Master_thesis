@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:               2025-03-25 12:06:08
+Finished at:              2025-03-25 12:51:08
+Total duration:           45.0 minutes (2699.9 seconds)
+Output folder:            exp_DEMetro_test_iterated_mode_distance
+Output folder size:       54.3 MB
+Total configurations:     13
+Successful runs:          13
+Failed configurations:    0
