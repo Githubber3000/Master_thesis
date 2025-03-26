@@ -1368,7 +1368,7 @@ create_directories(experiment_root_folder)
 # It's about the individual traces, the global traces and traces per run are always saved
 experiment_settings = {
     "save_traces": False,                 # if True, save traces to NetCDF files
-    "trace_plots": "all",                # "none", "first_run_only", "all" 
+    "trace_plots": "first_run_only",                # "none", "first_run_only", "all" 
     "plot_traces_in_notebook": False       # if True, plot traces in the notebook
 }
 
