@@ -15,6 +15,7 @@ import subprocess
 import time
 from datetime import datetime
 import humanize 
+from tqdm import tqdm
 
 warnings.simplefilter("ignore", category=RuntimeWarning)
 warnings.simplefilter("ignore", category=UserWarning)
@@ -95,26 +96,18 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     - global_plots_folder: Folder to save plots.
     """
 
-    # Handle varying attributes for plotting
-    if varying_attribute == "mu":
-        df_all_runs["mode_distance"] = df_all_runs[varying_attribute].apply(lambda x: abs(eval(x)[1] - eval(x)[0]))
-        df_all_runs = df_all_runs.sort_values("mode_distance", ascending=True)
-        varying_attribute_for_plot = "mode_distance"
-    else:
-        df_all_runs = df_all_runs.sort_values(varying_attribute, ascending=True)
-        varying_attribute_for_plot = varying_attribute
+    df_all_runs = df_all_runs.sort_values(varying_attribute, ascending=True)
+    varying_attribute_for_plot = varying_attribute
 
     # Define metrics for aggregation
     metrics = ["wasserstein_distance", "r_hat", "ess", "runtime"]
 
     # Initialize global plots
-    fig_ax_pairs_bars = {metric: plt.subplots(figsize=(10, 6)) for metric in metrics}
+    #fig_ax_pairs_bars = {metric: plt.subplots(figsize=(10, 6)) for metric in metrics}
 
     # New figure set (line + fill)
     fig_ax_pairs_shaded = {metric: plt.subplots(figsize=(10, 6))
                        for metric in metrics}
-
-
 
     for sampler in df_all_runs["sampler"].unique():
         df_sampler = df_all_runs[df_all_runs["sampler"] == sampler]
@@ -130,8 +123,8 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                         for metric in metrics}
 
         for metric, (mean, std) in metric_stats.items():
-            fig_bars, ax_bars = fig_ax_pairs_bars[metric]
-            ax_bars.errorbar(mean.index, mean, yerr=std, fmt="o-", label=sampler, color=color, capsize=5)
+            #fig_bar, ax_bar = fig_ax_pairs_bars[metric]
+            #ax_bar.errorbar(mean.index, mean, yerr=std, fmt="o-", label=sampler, color=color, capsize=5)
 
             # New figure set (line + shaded area)
             fig_shaded, ax_shaded = fig_ax_pairs_shaded[metric]
@@ -153,12 +146,12 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     # Save plots
     attribute_label = "Mode Distance" if varying_attribute == "mu" else varying_attribute.replace("_", " ").title()
     for metric in metrics:
-        fig_bar, ax_bar = fig_ax_pairs_bars[metric]
-        fig_shaded, ax_shaded = fig_ax_pairs_shaded[metric]
-        finalize_and_save_plot(fig_bar, ax_bar, attribute_label, metric,
-                               f"Averaged {metric.replace('_', ' ').title()} ({runs} Runs, config = {config_descr})",
-                               os.path.join(global_plots_folder, f"{metric}_global_plot.pdf"))
+        #fig_bar, ax_bar = fig_ax_pairs_bars[metric]
+        #finalize_and_save_plot(fig_bar, ax_bar, attribute_label, metric,
+        #                       f"Averaged {metric.replace('_', ' ').title()} ({runs} Runs, config = {config_descr})",
+        #                       os.path.join(global_plots_folder, f"{metric}_global_plot.pdf"))
         
+        fig_shaded, ax_shaded = fig_ax_pairs_shaded[metric]
         finalize_and_save_plot(fig_shaded, ax_shaded, attribute_label, metric,
                                f"Averaged {metric.replace('_', ' ').title()} ({runs} Runs, config = {config_descr})",
                                os.path.join(global_plots_folder, f"{metric}_global_plot_shaded.pdf"))
@@ -561,6 +554,7 @@ def run_experiment(
     num_chains,
     init_scheme=None,
     base_random_seed=None,
+    progress_bar=None,
     **posterior_kwargs
 ):
     print(f"\n===== Config {config_descr} started! =====\n")
@@ -836,18 +830,13 @@ def run_experiment(
 
         # Handle tuple-based attributes consistently
         if isinstance(df_results[varying_attribute].iloc[0], tuple):
-            if varying_attribute == "mode_means":
-                df_results["mode_distance"] = df_results[varying_attribute].apply(lambda x: abs(x[1] - x[0]))
-                varying_attribute_for_plot = "mode_distance"
-            else:
-                df_results[varying_attribute] = df_results[varying_attribute].apply(str)
-                varying_attribute_for_plot = varying_attribute
+            df_results[varying_attribute] = df_results[varying_attribute].apply(str)
+            varying_attribute_for_plot = varying_attribute
         else:
             varying_attribute_for_plot = varying_attribute
 
         # Sort the DataFrame by the final chosen attribute
         df_results = df_results.sort_values(varying_attribute_for_plot, ascending=True)
-
 
         plot_and_save_all_metrics(
             df_results=df_results,
@@ -859,6 +848,10 @@ def run_experiment(
             run_id=run_id,
             config_descr=config_descr
         )
+
+        # Now increment the TQDM progress bar if it's provided
+        if progress_bar is not None:
+            progress_bar.update(1)
 
     print("\n===== All Runs Completed Successfully! =====\n")
 
@@ -1416,11 +1409,10 @@ new_mixture_test = [
 
 
 
-categories = [unimodal, high_dim_and_correlated, multimodal, difficult_geometries, asymmetric_weights_mixture, symmetric_weights_mixture, Mixture_test_init_scheme]
+#experiments = [unimodal, high_dim_and_correlated, multimodal, difficult_geometries, asymmetric_weights_mixture, symmetric_weights_mixture, Mixture_test_init_scheme]
 
-category = new_mixture_test
-
-experiment_name = "middle_init_and_asymmetric_weights"
+experiments = [new_mixture_test]
+experiment_name = "middle_and _assym_weights"
 
 # Define the root directory for all experiments
 experiment_root_folder = f"exp_{experiment_name}"
@@ -1435,13 +1427,12 @@ if os.path.exists(experiment_root_folder):
     if user_input not in ["yes", "y"]:
         print("Operation aborted. No files were deleted.")
         sys.exit(0)
-    
+
     shutil.rmtree(experiment_root_folder)
 
 create_directories(experiment_root_folder)
 
-# important for produced file size
-# It's about the individual traces, the global traces and traces per run are always saved
+# important for reduced file size (only about the individual traces, the global traces and traces per run are always saved)
 experiment_settings = {
     "save_traces": False,                 # if True, save traces to NetCDF files
     "trace_plots": "first_run_only",                # "none", "first_run_only", "all" 
@@ -1452,42 +1443,47 @@ failed_configs = []
 start_time = time.time()
 start_dt = datetime.now()
 
-
 # Validate all configurations before running the experiments
-for experiment in categories:
-
-    for config in experiment:
+for exp in experiments:
+    for config in exp:
         validate_config(config)
 
+
+total_runs = sum(config["runs"] for exp in experiments for config in exp)
+
 print("All configurations are valid. Starting experiments...")
-
-
-for config in category:
-    try:
-        run_experiment(
-            experiment_settings,
-            posterior_type=config["posterior_type"],
-            config_descr=config["config_descr"],
-            runs=config["runs"],
-            varying_attribute=config["varying_attribute"],
-            varying_values=config["varying_values"],
-            init_scheme="varies" if config["varying_attribute"] == "init_scheme" else config.get("init_scheme", None),
-            num_samples="varies" if config["varying_attribute"] == "num_samples" else config["num_samples"],
-            num_chains="varies" if config["varying_attribute"] == "num_chains" else config["num_chains"],
-            base_random_seed=config.get("base_random_seed", None),
-            **{k: v for k, v in config.items() if k not in [
-                "config_descr", "runs", "varying_attribute", "varying_values", 
-                "num_samples", "num_chains", "init_scheme", 
-                "base_random_seed", "posterior_type"
-            ]}  # Pass remaining keys as posterior_kwargs
-        )
-    except Exception as e:
-        print(f"Error in config '{config['config_descr']}': {e}")
-        failed_configs.append((config['config_descr'], str(e)))
+with tqdm(total=total_runs, desc="Total experiment progress") as pbar:
+    for exp in experiments:
+        for config in exp:
+            try:
+                run_experiment(
+                    experiment_settings,
+                    posterior_type=config["posterior_type"],
+                    config_descr=config["config_descr"],
+                    runs=config["runs"],
+                    varying_attribute=config["varying_attribute"],
+                    varying_values=config["varying_values"],
+                    init_scheme="varies" if config["varying_attribute"] == "init_scheme" else config.get("init_scheme", None),
+                    num_samples="varies" if config["varying_attribute"] == "num_samples" else config["num_samples"],
+                    num_chains="varies" if config["varying_attribute"] == "num_chains" else config["num_chains"],
+                    base_random_seed=config.get("base_random_seed", None),
+                    progress_bar=pbar, 
+                    **{k: v for k, v in config.items() if k not in [
+                        "config_descr", "runs", "varying_attribute", "varying_values", 
+                        "num_samples", "num_chains", "init_scheme", 
+                        "base_random_seed", "posterior_type"
+                    ]}  # Pass remaining keys as posterior_kwargs
+                )
+            except Exception as e:
+                print(f"Error in config '{config['config_descr']}': {e}")
+                failed_configs.append((config['config_descr'], str(e)))
 
 end_time = time.time()
 end_dt = datetime.now()
 duration = end_time - start_time
+hours = int(duration // 3600)
+minutes = int((duration % 3600) // 60)
+seconds = round(duration % 60, 1)
 
 def get_folder_size(path='.'):
     """Compute total size of all files in directory."""
@@ -1499,12 +1495,9 @@ def get_folder_size(path='.'):
                 total += os.path.getsize(fp)
     return total
 
-
 # Prepare the summary text
 size_bytes = get_folder_size(experiment_root_folder)
-#total_configs = sum(len(category) for category in categories) # fix, make it more general
-total_configs = len(category)
-
+total_configs = sum(len(exp) for exp in experiments)
 
 summary_lines = [
     "\n============================",
@@ -1512,7 +1505,7 @@ summary_lines = [
     "============================",
     f"Started at:               {start_dt.strftime('%Y-%m-%d %H:%M:%S')}",
     f"Finished at:              {end_dt.strftime('%Y-%m-%d %H:%M:%S')}",
-    f"Total duration:           {round(duration / 60, 2)} minutes ({round(duration, 1)} seconds)",
+    f"Total duration:           {hours}h {minutes}m {seconds}s",
     f"Output folder:            {experiment_root_folder}",
     f"Output folder size:       {humanize.naturalsize(size_bytes)}",
     f"Total configurations:     {total_configs}",
@@ -1534,3 +1527,5 @@ with open(summary_path, "w") as f:
     f.write("\n".join(summary_lines))
 
 print(f"Summary saved to: {summary_path}")
+
+#new
