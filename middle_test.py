@@ -916,7 +916,8 @@ def validate_config(config):
         "Laplace": {"mu", "b"},
         "SkewStudentT": {"a", "b", "mu", "sigma"},
         "Mixture": {"component_types", "component_params", "weights"},
-        "MvNormal": {"mu", "cov"}
+        "MvNormal": {"mu", "cov"},
+        "Custom": {"logp_func", "param_names"}
     }
 
     OPTIONAL_ATTRIBUTES = {"base_random_seed", "init_scheme", "varying_component"}
@@ -999,16 +1000,18 @@ def validate_config(config):
 #    mu1, mu2 = -2, 2
 #    sigma1, sigma2 = 1, 1
 
-    #log_like1 = pm.logp(pm.Normal.dist(mu=mu1, sigma=sigma1), x)
-    #log_like2 = pm.logp(pm.Normal.dist(mu=mu2, sigma=sigma2), x)
+#    log_like1 = pm.logp(pm.Normal.dist(mu=mu1, sigma=sigma1), x)
+#    log_like2 = pm.logp(pm.Normal.dist(mu=mu2, sigma=sigma2), x)
 
-    #return pm.math.logsumexp([np.log(w1) + log_like1, np.log(w2) + log_like2])
+#    return pm.math.logsumexp([np.log(w1) + log_like1, np.log(w2) + log_like2])
 
 # default attributes
 default_num_samples = 20000
 default_num_chains = 20
 default_base_random_seed = 42
 default_runs = 50
+
+
 
 unimodal = [
 
