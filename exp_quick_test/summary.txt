@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:               2025-04-25 21:57:39
+Finished at:              2025-04-25 22:15:08
+Total duration:           0h 17m 28.8s
+Output folder:            exp_quick_test
+Output folder size:       18.3 MB
+Total configurations:     12
+Successful runs:          12
+Failed configurations:    0

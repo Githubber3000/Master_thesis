@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:               2025-04-29 13:01:23
+Finished at:              2025-04-29 13:16:36
+Total duration:           0h 15m 13.0s
+Output folder:            exp_neu_muti
+Output folder size:       6.4 MB
+Total configurations:     2
+Successful runs:          2
+Failed configurations:    0

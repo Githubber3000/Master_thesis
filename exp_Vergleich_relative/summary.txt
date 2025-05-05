@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:               2025-04-14 14:00:00
+Finished at:              2025-04-14 14:01:11
+Total duration:           0h 1m 11.3s
+Output folder:            exp_Vergleich_relative
+Output folder size:       832.1 kB
+Total configurations:     1
+Successful runs:          1
+Failed configurations:    0

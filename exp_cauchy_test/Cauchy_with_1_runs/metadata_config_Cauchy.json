@@ -1,0 +1,17 @@
+{
+    "config_descr": "Cauchy",
+    "runs": 1,
+    "posterior_type": "Cauchy",
+    "varying_attribute": "alpha",
+    "varying_values": [
+        2
+    ],
+    "num_samples": 4000,
+    "num_chains": 4,
+    "samples_per_chain": 1000,
+    "init_scheme": null,
+    "base_random_seed": 42,
+    "git_tag": "v1.5-28-g274afa4",
+    "alpha": 2,
+    "beta": 2
+}

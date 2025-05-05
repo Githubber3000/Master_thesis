@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:               2025-04-17 13:56:26
+Finished at:              2025-04-17 13:56:35
+Total duration:           0h 0m 8.9s
+Output folder:            exp_unimodal_test
+Output folder size:       441.2 kB
+Total configurations:     1
+Successful runs:          1
+Failed configurations:    0

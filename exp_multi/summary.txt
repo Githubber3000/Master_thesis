@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:               2025-04-24 11:05:18
+Finished at:              2025-04-24 11:15:45
+Total duration:           0h 10m 26.9s
+Output folder:            exp_multi
+Output folder size:       4.3 MB
+Total configurations:     2
+Successful runs:          2
+Failed configurations:    0
