@@ -1,0 +1,44 @@
+{
+    "config_descr": "Mv_normal_2d_high_corr",
+    "runs": 10,
+    "posterior_type": "MvNormal",
+    "varying_attribute": "mu",
+    "varying_values": [
+        [
+            0,
+            0
+        ],
+        [
+            -10,
+            10
+        ],
+        [
+            20,
+            -20
+        ],
+        [
+            50,
+            -50
+        ]
+    ],
+    "num_samples": 40000,
+    "num_chains": 20,
+    "samples_per_chain": 2000,
+    "init_scheme": null,
+    "base_random_seed": 42,
+    "git_tag": "v1.5-10-g36034d6",
+    "mu": [
+        50,
+        -50
+    ],
+    "cov": [
+        [
+            1,
+            0.95
+        ],
+        [
+            0.95,
+            1
+        ]
+    ]
+}
