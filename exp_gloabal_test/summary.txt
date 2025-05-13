@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:               2025-05-13 01:09:29
+Finished at:              2025-05-13 02:26:42
+Total duration:           1h 17m 12.6s
+Output folder:            exp_gloabal_test
+Output folder size:       20.6 MB
+Total configurations:     14
+Successful runs:          14
+Failed configurations:    0

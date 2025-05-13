@@ -27,7 +27,7 @@
     ],
     "init_scheme": "thesis_scheme",
     "base_random_seed": 42,
-    "git_tag": "v1.5-33-g91e6270a",
+    "git_tag": "v1.5-34-gbe88e0f5",
     "mu": [
         50,
         -50,

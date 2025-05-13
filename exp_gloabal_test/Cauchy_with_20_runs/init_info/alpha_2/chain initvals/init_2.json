@@ -1,0 +1,26 @@
+{
+    "run_id": 1,
+    "case": "unimodal",
+    "dim": 1,
+    "means_array": [
+        [
+            2
+        ]
+    ],
+    "center": 2,
+    "noise": 0.5,
+    "samples": [
+        {
+            "posterior": 2.2219425384539147
+        },
+        {
+            "posterior": 2.750925238895192
+        },
+        {
+            "posterior": 1.527557585936847
+        },
+        {
+            "posterior": 2.2784531257061764
+        }
+    ]
+}
