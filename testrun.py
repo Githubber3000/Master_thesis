@@ -1882,7 +1882,7 @@ def validate_config(config):
 # Define the list of experiments to run
 #experiments = [cauchy, unimodal, high_dim_and_correlated, multimodal, difficult_geometries]
 
-experiments = [high_dim_and_correlated]
+experiments = [cauchy, unimodal, high_dim_and_correlated, multimodal, easy_multimodal, difficult_geometries]
 experiment_name = "gloabal_test"
 
 # Define the root directory for all experiments
