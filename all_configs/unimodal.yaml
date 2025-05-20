@@ -4,9 +4,9 @@ configs:
   - config_descr: Normal
     posterior_type: Normal
     varying_attribute: mu
-    varying_values: [4]
+    varying_values: [2, 3, 4]
     sigma: 1
-
+    init_scheme: thesis_scheme
 
   - config_descr: Student_t
     posterior_type: StudentT
@@ -14,17 +14,11 @@ configs:
     varying_values: [1, 2, 3, 5, 30]
     mu: 0
     sigma: 1
+    init_scheme: thesis_scheme
 
-
-  - config_descr: Laplace
+  - config_descr: Laplace_test
     posterior_type: Laplace
     varying_attribute: b
     varying_values: [0.5, 1, 2, 5]
     mu: 0
-
-
-  - config_descr: Cauchy
-    posterior_type: Cauchy
-    varying_attribute: beta
-    varying_values: [0.5, 1, 2, 5]
-    alpha: 2
+    init_scheme: thesis_scheme
