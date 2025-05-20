@@ -1,0 +1,27 @@
+group_name: difficult_geometries
+configs:
+  - config_descr: SkewStudentT
+    posterior_type: SkewStudentT
+    varying_attribute: a
+    varying_values: [1, 2, 3, 5]
+    b: 1
+    mu: 0
+    sigma: 1
+
+
+  - config_descr: Mixture_of_SkewStudentT
+    posterior_type: Mixture
+    varying_attribute: mu
+    varying_values: [0, 3, 6, 10]
+    varying_component: 0
+    component_types: ["SkewStudentT", "SkewStudentT"]
+    component_params:
+      - a: 3
+        b: 1
+        sigma: 1
+      - a: 9
+        b: 3
+        mu: 3
+        sigma: 4
+    weights: [0.5, 0.5]
+ 
