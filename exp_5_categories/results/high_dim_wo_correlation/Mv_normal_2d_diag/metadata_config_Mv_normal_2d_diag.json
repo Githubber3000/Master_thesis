@@ -1,0 +1,31 @@
+{
+    "config_descr": "Mv_normal_2d_diag",
+    "runs": 20,
+    "num_samples": 6000,
+    "num_chains": 6,
+    "posterior_type": "MvNormal",
+    "varying_attribute": "mu",
+    "varying_values": [
+        [
+            10,
+            20
+        ]
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-38-gadd2e49c",
+    "mu": [
+        10,
+        20
+    ],
+    "cov": [
+        [
+            1.0,
+            0.0
+        ],
+        [
+            0.0,
+            1.0
+        ]
+    ]
+}

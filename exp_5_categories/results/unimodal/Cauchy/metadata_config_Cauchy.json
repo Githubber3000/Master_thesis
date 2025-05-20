@@ -1,0 +1,19 @@
+{
+    "config_descr": "Cauchy",
+    "runs": 20,
+    "num_samples": 6000,
+    "num_chains": 6,
+    "posterior_type": "Cauchy",
+    "varying_attribute": "beta",
+    "varying_values": [
+        0.5,
+        1,
+        2,
+        5
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-38-gadd2e49c",
+    "alpha": 2,
+    "beta": 5
+}
