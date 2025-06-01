@@ -1,2 +1,0 @@
-run_id,mu,sampler,wasserstein_distance,mmd_rff,swd_zscore,r_hat,ess,runtime
-15,"(10, 10, 10, 20, 20, 30, 30, 30, 40, 40)",DEMetro,2.518180911791945,0.4154652947835826,1015.817072777798,,6.048387096774194,2.3467109203338623
