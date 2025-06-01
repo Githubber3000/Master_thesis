@@ -1,0 +1,39 @@
+{
+    "config_descr": "Mixture_of_Normal",
+    "runs": 20,
+    "num_samples": 6000,
+    "num_chains": 6,
+    "posterior_type": "Mixture",
+    "varying_attribute": "mu",
+    "varying_values": [
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-38-gadd2e49c",
+    "component_types": [
+        "Normal",
+        "Normal"
+    ],
+    "component_params": [
+        {
+            "mu": 0,
+            "sigma": 1
+        },
+        {
+            "mu": 22,
+            "sigma": 1
+        }
+    ],
+    "weights": [
+        0.7,
+        0.3
+    ]
+}

@@ -1,0 +1,39 @@
+{
+    "config_descr": "Mixture_of_SkewStudentT",
+    "runs": 20,
+    "num_samples": 6000,
+    "num_chains": 6,
+    "posterior_type": "Mixture",
+    "varying_attribute": "mu",
+    "varying_values": [
+        0,
+        3,
+        6,
+        10
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-38-gadd2e49c",
+    "component_types": [
+        "SkewStudentT",
+        "SkewStudentT"
+    ],
+    "component_params": [
+        {
+            "a": 3,
+            "b": 1,
+            "sigma": 1,
+            "mu": 10
+        },
+        {
+            "a": 9,
+            "b": 3,
+            "mu": 3,
+            "sigma": 4
+        }
+    ],
+    "weights": [
+        0.5,
+        0.5
+    ]
+}

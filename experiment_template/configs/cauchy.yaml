@@ -1,0 +1,9 @@
+group_name: cauchy
+configs:
+  - config_descr: Cauchy
+    posterior_type: Cauchy
+    varying_attribute: alpha
+    varying_values: [2,3,4,5]
+    beta: 2
+
+

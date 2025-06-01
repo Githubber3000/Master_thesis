@@ -1,0 +1,71 @@
+{
+    "config_descr": "Mixture_of_Normal_2d_diagonal",
+    "runs": 20,
+    "num_samples": 6000,
+    "num_chains": 6,
+    "posterior_type": "Mixture",
+    "varying_attribute": "mu",
+    "varying_values": [
+        [
+            5,
+            5
+        ],
+        [
+            10,
+            10
+        ],
+        [
+            20,
+            20
+        ],
+        [
+            50,
+            10
+        ]
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-38-gadd2e49c",
+    "component_types": [
+        "MvNormal",
+        "MvNormal"
+    ],
+    "component_params": [
+        {
+            "mu": [
+                0,
+                0
+            ],
+            "cov": [
+                [
+                    1.0,
+                    0.5
+                ],
+                [
+                    0.5,
+                    1.0
+                ]
+            ]
+        },
+        {
+            "cov": [
+                [
+                    2.0,
+                    0.3
+                ],
+                [
+                    0.3,
+                    2.0
+                ]
+            ],
+            "mu": [
+                50,
+                10
+            ]
+        }
+    ],
+    "weights": [
+        0.7,
+        0.3
+    ]
+}

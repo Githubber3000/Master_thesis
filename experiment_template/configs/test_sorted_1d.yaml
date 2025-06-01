@@ -1,0 +1,15 @@
+group_name: test_sorted
+configs:
+  - config_descr: Mixture_of_Normal
+    posterior_type: Mixture
+    varying_attribute: mu
+    varying_values: [10, 1, 17]
+    varying_component: 1
+    component_types: ["Normal", "Normal"]
+    component_params:
+      - mu: 0
+        sigma: 1
+      - mu: 10
+        sigma: 1
+    weights: [0.7, 0.3]
+

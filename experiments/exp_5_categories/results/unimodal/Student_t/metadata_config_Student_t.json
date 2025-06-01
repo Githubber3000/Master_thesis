@@ -1,0 +1,21 @@
+{
+    "config_descr": "Student_t",
+    "runs": 20,
+    "num_samples": 6000,
+    "num_chains": 6,
+    "posterior_type": "StudentT",
+    "varying_attribute": "nu",
+    "varying_values": [
+        1,
+        2,
+        3,
+        5,
+        30
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-38-gadd2e49c",
+    "nu": 30,
+    "mu": 0,
+    "sigma": 1
+}
