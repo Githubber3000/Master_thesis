@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Full Experiment Report</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 2em;
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    .group-section {
+      margin-bottom: 3em;
+      border: 1px solid #ccc;
+      padding: 1em;
+      border-radius: 6px;
+    }
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .group-header h2 {
+      margin: 0;
+    }
+    .config-section {
+      margin-top: 1em;
+    }
+    .plot-row {
+      display: flex;
+      overflow-x: auto;
+      gap: 1em;
+      padding-bottom: 1em;
+    }
+    .plot-row img {
+      max-height: 200px;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+    }
+    .plot-title {
+      font-weight: bold;
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+  <script>
+    function toggleGroup(id) {
+      const content = document.getElementById(id);
+      const arrow = document.getElementById(id + '-arrow');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        arrow.textContent = '▼';
+      } else {
+        content.classList.add('hidden');
+        arrow.textContent = '▶';
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Complete Experiment Report</h1>
+
+  <!-- Repeat this block per group -->
+  {% for group in groups %}
+  <div class="group-section">
+    <div class="group-header" onclick="toggleGroup('group-{{ loop.index }}')">
+      <h2>{{ group.name }}</h2>
+      <span id="group-{{ loop.index }}-arrow">▼</span>
+    </div>
+    <div id="group-{{ loop.index }}">
+      {% for config in group.configs %}
+      <div class="config-section">
+        <h3>{{ config.config_descr }} ({{ config.posterior_type }}, {{ config.varying_attribute }}, {{ config.runs }} runs)</h3>
+        <div class="plot-row">
+          {% for metric in config.metrics %}
+            <div>
+              <div class="plot-title">{{ metric.replace('_', ' ').title() }}</div>
+              <img src="{{ config.metric_plot_paths[metric] }}" alt="{{ metric }} plot">
+            </div>
+
+            {% if metric == "wasserstein_distance" %}
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="{{ config.glass_plot_paths.ws }}" alt="Glass Delta WS">
+              </div>
+            {% elif metric == "mmd_rff" %}
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="{{ config.glass_plot_paths.mmd }}" alt="Glass Delta MMD">
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+</body>
+</html>
