@@ -2061,8 +2061,10 @@ def run_experiment(
 
     logger.info(f"===== Config {config_descr} completed successfully. =====")
 
-experiment_name = "new_run"
-config_names = ["Multimodal", "Dimension", "Correlated", "Skewness", "Kurtosis"]
+
+
+experiment_name = "70_runs"
+config_names = ["Multimodal", "Dimension", "Correlation", "Skewness", "Kurtosis"]
 
 # Define the root directory for all experiments
 experiment_root_folder = os.path.join("experiments", f"exp_{experiment_name}")
