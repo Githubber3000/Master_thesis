@@ -1,0 +1,27 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-06-03 13:12:53
+Finished at:                  2025-06-03 14:03:35
+Total duration:               0h 50m 41.2s
+Output folder:                experiments/exp_All_categories
+Output folder size:           42.2 MB
+Total configurations:         11
+Successful configuration:     10
+Failed configurations:        1
+
+ Failed Configurations:
+ - Mixture_of_3_Normal_2d_vertical_drift: array must not contain infs or NaNs
+Apply node that caused the error: SolveTriangular{trans=0, unit_diagonal=False, lower=True, check_finite=True, b_ndim=2}([[1. 0.] [0. 1.]], Transpose{axes=[1, 0]}.0)
+Toposort index: 4
+Inputs types: [TensorType(float64, shape=(2, 2)), TensorType(float64, shape=(2, 1))]
+Inputs shapes: [(2, 2), (2, 1)]
+Inputs strides: [(8, 16), (8, 16)]
+Inputs values: [array([[1., 0.],
+       [0., 1.]]), array([[9.43550052],
+       [       nan]])]
+Outputs clients: [[Transpose{axes=[1, 0]}(SolveTriangular{trans=0, unit_diagonal=False, lower=True, check_finite=True, b_ndim=2}.0)]]
+
+HINT: Re-running with most PyTensor optimizations disabled could provide a back-trace showing when this node was created. This can be done by setting the PyTensor flag 'optimizer=fast_compile'. If that does not work, PyTensor optimizations can be disabled with 'optimizer=None'.
+HINT: Use the PyTensor flag `exception_verbosity=high` for a debug print-out and storage map footprint of this Apply node.

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Full Experiment Report</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 2em;
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    .group-section {
+      margin-bottom: 3em;
+      border: 1px solid #ccc;
+      padding: 1em;
+      border-radius: 6px;
+    }
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .group-header h2 {
+      margin: 0;
+    }
+    .config-section {
+      margin-top: 1em;
+    }
+    .plot-row {
+      display: flex;
+      overflow-x: auto;
+      gap: 1em;
+      padding-bottom: 1em;
+    }
+    .plot-row img {
+      max-height: 200px;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+    }
+    .plot-title {
+      font-weight: bold;
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+  <script>
+    function toggleGroup(id) {
+      const content = document.getElementById(id);
+      const arrow = document.getElementById(id + '-arrow');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        arrow.textContent = '▼';
+      } else {
+        content.classList.add('hidden');
+        arrow.textContent = '▶';
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Complete Experiment Report</h1>
+
+  <!-- Repeat this block per group -->
+  
+  <div class="group-section">
+    <div class="group-header" onclick="toggleGroup('group-1')">
+      <h2>Multimodal</h2>
+      <span id="group-1-arrow">▼</span>
+    </div>
+    <div id="group-1">
+      
+      <div class="config-section">
+        <h3>Mixture_of_Normal (Mixture, mu, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Multimodal/Mixture_of_Normal/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Multimodal/Mixture_of_Normal/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Multimodal/Mixture_of_Normal/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Multimodal/Mixture_of_Normal/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Multimodal/Mixture_of_Normal/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Multimodal/Mixture_of_Normal/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Multimodal/Mixture_of_Normal/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+      <div class="config-section">
+        <h3>Mixture_of_3_Normal_2d_vary_mu_diagonal (Mixture, mu, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vary_mu_diagonal/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vary_mu_diagonal/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vary_mu_diagonal/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vary_mu_diagonal/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vary_mu_diagonal/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vary_mu_diagonal/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vary_mu_diagonal/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+      <div class="config-section">
+        <h3>Mixture_of_3_Normal_2d_vertical_drift (Mixture, mu, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vertical_drift/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vertical_drift/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vertical_drift/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vertical_drift/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vertical_drift/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vertical_drift/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Multimodal/Mixture_of_3_Normal_2d_vertical_drift/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+      <div class="config-section">
+        <h3>Mixture_of_10_MvNormal_on_circle (Mixture, mu, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Multimodal/Mixture_of_10_MvNormal_on_circle/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Multimodal/Mixture_of_10_MvNormal_on_circle/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Multimodal/Mixture_of_10_MvNormal_on_circle/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Multimodal/Mixture_of_10_MvNormal_on_circle/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Multimodal/Mixture_of_10_MvNormal_on_circle/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Multimodal/Mixture_of_10_MvNormal_on_circle/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Multimodal/Mixture_of_10_MvNormal_on_circle/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="group-section">
+    <div class="group-header" onclick="toggleGroup('group-2')">
+      <h2>Dimension</h2>
+      <span id="group-2-arrow">▼</span>
+    </div>
+    <div id="group-2">
+      
+      <div class="config-section">
+        <h3>Mv_normal_20d_without_corr (MvNormal, dimension_corr, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Dimension/Mv_normal_20d_without_corr/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Dimension/Mv_normal_20d_without_corr/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Dimension/Mv_normal_20d_without_corr/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Dimension/Mv_normal_20d_without_corr/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Dimension/Mv_normal_20d_without_corr/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Dimension/Mv_normal_20d_without_corr/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Dimension/Mv_normal_20d_without_corr/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+      <div class="config-section">
+        <h3>Mv_normal_20d_with_corr (MvNormal, dimension_corr, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Dimension/Mv_normal_20d_with_corr/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Dimension/Mv_normal_20d_with_corr/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Dimension/Mv_normal_20d_with_corr/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Dimension/Mv_normal_20d_with_corr/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Dimension/Mv_normal_20d_with_corr/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Dimension/Mv_normal_20d_with_corr/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Dimension/Mv_normal_20d_with_corr/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="group-section">
+    <div class="group-header" onclick="toggleGroup('group-3')">
+      <h2>Skewness</h2>
+      <span id="group-3-arrow">▼</span>
+    </div>
+    <div id="group-3">
+      
+      <div class="config-section">
+        <h3>SkewNormal (SkewNormal, alpha, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Skewness/SkewNormal/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Skewness/SkewNormal/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Skewness/SkewNormal/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Skewness/SkewNormal/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Skewness/SkewNormal/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Skewness/SkewNormal/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Skewness/SkewNormal/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="group-section">
+    <div class="group-header" onclick="toggleGroup('group-4')">
+      <h2>Kurtosis</h2>
+      <span id="group-4-arrow">▼</span>
+    </div>
+    <div id="group-4">
+      
+      <div class="config-section">
+        <h3>StudentT (StudentT, nu, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Kurtosis/StudentT/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Kurtosis/StudentT/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Kurtosis/StudentT/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Kurtosis/StudentT/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Kurtosis/StudentT/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Kurtosis/StudentT/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Kurtosis/StudentT/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="group-section">
+    <div class="group-header" onclick="toggleGroup('group-5')">
+      <h2>Correlation</h2>
+      <span id="group-5-arrow">▼</span>
+    </div>
+    <div id="group-5">
+      
+      <div class="config-section">
+        <h3>MvNormal_5d_corr_rho0.0 (MvNormal, mu, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.0/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.0/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.0/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.0/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.0/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.0/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.0/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+      <div class="config-section">
+        <h3>MvNormal_5d_corr_rho0.5 (MvNormal, mu, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.5/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.5/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.5/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.5/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.5/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.5/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.5/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+      <div class="config-section">
+        <h3>MvNormal_5d_corr_rho0.9 (MvNormal, mu, 6 runs)</h3>
+        <div class="plot-row">
+          
+            <div>
+              <div class="plot-title">Wasserstein Distance</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.9/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ WS</div>
+                <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.9/glass_delta_ws_dist.png" alt="Glass Delta WS">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">Mmd Rff</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.9/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+            </div>
+
+            
+              <div>
+                <div class="plot-title">Glass's Δ MMD</div>
+                <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.9/glass_delta_mmd.png" alt="Glass Delta MMD">
+              </div>
+            
+          
+            <div>
+              <div class="plot-title">R Hat</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.9/r_hat_global_plot_shaded.png" alt="r_hat plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Ess</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.9/ess_global_plot_shaded.png" alt="ess plot">
+            </div>
+
+            
+          
+            <div>
+              <div class="plot-title">Runtime</div>
+              <img src="report_pngs/Correlation/MvNormal_5d_corr_rho0.9/runtime_global_plot_shaded.png" alt="runtime plot">
+            </div>
+
+            
+          
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+
+</body>
+</html>

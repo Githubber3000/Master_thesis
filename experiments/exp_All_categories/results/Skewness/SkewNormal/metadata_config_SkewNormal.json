@@ -1,0 +1,28 @@
+{
+    "config_descr": "SkewNormal",
+    "runs": 6,
+    "total_iid_batches": 18,
+    "iid_vs_iid_comparisons": 6,
+    "mcmc_vs_iid_comparisons": 6,
+    "num_samples": 4000,
+    "num_chains": 4,
+    "samples_per_chain": 1000,
+    "posterior_type": "SkewNormal",
+    "varying_attribute": "alpha",
+    "varying_values": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        80,
+        100
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-45-gcde69831",
+    "mu": 0,
+    "sigma": 1,
+    "alpha": "varies"
+}

@@ -1,0 +1,21 @@
+group_name: multimodal
+configs:
+
+  - config_descr: Mixture_of_Normal
+    posterior_type: Mixture
+    varying_attribute: mu
+    varying_values: [8, 10, 12, 14, 16, 18, 20, 22, 40]
+    varying_component: 1
+    component_types: ["Normal", "Normal"]
+    component_params:
+      - mu: 0
+        sigma: 1
+      - mu: 10
+        sigma: 1
+    weights: [0.7, 0.3]
+
+
+
+
+
+  
