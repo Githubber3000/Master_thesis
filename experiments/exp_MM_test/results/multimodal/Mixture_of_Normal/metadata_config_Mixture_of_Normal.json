@@ -1,0 +1,44 @@
+{
+    "config_descr": "Mixture_of_Normal",
+    "runs": 40,
+    "total_iid_batches": 120,
+    "iid_vs_iid_comparisons": 40,
+    "mcmc_vs_iid_comparisons": 40,
+    "num_samples": 8000,
+    "num_chains": 4,
+    "samples_per_chain": 2000,
+    "posterior_type": "Mixture",
+    "varying_attribute": "mu",
+    "varying_values": [
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        40
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-45-gcde69831",
+    "component_types": [
+        "Normal",
+        "Normal"
+    ],
+    "component_params": [
+        {
+            "mu": 0,
+            "sigma": 1
+        },
+        {
+            "mu": 40,
+            "sigma": 1
+        }
+    ],
+    "weights": [
+        0.7,
+        0.3
+    ]
+}
