@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-06-15 16:05:17
+Finished at:                  2025-06-15 16:15:39
+Total duration:               0h 10m 22.3s
+Output folder:                experiments/exp_circle_test
+Output folder size:           5.0 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0
