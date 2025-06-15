@@ -3,7 +3,7 @@ configs:
   - config_descr: Mixture_of_Normal
     posterior_type: Mixture
     varying_attribute: mu
-    varying_values: [8, 10, 12, 14, 16, 18, 20, 22]
+    varying_values: [8, 14, 20]
     varying_component: 1
     component_types: ["Normal", "Normal"]
     component_params:

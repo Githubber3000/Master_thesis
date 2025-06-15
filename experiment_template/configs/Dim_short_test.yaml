@@ -3,7 +3,7 @@ configs:
 
   - config_descr: Mv_normal_20d_without_corr
     posterior_type: MvNormal
-    varying_attribute: dimension_corr
+    varying_attribute: dimension_mv
     varying_values: [20]
     mu: [10, 10, 10, 10, 10, 20, 20, 20, 20, 20,
         30, 30, 30, 30, 30, 40, 40, 40, 40, 40]

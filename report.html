@@ -37,11 +37,21 @@
       padding-bottom: 1em;
     }
     .plot-row img {
-      max-height: 200px;
       border: 1px solid #aaa;
       border-radius: 4px;
       box-shadow: 0 0 4px rgba(0,0,0,0.1);
     }
+
+    .plot-row img:not(.init-plot) {
+      max-height: 200px;
+    }
+
+    img.init-plot {
+      max-height: 180px;
+      max-width: 300px;
+      object-fit: contain;
+    }
+
     .plot-title {
       font-weight: bold;
       text-align: center;
@@ -98,6 +108,32 @@
             {% endif %}
           {% endfor %}
         </div>
+
+        <!-- Foldable section for KDEs -->
+        <details>
+          <summary><b>IID Samples KDE across varying values</b></summary>
+          <div class="plot-row">
+            {% for kde_plot_path in config.iid_kde_plot_paths %}
+              <div>
+                <img src="{{ kde_plot_path }}" alt="KDE plot">
+              </div>
+            {% endfor %}
+          </div>
+        </details> 
+
+        {% if config.init_plot_paths %}
+        <details>
+          <summary><b>Init Values per Posterior Variant</b></summary>
+          <div class="plot-row">
+            {% for init_path in config.init_plot_paths %}
+              <div>
+                <img src="{{ init_path }}" alt="Init Plot" class="init-plot">
+              </div>
+            {% endfor %}
+          </div>
+        </details>
+      {% endif %}
+
       </div>
       {% endfor %}
     </div>

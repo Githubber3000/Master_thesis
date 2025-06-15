@@ -1,0 +1,11 @@
+group_name: Correlation
+configs:
+
+  - config_descr: sweep_corr
+    posterior_type: MvStudentT
+    varying_attribute: correlation
+    varying_values: [0.0, 0.5, 0.9]
+    mu: [0, 0]
+    cov: ID_2 
+    nu: 3
+

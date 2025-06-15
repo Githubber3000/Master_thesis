@@ -6,7 +6,7 @@ configs:
     runs: 3
     num_chains: 4
     base_random_seed: 42
-    varying_attribute: dimension_corr
+    varying_attribute: dimension_mv
     varying_values: [5, 4, 3, 2]
     mu: [10, 10, 20, 30, 30]
     cov:

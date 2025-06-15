@@ -3,8 +3,8 @@ configs:
 
   - config_descr: Normal
     posterior_type: Normal
-    varying_attribute: dimension
-    varying_values: [3,4,5]
+    varying_attribute: dimension_mv
+    varying_values: [1]
     mu: 5
     sigma: 1
 
