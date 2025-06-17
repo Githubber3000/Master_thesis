@@ -46,6 +46,7 @@
       max-height: 200px;
     }
 
+    img.kde-plot,
     img.init-plot {
       max-height: 180px;
       max-width: 300px;
@@ -56,6 +57,28 @@
       font-weight: bold;
       text-align: center;
     }
+
+    .plot-column-layout {
+      display: flex;
+      flex-direction: row;
+      gap: 1em;
+      overflow-x: auto;
+      padding-bottom: 1em;
+      align-items: flex-start;
+    }
+
+    .plot-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    .plot-column span {
+      font-size: 0.9em;
+      color: #555;
+    }
+
     .hidden {
       display: none;
     }
@@ -110,7 +133,7 @@
         </div>
 
         <!-- Foldable section for KDEs -->
-        <details>
+        <!-- <details>
           <summary><b>IID Samples KDE across varying values</b></summary>
           <div class="plot-row">
             {% for kde_plot_path in config.iid_kde_plot_paths %}
@@ -132,6 +155,20 @@
             {% endfor %}
           </div>
         </details>
+       {% endif %} -->
+
+       {% if config.iid_kde_plot_paths and config.init_plot_paths %}
+      <details>
+        <summary><b>KDE + Init Plots</b></summary>
+        <div class="plot-column-layout">
+          {% for kde_path, init_path in config.kde_init_pairs %}
+            <div class="plot-column">
+              <img src="{{ kde_path }}" alt="KDE plot" class="kde-plot">
+              <img src="{{ init_path }}" alt="Init Plot" class="init-plot">
+            </div>
+          {% endfor %}
+        </div>
+      </details>
       {% endif %}
 
       </div>

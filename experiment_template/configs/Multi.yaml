@@ -1,0 +1,165 @@
+group_name: Multimodal
+configs:
+
+  - config_descr: Varying_only_Mode_distance
+    posterior_type: Mixture
+    component_types: ["Normal", "Normal"]
+    component_params:
+      - mu: 0
+        sigma: 1
+      - mu: 10
+        sigma: 1
+    weights: [0.5, 0.5]
+    varying_attribute: mu
+    varying_values: [1.5, 2.5, 4.0, 6.0, 15]
+    varying_component: 1
+
+  - config_descr: Varying_Mode_distance_with_high_Correlation
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal"]
+    component_params:
+      - mu: [0.0, 0.0]
+        cov: HIGH_2
+      - cov: HIGH_2
+    weights: [0.5, 0.5]
+    varying_attribute: mu
+    varying_values: [[1.5, 0.0],
+         [2.5, 0.0],
+
+         [4.0, 0.0],
+
+         [6.0, 0.0],
+
+        [15.0, 0.0,]]
+    varying_component: 1
+
+
+  - config_descr: Varying_Mode_distance_with_high_Dimension
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal"]
+    component_params:
+      - mu: [0.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 0.0]
+        cov: ID_30
+      - cov: ID_30
+    weights: [0.5, 0.5]
+    varying_attribute: mu
+    varying_values: [[1.5, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0],
+         [2.5, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0],
+
+         [4.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0],
+
+         [6.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0],
+
+        [15.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0]]
+    varying_component: 1
+
+
+  - config_descr: Varying_Mode_distance_with_high_Dimension_and_high_Correlation
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal"]
+    component_params:
+      - mu: [0.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 0.0]
+        cov: HIGH_30
+      - cov: HIGH_30
+    weights: [0.5, 0.5]
+    varying_attribute: mu
+    varying_values: [[1.5, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0],
+         [2.5, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0],
+
+         [4.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0],
+
+         [6.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0],
+
+        [15.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0]]
+    varying_component: 1
+
+  - config_descr: Mixture_of_3_Normal_2d_vertical_drift
+    posterior_type: Mixture
+    varying_attribute: mu
+    varying_component: 2
+    varying_values:
+      - [5.0, 0.0]
+      - [5.0, 5.0]
+      - [5.0, 10.0]
+      - [5.0, 20.0]
+      - [5.0, 40.0]
+    component_types:
+      - MvNormal
+      - MvNormal
+      - MvNormal
+    component_params:
+      - mu: [0.0, 0.0]
+        cov: ID_2
+      - mu: [10.0, 0.0]
+        cov: ID_2
+      - cov: ID_2
+    weights: [0.33, 0.33, 0.34]
+
+
+
+
+
+
+
+
+  
