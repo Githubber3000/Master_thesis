@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-06-30 15:47:27
+Finished at:                  2025-06-30 15:52:20
+Total duration:               0h 4m 53.5s
+Output folder:                experiments/exp_new_parse_test
+Output folder size:           2.2 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

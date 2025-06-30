@@ -5,9 +5,7 @@ configs:
     posterior_type: MvNormal
     varying_attribute: dimension_mv
     varying_values: [2,5,10,15,30]
-    mu: [10, 10, 10, 10, 10, 20, 20, 20, 20, 20,
-         30, 30, 30, 30, 30, 40, 40, 40, 40, 40,
-         50, 50, 50, 50, 50, 60, 60, 60, 60, 60]
+    mu: ZERO_30
     cov: ID_30
 
 
@@ -15,9 +13,7 @@ configs:
     posterior_type: MvNormal
     varying_attribute: dimension_mv
     varying_values: [2,5,10,15,30]
-    mu: [10, 10, 10, 10, 10, 20, 20, 20, 20, 20,
-         30, 30, 30, 30, 30, 40, 40, 40, 40, 40,
-         50, 50, 50, 50, 50, 60, 60, 60, 60, 60]
+    mu: ZERO_30
     cov: HIGH_30
 
 
@@ -25,9 +21,7 @@ configs:
     posterior_type: MvStudentT
     varying_attribute: dimension_mv
     varying_values: [2,5,10,15,30]
-    mu: [10, 10, 10, 10, 10, 20, 20, 20, 20, 20,
-         30, 30, 30, 30, 30, 40, 40, 40, 40, 40,
-         50, 50, 50, 50, 50, 60, 60, 60, 60, 60]
+    mu: ZERO_30
     nu: 2.1
     scale: ID_30
 
@@ -35,9 +29,7 @@ configs:
     posterior_type: MvStudentT
     varying_attribute: dimension_mv
     varying_values: [2,5,10,15,30]
-    mu: [10, 10, 10, 10, 10, 20, 20, 20, 20, 20,
-         30, 30, 30, 30, 30, 40, 40, 40, 40, 40,
-         50, 50, 50, 50, 50, 60, 60, 60, 60, 60]
+    mu: ZERO_30
     nu: 2.1
     scale: HIGH_30
 

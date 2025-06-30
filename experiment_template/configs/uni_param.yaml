@@ -1,9 +1,0 @@
-group_name: unimodal
-configs:
-
-  - config_descr: Normal
-    posterior_type: Normal
-    varying_attribute: mu
-    varying_values: [4,5,6]
-    sigma: 1
-
