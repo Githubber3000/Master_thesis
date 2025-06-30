@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-06-30 00:29:40
+Finished at:                  2025-06-30 10:39:05
+Total duration:               10h 9m 24.9s
+Output folder:                experiments/exp_new_run_no_MM_30_runs
+Output folder size:           26.2 MB
+Total configurations:         13
+Successful configuration:     13
+Failed configurations:        0

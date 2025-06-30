@@ -1,0 +1,10 @@
+group_name: Skewness
+configs:
+
+  - config_descr: Vary_only_Skewness
+    posterior_type: SkewNormal
+    varying_attribute: alpha
+    varying_values: [0, 2, 5, 7, 10]
+    sigma: 1
+    mu: 0
+
