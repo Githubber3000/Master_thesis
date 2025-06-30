@@ -1,0 +1,35 @@
+group_name: Global_Test
+configs:
+
+  - config_descr: Vary_only_Skewness
+    posterior_type: SkewNormal
+    varying_attribute: alpha
+    varying_values: [0, 2, 5, 7, 10]
+    sigma: 1
+    mu: 0
+
+  - config_descr: Vary_Dimension_with_heavy_Tails_and_high_correlation
+    posterior_type: MvStudentT
+    varying_attribute: dimension_mv
+    varying_values: [2,5,10,15,30]
+    mu: ZERO_30
+    nu: 2.1
+    scale: HIGH_30
+
+  - config_descr: Vary_Correlation_with_heavy_Tails_and_high_Dimension
+    posterior_type: MvStudentT
+    varying_attribute: correlation
+    varying_values: [0.0, 0.3, 0.5, 0.9, 0.99]
+    mu: ZERO_30
+    scale: ID_30
+    nu: 2.1
+
+  - config_descr: Varing_Tails_with_high_Dimension_and_high_Correlation
+    posterior_type: MvStudentT
+    varying_attribute: nu
+    varying_values: [2.1,3,4,5,30]
+    scale: HIGH_30
+    mu: ZERO_30
+
+
+

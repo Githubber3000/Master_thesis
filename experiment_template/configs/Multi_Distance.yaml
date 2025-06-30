@@ -1,0 +1,73 @@
+group_name: Multimodal_Distance
+configs:
+
+  - config_descr: Varying_only_Mode_distance
+    posterior_type: Mixture
+    component_types: ["Normal", "Normal"]
+    component_params:
+      - mu: 0
+        sigma: 1
+      - mu: 10
+        sigma: 1
+    weights: [0.5, 0.5]
+    varying_attribute: mu
+    varying_values: [4, 6, 15]
+    varying_component: 1
+
+  - config_descr: Varying_Mode_distance_with_heavy_Tails
+    posterior_type: Mixture
+    component_types: ["StudentT", "StudentT"]
+    component_params:
+      - mu: 0
+        sigma: 1
+        nu: 2.1
+      - mu: 10
+        sigma: 1
+        nu: 2.1
+    weights: [0.5, 0.5]
+    varying_attribute: mu
+    varying_values: [4, 6, 15]
+    varying_component: 1
+
+  - config_descr: Varying_Mode_distance_with_high_Correlation
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal"]
+    component_params:
+      - mu: [0.0, 0.0]
+        cov: HIGH_2
+      - cov: HIGH_2
+    weights: [0.5, 0.5]
+    varying_attribute: mu
+    varying_values: [[4, 0],
+         [6, 0],
+
+        [15, 0]]
+    varying_component: 1
+
+  - config_descr: Varying_Mode_distance_with_high_Correlation_and_heavy_Tails
+    posterior_type: Mixture
+    component_types: ["MvStudentT", "MvStudentT"]
+    component_params:
+      - mu: [0.0, 0.0]
+        scale: HIGH_2
+        nu: 2.1
+      - scale: HIGH_2
+        nu: 2.1
+    weights: [0.5, 0.5]
+    varying_attribute: mu
+    varying_values: [[4, 0],
+         [6, 0],
+
+        [15, 0]]
+    varying_component: 1
+
+
+
+
+
+
+
+
+
+
+  
