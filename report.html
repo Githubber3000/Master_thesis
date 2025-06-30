@@ -98,7 +98,10 @@
   </script>
 </head>
 <body>
-  <h1>Complete Experiment Report</h1>
+<h1>Complete Experiment Report</h1>
+
+{% set metrics = metrics or
+  ["wasserstein_distance","mmd_rff","r_hat","ess","runtime"] %}
 
   <!-- Repeat this block per group -->
   {% for group in groups %}
@@ -107,64 +110,82 @@
       <h2>{{ group.name }}</h2>
       <span id="group-{{ loop.index }}-arrow">▼</span>
     </div>
+
+
     <div id="group-{{ loop.index }}">
       {% for config in group.configs %}
       <div class="config-section">
-        <h3>{{ config.config_descr }} ({{ config.posterior_type }}, {{ config.varying_attribute }}, {{ config.runs }} runs)</h3>
-        <div class="plot-row">
-          {% for metric in config.metrics %}
-            <div>
-              <div class="plot-title">{{ metric.replace('_', ' ').title() }}</div>
-              <img src="{{ config.metric_plot_paths[metric] }}" alt="{{ metric }} plot">
+        <h3>
+          {{ config.config_descr }} 
+          ({{ config.posterior_type }}, 
+          {{ config.varying_attribute }}, 
+          {{ config.runs }} runs)
+        </h3>
+
+        {# ---------- helper macro ---------- #}
+        {% macro metric_grid(metric_paths, glass_paths, title, open=false) -%}
+          <details {% if open %}open{% endif %}>
+            <summary><b>{{ title }}</b></summary>
+        
+            <div class="plot-row">
+              {% for m in metrics %}
+                {% if metric_paths[m] is defined %}
+                  <div>
+                    <div class="plot-title">{{ m.replace('_',' ').title() }}</div>
+                    <img src="{{ metric_paths[m] }}" alt="{{ m }} plot">
+                  </div>
+                {% endif %}
+                
+                {# extra Glass-Δ thumbnails where available #}
+                {% if m == 'wasserstein_distance' and glass_paths.ws is defined %}
+                  <div>
+                    <div class="plot-title">Glass’s Δ WS</div>
+                    <img src="{{ glass_paths.ws }}" alt="Glass Δ WS">
+                  </div>
+                {% elif m == 'mmd_rff' and glass_paths.mmd is defined %}
+                  <div>
+                    <div class="plot-title">Glass’s Δ MMD</div>
+                    <img src="{{ glass_paths.mmd }}" alt="Glass Δ MMD">
+                  </div>
+                {% endif %}
+              {% endfor %}
             </div>
+          </details>
+        {%- endmacro %}
 
-            {% if metric == "wasserstein_distance" %}
-              <div>
-                <div class="plot-title">Glass's Δ WS</div>
-                <img src="{{ config.glass_plot_paths.ws }}" alt="Glass Delta WS">
-              </div>
-            {% elif metric == "mmd_rff" %}
-              <div>
-                <div class="plot-title">Glass's Δ MMD</div>
-                <img src="{{ config.glass_plot_paths.mmd }}" alt="Glass Delta MMD">
-              </div>
-            {% endif %}
-          {% endfor %}
-        </div>
 
-        <!-- Foldable section for KDEs -->
-        <!-- <details>
-          <summary><b>IID Samples KDE across varying values</b></summary>
-          <div class="plot-row">
-            {% for kde_plot_path in config.iid_kde_plot_paths %}
-              <div>
-                <img src="{{ kde_plot_path }}" alt="KDE plot">
-              </div>
-            {% endfor %}
-          </div>
-        </details> 
+      {# ---------- pooled level plots ---------- #}
+      {{ metric_grid(
+           config.metric_plot_paths_pooled,
+           config.glass_plot_paths_pooled,
+           "Pooled Chains results",
+           true
+      ) }}
 
-        {% if config.init_plot_paths %}
-        <details>
-          <summary><b>Init Values per Posterior Variant</b></summary>
-          <div class="plot-row">
-            {% for init_path in config.init_plot_paths %}
-              <div>
-                <img src="{{ init_path }}" alt="Init Plot" class="init-plot">
-              </div>
-            {% endfor %}
-          </div>
-        </details>
-       {% endif %} -->
+      {# ---------- chain level plots (if present) ---------- #}
+      {% if config.metric_plot_paths_chain %}
+        {{ metric_grid(
+             config.metric_plot_paths_chain,
+             config.glass_plot_paths_chain,
+             "One Chain results",
+             true
+        ) }}
+      {% endif %}
 
-       {% if config.iid_kde_plot_paths and config.init_plot_paths %}
+      {# ---------- KDE + init ---------- #}
+      {% if config.kde_init_triples %}
       <details>
         <summary><b>KDE + Init Plots</b></summary>
+
         <div class="plot-column-layout">
-          {% for kde_path, init_path in config.kde_init_pairs %}
+          {% for kde, pooled, chain in config.kde_init_triples %}
             <div class="plot-column">
-              <img src="{{ kde_path }}" alt="KDE plot" class="kde-plot">
-              <img src="{{ init_path }}" alt="Init Plot" class="init-plot">
+              <img src="{{ kde}}" alt="KDE plot" class="kde-plot">
+
+              <img src="{{ pooled }}" alt="Pooled Init Plot" class="init-plot">
+
+              <img src="{{ chain }}" alt="Chain Init Plot" class="init-plot">
+
             </div>
           {% endfor %}
         </div>
