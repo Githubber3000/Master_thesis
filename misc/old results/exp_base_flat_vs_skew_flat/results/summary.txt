@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-01 14:19:19
+Finished at:                  2025-07-01 14:22:41
+Total duration:               0h 3m 21.6s
+Output folder:                experiments/exp_base_flat_vs_skew_flat
+Output folder size:           3.2 MB
+Total configurations:         2
+Successful configuration:     2
+Failed configurations:        0
