@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-06-30 21:12:58
+Finished at:                  2025-07-01 07:12:55
+Total duration:               9h 59m 57.0s
+Output folder:                experiments/exp_Global_25_runs
+Output folder size:           37.4 MB
+Total configurations:         20
+Successful configuration:     20
+Failed configurations:        0

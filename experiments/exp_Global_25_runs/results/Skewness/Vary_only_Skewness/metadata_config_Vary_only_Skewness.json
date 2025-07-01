@@ -1,0 +1,25 @@
+{
+    "config_descr": "Vary_only_Skewness",
+    "runs": 25,
+    "total_iid_batches": 75,
+    "iid_vs_iid_comparisons": 25,
+    "mcmc_vs_iid_comparisons": 25,
+    "num_samples": 4000,
+    "num_chains": 4,
+    "samples_per_chain": 1000,
+    "posterior_type": "SkewNormal",
+    "varying_attribute": "alpha",
+    "varying_values": [
+        0,
+        2,
+        5,
+        7,
+        10
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-58-g80930b0e",
+    "mu": 0,
+    "sigma": 1,
+    "alpha": "varies"
+}

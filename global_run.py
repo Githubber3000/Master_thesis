@@ -2579,7 +2579,7 @@ def run_experiment(
 
 
 experiment_name = "Global_25_runs"
-config_names = ["Base", "Skew" "Corr", "Dim", "Tails", "Multi_Distance", "Multi_Location"]
+config_names = ["Base", "Skew", "Corr", "Dim", "Tails", "Multi_Distance", "Multi_Location"]
 # Define the root directory for all experiments
 experiment_root_folder = os.path.join("experiments", f"exp_{experiment_name}")
 results_folder = os.path.join(experiment_root_folder, "results")
