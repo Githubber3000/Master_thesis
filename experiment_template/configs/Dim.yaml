@@ -3,7 +3,7 @@ configs:
 
   - config_descr: Vary_only_Dimension
     posterior_type: MvNormal
-    varying_attribute: dimension_mv
+    varying_attribute: dimension
     varying_values: [2,5,10,15,30]
     mu: ZERO_30
     cov: ID_30
@@ -11,7 +11,7 @@ configs:
 
   - config_descr: Vary_Dimension_with_high_correlation
     posterior_type: MvNormal
-    varying_attribute: dimension_mv
+    varying_attribute: dimension
     varying_values: [2,5,10,15,30]
     mu: ZERO_30
     cov: HIGH_30
@@ -19,7 +19,7 @@ configs:
 
   - config_descr: Vary_Dimension_with_heavy_Tails
     posterior_type: MvStudentT
-    varying_attribute: dimension_mv
+    varying_attribute: dimension
     varying_values: [2,5,10,15,30]
     mu: ZERO_30
     nu: 2.1
@@ -27,7 +27,7 @@ configs:
 
   - config_descr: Vary_Dimension_with_heavy_Tails_and_high_correlation
     posterior_type: MvStudentT
-    varying_attribute: dimension_mv
+    varying_attribute: dimension
     varying_values: [2,5,10,15,30]
     mu: ZERO_30
     nu: 2.1

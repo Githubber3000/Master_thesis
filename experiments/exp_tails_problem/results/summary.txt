@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-01 17:14:33
+Finished at:                  2025-07-01 17:22:01
+Total duration:               0h 7m 27.9s
+Output folder:                experiments/exp_tails_problem
+Output folder size:           15.0 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

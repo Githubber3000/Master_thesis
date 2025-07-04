@@ -1,0 +1,18 @@
+group_name: Dimension
+configs:
+
+  - config_descr: Vary_only_Dimension
+    posterior_type: MvNormal
+    varying_attribute: dimension_mv
+    varying_values: [2,5,10,15,30]
+    mu: ZERO_30
+    cov: ID_30
+
+
+
+
+
+
+
+
+
