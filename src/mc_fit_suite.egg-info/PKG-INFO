@@ -1,0 +1,21 @@
+Metadata-Version: 2.4
+Name: mc-fit-suite
+Version: 0.0.1
+Summary: Monte-Carlo fixed Target Suite
+Author: Fabian Kohrs
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: typer
+Requires-Dist: pymc
+Requires-Dist: pandas
+Requires-Dist: seaborn
+Requires-Dist: PyYAML
+Requires-Dist: jinja2
+Requires-Dist: humanize
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: arviz
+Requires-Dist: matplotlib
+Requires-Dist: tqdm
+
+# Master_thesis

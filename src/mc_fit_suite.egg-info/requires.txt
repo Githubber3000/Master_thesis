@@ -1,0 +1,12 @@
+typer
+pymc
+pandas
+seaborn
+PyYAML
+jinja2
+humanize
+numpy
+scipy
+arviz
+matplotlib
+tqdm

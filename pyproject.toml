@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mc-fit-suite"          
+version = "0.0.1"              
+description = "Monte-Carlo fixed Target Suite"
+authors = [
+  {name = "Fabian Kohrs"}
+]
+readme = "README.md"
+requires-python = ">=3.9"
+
+
+dependencies = [
+  "typer",
+  "pymc",
+  "pandas",
+  "seaborn",
+  "PyYAML",
+  "jinja2",
+  "humanize",
+  "numpy",
+  "scipy",
+  "arviz",
+  "matplotlib",
+  "tqdm"
+]
+
+[project.scripts]
+mc_fit = "mc_fit_suite.cli:app"
+
+[tool.setuptools.packages.find]  
+where   = ["src"]
+include = ["mc_fit_suite"]

@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-05 19:16:51
+Finished at:                  2025-07-05 19:21:59
+Total duration:               0h 5m 7.7s
+Output folder:                experiments/exp_graph_test
+Output folder size:           2.9 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

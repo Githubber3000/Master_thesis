@@ -1,0 +1,2 @@
+[console_scripts]
+mc_fit = mc_fit_suite.cli:app
