@@ -30,12 +30,6 @@ def run_full_experiment(
 
      # Create / clean directory tree
     if os.path.exists(exp_root):
-        reply = input(f"{exp_root} exists – overwrite? [y/n] ").lower()
-
-        if reply not in {"y", "yes"}:
-            print("Aborted. No files were deleted.")
-            sys.exit(0)
-
         shutil.rmtree(results)
     else:
         create_directories(exp_root)
@@ -100,7 +94,7 @@ def run_full_experiment(
 
     failed_configs = []
 
-    with tqdm(total=total_runs, desc="Total experiment progress") as pbar:
+    with tqdm(total=total_runs, desc="Total experiment progress", file=sys.stdout, dynamic_ncols=True) as pbar:
         for group_name, exp_group in experiments:
             for config in exp_group:
                 try:

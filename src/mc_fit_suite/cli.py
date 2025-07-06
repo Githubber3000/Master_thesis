@@ -127,14 +127,14 @@ def main(
     typer.echo("\nDefault values:")
     typer.echo(typer.style(json.dumps(defaults, indent=2), fg="yellow"))
 
-    if not typer.confirm("\nProceed with these settings?", default=True):
+    if not typer.confirm(f"\nProceed to run {experiment_name} with these settings?", default=True):
         typer.echo("Aborted by user.")
         raise typer.Exit(1)
 
     if rerun:
-        typer.echo(f"\n Re-running '{experiment_name}' on configs: {config_names!r}\n")
+        typer.echo(f"\nRe-running '{experiment_name}' on configs: {config_names!r}\n")
     else:
-        typer.echo(f"\n Creating new experiment '{experiment_name}' with configs: {config_names!r}\n")
+        typer.echo(f"\nCreating new experiment '{experiment_name}' with configs: {config_names!r}\n")
 
     run_full_experiment(
         experiment_name=experiment_name,

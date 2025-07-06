@@ -123,7 +123,7 @@
         </h3>
 
         {# ---------- helper macro ---------- #}
-        {% macro metric_grid(metric_paths, glass_paths, title, open=false) -%}
+        {% macro metric_grid(metric_paths, glass_paths, scatter_paths, title, open=false) -%}
           <details {% if open %}open{% endif %}>
             <summary><b>{{ title }}</b></summary>
         
@@ -135,6 +135,14 @@
                     <img src="{{ metric_paths[m] }}" alt="{{ m }} plot">
                   </div>
                 {% endif %}
+                
+                {# scatter thumbnails where available #}
+                {% if scatter_paths[m] is defined %}
+                  <div>
+                    <div class="plot-title">{{ m.replace('_',' ').title() }} (scatter)</div>
+                    <img src="{{ scatter_paths[m] }}" alt="{{ m }} scatter plot">
+                  </div>
+               {% endif %}
                 
                 {# extra Glass-Δ thumbnails where available #}
                 {% if m == 'wasserstein_distance' and glass_paths.ws is defined %}
@@ -156,19 +164,21 @@
 
       {# ---------- pooled level plots ---------- #}
       {{ metric_grid(
-           config.metric_plot_paths_pooled,
-           config.glass_plot_paths_pooled,
-           "Pooled Chains results",
-           true
+          config.metric_plot_paths_pooled,
+          config.glass_plot_paths_pooled,
+          config.scatter_plot_paths_pooled,
+          "Pooled Chains results",
+          true
       ) }}
 
       {# ---------- chain level plots (if present) ---------- #}
       {% if config.metric_plot_paths_chain %}
         {{ metric_grid(
-             config.metric_plot_paths_chain,
-             config.glass_plot_paths_chain,
-             "One Chain results",
-             true
+            config.metric_plot_paths_chain,
+            config.glass_plot_paths_chain,
+            config.scatter_plot_paths_chain,
+            "One Chain results",
+            true
         ) }}
       {% endif %}
 

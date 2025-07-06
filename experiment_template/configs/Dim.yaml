@@ -8,6 +8,18 @@ configs:
     mu: ZERO_30
     cov: ID_30
 
+  - config_descr: Vary_Dimension_with_high_Multimodality
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal"]
+    component_params:
+      - mu: ZERO_30
+        cov: ID_30
+      - mu: FIRST_10_30
+        cov: ID_30
+    weights: [0.5, 0.5]
+    varying_attribute: dimension
+    varying_values: [2,5,10,15,30]
+
 
   - config_descr: Vary_Dimension_with_high_correlation
     posterior_type: MvNormal

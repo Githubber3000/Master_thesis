@@ -62,10 +62,19 @@ def load_config_file(path):
                         component[key] = parse_mu_entry(component[key])
 
         if "varying_values" in cfg:
-            cfg["varying_values"] = [
-                tuple(v) if isinstance(v, list) else v
-                for v in cfg["varying_values"]
-            ]
+            # If we’re varying mu/loc, parse each spec string into a vector
+            if cfg["varying_attribute"] in ("mu", "loc"):
+                cfg["varying_values"] = [
+                    parse_mu_entry(v) for v in cfg["varying_values"]
+                ]
+
+            # Otherwise, leave numeric or tuple values intact
+            else:
+                cfg["varying_values"] = [
+                    tuple(v) if isinstance(v, list) else v
+                    for v in cfg["varying_values"]
+                ]
+                
     return group_name, configs
 
 def load_experiment_settings(path):
@@ -176,12 +185,31 @@ def save_adjusted_posterior_config(posterior_kwargs, folder, dim_value):
 
 
 def parse_mu_entry(mu_entry):
+    """
+    Parse a mu entry specifier into a list of floats.
+
+    Supported specifiers:
+    - "ZERO_<n>":    returns an n-dimensional zero vector
+    - "FIRST_<v>_<n>": returns an n-dimensional vector with all zeros
+                       except the first element set to v
+
+    If mu_entry is not a str, it is returned unchanged.
+    """
+
     if not isinstance(mu_entry, str):
         return mu_entry
 
     if mu_entry.startswith("ZERO_"):
         n = int(mu_entry.split("_")[1])
         return [0.0] * n
+    
+    if mu_entry.startswith("FIRST_"):
+        _, value_str, dim_str = mu_entry.split("_", 2)
+        v = float(value_str)
+        n = int(dim_str)
+        vec = [0.0] * n
+        vec[0] = v
+        return vec
 
     raise ValueError(f"Unknown mu specifier: {mu_entry}")
 

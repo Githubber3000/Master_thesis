@@ -34,6 +34,14 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
             if os.path.exists(full_p):
                 out[m] = rel(full_p)
         return out
+    
+    def collect_scatter_pngs(base, metrics):
+        out = {}
+        for m in metrics:
+            full_p = os.path.join(base, f"{m}_global_plot_scatter.png")
+            if os.path.exists(full_p):
+                out[m] = rel(full_p)
+        return out
 
     def collect_glass_pngs(base): 
         out = {}
@@ -91,10 +99,12 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
                 # batch
                 "metric_plot_paths_pooled" : collect_metric_pngs(pooled_png_base, metrics),
                 "glass_plot_paths_pooled"  : collect_glass_pngs(pooled_png_base),
+                "scatter_plot_paths_pooled": collect_scatter_pngs(pooled_png_base, metrics),
 
                 # chain  (may be None)
                 "metric_plot_paths_chain" : collect_metric_pngs(chain_png_base, metrics),
                 "glass_plot_paths_chain"  : collect_glass_pngs(chain_png_base),
+                "scatter_plot_paths_chain": collect_scatter_pngs(chain_png_base, metrics),
 
                 "iid_kde_plot_paths": rel_kde_paths,
                 "pooled_init_plot_paths": rel_pooled_init_paths,
@@ -497,7 +507,7 @@ def finalize_and_save_plot(fig, ax, xlabel, ylabel, title, save_path, save_path_
 
 
 
-def plot_histogram(samples, title, save_path=None, save_path_png=None, posterior_type=None, value=None):
+def plot_histogram(samples, title, save_path=None, save_path_png=None, posterior_type=None, value=None, xlim=(-20, 40)):
     """
     Plots a histogram and KDE of the given samples.
 
@@ -531,6 +541,9 @@ def plot_histogram(samples, title, save_path=None, save_path_png=None, posterior
         plt.ylabel("Density")
         plt.legend()
         plt.grid(True)
+
+        if xlim is not None:
+            plt.xlim(xlim)
 
     if save_path:
 

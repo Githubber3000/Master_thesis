@@ -22,7 +22,6 @@ def sliced_wasserstein_distance(X, Y, L=None, rng=None):
     - X: numpy array of shape (N, d) -> first sample set
     - Y: numpy array of shape (N, d) -> second sample set
     - L: int, number of random projections
-    - p: int, order of Wasserstein distance (default: 1)
     
     Returns:
     - SWD_p: float, the sliced Wasserstein distance
