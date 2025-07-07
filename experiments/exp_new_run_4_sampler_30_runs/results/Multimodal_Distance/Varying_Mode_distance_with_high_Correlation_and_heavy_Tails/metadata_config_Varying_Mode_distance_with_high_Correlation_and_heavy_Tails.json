@@ -1,0 +1,69 @@
+{
+    "config_descr": "Varying_Mode_distance_with_high_Correlation_and_heavy_Tails",
+    "runs": 30,
+    "total_iid_batches": 90,
+    "iid_vs_iid_comparisons": 30,
+    "mcmc_vs_iid_comparisons": 30,
+    "num_samples": 4000,
+    "num_chains": 4,
+    "samples_per_chain": 1000,
+    "posterior_type": "Mixture",
+    "varying_attribute": "mu",
+    "varying_values": [
+        [
+            4,
+            0
+        ],
+        [
+            6,
+            0
+        ],
+        [
+            15,
+            0
+        ]
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-64-gfd452dea",
+    "component_types": [
+        "MvStudentT",
+        "MvStudentT"
+    ],
+    "component_params": [
+        {
+            "mu": [
+                0.0,
+                0.0
+            ],
+            "scale": [
+                [
+                    1.0,
+                    0.9
+                ],
+                [
+                    0.9,
+                    1.0
+                ]
+            ],
+            "nu": 2.1
+        },
+        {
+            "scale": [
+                [
+                    1.0,
+                    0.9
+                ],
+                [
+                    0.9,
+                    1.0
+                ]
+            ],
+            "nu": 2.1
+        }
+    ],
+    "weights": [
+        0.5,
+        0.5
+    ]
+}

@@ -1,0 +1,38 @@
+{
+    "config_descr": "Varying_only_Mode_distance",
+    "runs": 30,
+    "total_iid_batches": 90,
+    "iid_vs_iid_comparisons": 30,
+    "mcmc_vs_iid_comparisons": 30,
+    "num_samples": 4000,
+    "num_chains": 4,
+    "samples_per_chain": 1000,
+    "posterior_type": "Mixture",
+    "varying_attribute": "mu",
+    "varying_values": [
+        4,
+        6,
+        15
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-64-gfd452dea",
+    "component_types": [
+        "Normal",
+        "Normal"
+    ],
+    "component_params": [
+        {
+            "mu": 0,
+            "sigma": 1
+        },
+        {
+            "mu": 10,
+            "sigma": 1
+        }
+    ],
+    "weights": [
+        0.5,
+        0.5
+    ]
+}

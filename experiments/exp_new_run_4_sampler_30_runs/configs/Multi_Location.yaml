@@ -1,0 +1,38 @@
+group_name: Multimodal_Location
+configs:
+
+  - config_descr: Line_3_Modes_1D
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal", "MvNormal"]
+    component_params:
+      - cov: ID_2
+      - mu: [0, 0]
+        cov: ID_2
+      - mu: [8, 0]
+        cov: ID_2
+    weights: [0.33, 0.33, 0.33]
+    varying_attribute: mu
+    varying_values: [[-8, 0]]
+    varying_component: 0
+
+
+  - config_descr: Triangle_3_Modes_2D
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal", "MvNormal"]
+    component_params:
+      - cov: ID_2
+      - mu: [-2.309401, 4.0]
+        cov: ID_2
+      - mu: [-2.309401, -4.0]
+        cov: ID_2
+    weights: [0.33, 0.33, 0.33]
+    varying_attribute: mu
+    varying_values: [[4.618802, 0.0]]
+    varying_component: 0
+
+
+
+
+
+
+  
