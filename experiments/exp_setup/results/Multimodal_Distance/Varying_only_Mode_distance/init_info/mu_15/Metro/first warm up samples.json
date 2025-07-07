@@ -1,0 +1,13 @@
+{
+    "sampler": "Metro",
+    "value": 15,
+    "means_array": [
+        0,
+        15
+    ],
+    "case": "Warmup Samples",
+    "dim": 1,
+    "samples": [
+        8.066078515531402
+    ]
+}

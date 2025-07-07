@@ -68,13 +68,11 @@ def load_config_file(path):
                     parse_mu_entry(v) for v in cfg["varying_values"]
                 ]
 
-            # Otherwise, leave numeric or tuple values intact
-            else:
-                cfg["varying_values"] = [
-                    tuple(v) if isinstance(v, list) else v
-                    for v in cfg["varying_values"]
-                ]
-                
+            cfg["varying_values"] = [
+                tuple(v) if isinstance(v, list) else v
+                for v in cfg["varying_values"]
+            ]
+            
     return group_name, configs
 
 def load_experiment_settings(path):

@@ -5,7 +5,7 @@ from jinja2 import Environment, FileSystemLoader
 from glob import glob
 import numpy as np
 import seaborn as sns
-
+import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import pandas as pd
 import arviz as az
@@ -39,6 +39,14 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
         out = {}
         for m in metrics:
             full_p = os.path.join(base, f"{m}_global_plot_scatter.png")
+            if os.path.exists(full_p):
+                out[m] = rel(full_p)
+        return out
+    
+    def collect_scatter_htmls(base, metrics):
+        out = {}
+        for m in metrics:
+            full_p = os.path.join(base, f"{m}_global_scatter_interactive.html")
             if os.path.exists(full_p):
                 out[m] = rel(full_p)
         return out
@@ -100,11 +108,13 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
                 "metric_plot_paths_pooled" : collect_metric_pngs(pooled_png_base, metrics),
                 "glass_plot_paths_pooled"  : collect_glass_pngs(pooled_png_base),
                 "scatter_plot_paths_pooled": collect_scatter_pngs(pooled_png_base, metrics),
+                "scatter_html_paths_pooled": collect_scatter_htmls(pooled_png_base, metrics),
 
                 # chain  (may be None)
                 "metric_plot_paths_chain" : collect_metric_pngs(chain_png_base, metrics),
                 "glass_plot_paths_chain"  : collect_glass_pngs(chain_png_base),
                 "scatter_plot_paths_chain": collect_scatter_pngs(chain_png_base, metrics),
+                "scatter_html_paths_chain": collect_scatter_htmls(chain_png_base, metrics),
 
                 "iid_kde_plot_paths": rel_kde_paths,
                 "pooled_init_plot_paths": rel_pooled_init_paths,
@@ -398,24 +408,70 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 alpha=0.1,
             )
 
+
+
+
         # ── optional scatter-only twin ──────────────────────────────
         if save_extra_scatter and metric in scatter_data:
-            fig_sc, ax_sc = plt.subplots(figsize=(10, 6))
-            for s, xs, ys, c in scatter_data[metric]:
-                ax_sc.scatter(xs, ys, alpha=0.55, s=30,
-                                color=c, rasterized=True, label=s)
+            # fig_sc, ax_sc = plt.subplots(figsize=(10, 6))
+            # for s, xs, ys, c in scatter_data[metric]:
+            #     ax_sc.scatter(xs, ys, alpha=0.55, s=30,
+            #                     color=c, rasterized=True, label=s)
                 
-            finalize_and_save_plot(
-                fig_sc, ax_sc,
-                attribute_label,
-                metric,
-                title=(f"All runs {metric.replace('_', ' ').title()} "
-                        f"({runs} Runs, config = {config_descr})"),
-                save_path=os.path.join(global_plots_folder,
-                                        f"{metric}_global_plot_scatter.pdf"),
-                save_path_png=os.path.join(png_folder,
-                                            f"{metric}_global_plot_scatter.png"),
+            # finalize_and_save_plot(
+            #     fig_sc, ax_sc,
+            #     attribute_label,
+            #     metric,
+            #     title=(f"All runs {metric.replace('_', ' ').title()} "
+            #             f"({runs} Runs, config = {config_descr})"),
+            #     save_path=os.path.join(global_plots_folder,
+            #                             f"{metric}_global_plot_scatter.pdf"),
+            #     save_path_png=os.path.join(png_folder,
+            #                                 f"{metric}_global_plot_scatter.png"),
+            # )
+
+             # Build an interactive Plotly figure
+            fig = go.Figure()
+
+            for sampler, xs, ys, color in scatter_data[metric]:
+                fig.add_trace(go.Scatter(
+                    x=xs,
+                    y=ys,
+                    mode="markers",
+                    name=sampler,
+                    marker=dict(color=color, opacity=0.6, size=6)
+                ))
+
+            fig.update_layout(
+                title=f"All runs {metric.replace('_',' ').title()} ({runs} runs, {config_descr})",
+                xaxis_title=attribute_label,
+                yaxis_title=metric.replace('_',' ').title(),
+                legend=dict(
+                    itemclick="toggle",         # click to show/hide one sampler
+                    itemdoubleclick="toggleothers"  # dbl-click to isolate one
+                ),
+                width=None,
+                height=None,
+                margin=dict(l=40, r=20, t=50, b=40)
             )
+
+            # Save out as a standalone HTML you can drop into reports/webpages:
+            html_path = os.path.join(
+                png_folder,
+                f"{metric}_global_scatter_interactive.html"
+            )
+
+            fig.write_html(html_path, include_plotlyjs="cdn", config=dict(responsive=True), full_html=True)
+
+            # (Optionally still save a PNG snapshot too—Plotly can do that if you have kaleido:)
+            # png_path = os.path.join(
+            #     png_folder,
+            #     f"{metric}_global_scatter_interactive.png"
+            # )
+            # fig.write_image(png_path)
+
+            # print(f"  • Interactive scatter for {metric} → {html_path}")
+
 
     # Save Global Averages per Sampler to CSV
     for sampler, metrics_dict in global_avg_dfs.items():

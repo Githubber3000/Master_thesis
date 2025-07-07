@@ -22,7 +22,6 @@ configs:
         cov: ID_30 
       - mu: FIRST_10_30
         cov: ID_30
-
     weights: [0.5, 0.5]
     varying_attribute: mu
     varying_values: [FIRST_4_30, FIRST_6_30, FIRST_15_30]

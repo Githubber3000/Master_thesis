@@ -36,13 +36,24 @@
       gap: 1em;
       padding-bottom: 1em;
     }
-    .plot-row img {
+
+    .plot-row > div,
+    .plot-row details.interactive-toggle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* force every tile to exactly 300px wide */
+      flex: 0 0 auto;
+      max-width: none;
+    }
+    .plot-row img,
+    .plot-row iframe {
       border: 1px solid #aaa;
       border-radius: 4px;
       box-shadow: 0 0 4px rgba(0,0,0,0.1);
     }
 
-    .plot-row img:not(.init-plot) {
+    .plot-row img:not(.kde-plot) {
       max-height: 200px;
     }
 
@@ -56,6 +67,29 @@
     .plot-title {
       font-weight: bold;
       text-align: center;
+    }
+
+    .plot-thumb {
+      width: 800px;
+      height: 500px;           /* oder z. B. 600px je nach Platzbedarf */
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+      max-height: none;        /* verhindert Zwangsbegrenzung durch alte Regeln */
+    }
+
+    .plot-row details.interactive-toggle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;       /* no extra gaps */
+      padding: 0;
+    }
+
+
+    .plot-row details.interactive-toggle:not([open])
+       summary .summary-text {
+        display: none;
     }
 
     .plot-column-layout {
@@ -123,7 +157,7 @@
         </h3>
 
         {# ---------- helper macro ---------- #}
-        {% macro metric_grid(metric_paths, glass_paths, scatter_paths, title, open=false) -%}
+        {% macro metric_grid(metric_paths, glass_paths, scatter_paths, scatter_html_paths, title, open=false) -%}
           <details {% if open %}open{% endif %}>
             <summary><b>{{ title }}</b></summary>
         
@@ -142,8 +176,23 @@
                     <div class="plot-title">{{ m.replace('_',' ').title() }} (scatter)</div>
                     <img src="{{ scatter_paths[m] }}" alt="{{ m }} scatter plot">
                   </div>
-               {% endif %}
-                
+                {% endif %}
+
+                {# interactive scatter iframe, now collapsible #}
+                {% if scatter_html_paths[m] is defined %}
+                  <details class="interactive-toggle">
+                    <summary>
+                      <span class="plot-title summary-text">
+                        {{ m.replace('_',' ').title() }} (interactive af)
+                      </span>
+                    </summary>
+                    <iframe src="{{ scatter_html_paths[m] }}"
+                      class="plot-thumb"
+                      loading="lazy">
+                    </iframe>
+                  </details>
+                {% endif %}
+                  
                 {# extra Glass-Δ thumbnails where available #}
                 {% if m == 'wasserstein_distance' and glass_paths.ws is defined %}
                   <div>
@@ -167,6 +216,7 @@
           config.metric_plot_paths_pooled,
           config.glass_plot_paths_pooled,
           config.scatter_plot_paths_pooled,
+          config.scatter_html_paths_pooled,
           "Pooled Chains results",
           true
       ) }}
@@ -177,8 +227,9 @@
             config.metric_plot_paths_chain,
             config.glass_plot_paths_chain,
             config.scatter_plot_paths_chain,
+            config.scatter_html_paths_chain,
             "One Chain results",
-            true
+            false
         ) }}
       {% endif %}
 
