@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-07 23:48:15
+Finished at:                  2025-07-08 13:31:06
+Total duration:               13h 42m 50.9s
+Output folder:                experiments/exp_Multimodal_60_runs
+Output folder size:           50.4 MB
+Total configurations:         13
+Successful configuration:     13
+Failed configurations:        0
