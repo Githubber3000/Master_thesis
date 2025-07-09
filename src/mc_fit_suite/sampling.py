@@ -6,9 +6,10 @@ import logging
 import scipy.stats as sp
 import pytensor.tensor as pt
 
-from .utils       import build_correlation_cov_matrix, create_directories, get_posterior_dim
-from .config      import save_adjusted_posterior_config, adjust_dimension_of_kwargs, adjust_circle_layout
-from .reporting   import compute_and_store_iid_stats, save_sample_info
+from .utils         import build_correlation_cov_matrix, create_directories, get_posterior_dim, ensure_2d
+from .config        import save_adjusted_posterior_config, adjust_dimension_of_kwargs, adjust_circle_layout
+from .reporting     import save_sample_info, plot_histogram
+from .metrics       import sliced_wasserstein_distance, compute_mmd_rff, compute_mmd
 
    
 logger = logging.getLogger(__name__)
@@ -246,6 +247,80 @@ def generate_iid_samples(posterior_type = None, num_samples=None, rng=None,**par
         raise ValueError(f"Unsupported posterior type: {posterior_type}")
 
 
+def compute_and_store_iid_stats(
+    iid_batches,
+    value,
+    num_iid_vs_iid_batches,
+    iid_ref_stats_dict,
+    iid_histogram_folder,
+    png_folder,
+    varying_attribute,
+    posterior_type,
+    do_mmd,
+    do_mmd_rff,
+    rng
+):
+
+    ref_swd_values = []
+    ref_mmd_values = []
+    ref_mmd_rff_values = []
+    
+
+    # get dimension of the first batch
+    dim = ensure_2d(iid_batches[0]).shape[1]
+    projections = 1 if dim == 1 else max(50, min(10*dim, 500))
+
+    # Pairwise comparison for SWD/MMD stats
+    for i in range(0, num_iid_vs_iid_batches, 2): 
+        x = ensure_2d(iid_batches[i])
+        y = ensure_2d(iid_batches[i + 1])
+
+        swd = sliced_wasserstein_distance(x, y, L=projections, rng=rng)
+        if do_mmd:
+            mmd = compute_mmd(x, y, rng=rng)
+        else:
+            mmd = np.nan
+
+        if do_mmd_rff:    
+            mmd_rff = compute_mmd_rff(x, y, D=500, rng=rng)
+        else:
+            mmd_rff = np.nan
+        
+        ref_swd_values.append(swd)
+        ref_mmd_values.append(mmd)
+        ref_mmd_rff_values.append(mmd_rff)
+        
+
+    iid_ref_stats_dict[value] = {
+        "mean_swd": np.mean(ref_swd_values),
+        "std_swd": np.std(ref_swd_values, ddof=1),
+        "median_swd": np.median(ref_swd_values),
+        "q25_swd": np.quantile(ref_swd_values, 0.25),
+        "q75_swd": np.quantile(ref_swd_values, 0.75),
+
+        "mean_mmd": np.mean(ref_mmd_values),
+        "std_mmd": np.std(ref_mmd_values, ddof=1),
+        "median_mmd": np.median(ref_mmd_values),
+        "q25_mmd": np.quantile(ref_mmd_values, 0.25),
+        "q75_mmd": np.quantile(ref_mmd_values, 0.75),
+
+        "mean_mmd_rff": np.mean(ref_mmd_rff_values),
+        "std_mmd_rff": np.std(ref_mmd_rff_values, ddof=1),
+        "median_mmd_rff": np.median(ref_mmd_rff_values),
+        "q25_mmd_rff": np.quantile(ref_mmd_rff_values, 0.25),
+        "q75_mmd_rff": np.quantile(ref_mmd_rff_values, 0.75)
+    }
+
+    plot_histogram(
+        samples=iid_batches[0],
+        title=f"IID Samples Histogram & KDE ({varying_attribute}={value})",
+        save_path=os.path.join(iid_histogram_folder, f"iid_hist_kde_{varying_attribute}_{value}.pdf"),
+        save_path_png=os.path.join(png_folder, f"iid_hist_kde_{varying_attribute}_{value}.png"),
+        posterior_type=posterior_type,
+        value=value
+    )
+
+
 def generate_all_iid_batches(
     posterior_type,
     posterior_kwargs,
@@ -261,7 +336,9 @@ def generate_all_iid_batches(
     rng,
     group_folder,
     png_folder,
-    required_parameters
+    required_parameters,
+    do_mmd,
+    do_mmd_rff
 ):
     """
     Generates all IID batches for the given posterior type and varying attribute.
@@ -374,6 +451,8 @@ def generate_all_iid_batches(
                 png_folder=png_folder,
                 varying_attribute=varying_attribute,
                 posterior_type=posterior_type,
+                do_mmd=do_mmd,
+                do_mmd_rff=do_mmd_rff,
                 rng=rng
             )
 
@@ -427,6 +506,8 @@ def generate_all_iid_batches(
                 png_folder=png_folder,
                 varying_attribute=varying_attribute,
                 posterior_type=posterior_type,
+                do_mmd=do_mmd,
+                do_mmd_rff=do_mmd_rff,
                 rng=rng
             )
 

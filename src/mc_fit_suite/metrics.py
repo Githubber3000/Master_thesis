@@ -58,7 +58,39 @@ def sliced_wasserstein_distance(X, Y, L=None, rng=None):
 
     return SWD_p
 
-def compute_mmd_rff(X, Y, D=None, sigma=1.0, rng=None):
+
+
+def median_heuristic(X, Y, rng=None):
+    """
+    Compute the median heuristic for the RBF bandwidth sigma.
+    
+    Parameters:
+    - X: np.ndarray of shape (n, d)
+    - Y: np.ndarray of shape (m, d)
+    - rng: np.random.Generator, optional
+    
+    Returns:
+    - sigma: float, median of pairwise distances
+    """
+    rng = rng or np.random.default_rng()
+
+    Z = np.vstack([X, Y])
+    N = Z.shape[0]
+
+    # If the number of samples is too large, randomly sample 1000 points
+    if N > 1000:
+        idx = rng.choice(N, size=1000, replace=False)
+        Z = Z[idx]
+        N = 1000
+    
+    diffs = Z[:, None, :] - Z[None, :, :]
+    dist = np.linalg.norm(diffs, axis=2)      
+    upper = dist[np.triu_indices(N, k=1)]
+
+    return np.median(upper)
+
+
+def compute_mmd_rff(X, Y, D=500, rng=None):
     """
     Computes the approximate Maximum Mean Discrepancy (MMD) using Random Fourier Features (RFF)
     between two sample sets X and Y.
@@ -67,7 +99,6 @@ def compute_mmd_rff(X, Y, D=None, sigma=1.0, rng=None):
     - X: np.ndarray of shape (n, d) – sample set from distribution p(x)
     - Y: np.ndarray of shape (m, d) – sample set from distribution q(x)
     - D: int – number of random Fourier features
-    - sigma: float – bandwidth of the Gaussian kernel
     - rng: np.random.Generator, optional – random number generator for reproducibility
 
     Returns:
@@ -75,6 +106,10 @@ def compute_mmd_rff(X, Y, D=None, sigma=1.0, rng=None):
     """
 
     rng = rng or np.random.default_rng()
+    
+    sigma = median_heuristic(X, Y, rng=rng)
+
+    print(f"Using sigma={sigma} for RFF MMD computation")
 
     n, d = X.shape
     m, _ = Y.shape
@@ -95,7 +130,53 @@ def compute_mmd_rff(X, Y, D=None, sigma=1.0, rng=None):
     mu_p = Z_X.mean(axis=0)
     mu_q = Z_Y.mean(axis=0)
 
-    # Step 4: Calculate MMD^2 (Euclidean distance between embeddings)
+    # Step 4: Calculate MMD (Euclidean distance between embeddings)
     mmd_rff = np.linalg.norm(mu_p - mu_q)
 
     return mmd_rff
+
+
+
+
+def compute_mmd(X, Y, rng=None):
+    """
+    Computes the Maximum Mean Discrepancy (MMD) 
+    between two sample sets X and Y.
+
+    Parameters:
+    - X: np.ndarray of shape (n, d) – sample set from distribution p(x)
+    - Y: np.ndarray of shape (m, d) – sample set from distribution q(x)
+    - rng: np.random.Generator, optional – random number generator for reproducibility
+
+    Returns:
+    - mmd: float – MMD value
+    """
+
+    rng = rng or np.random.default_rng()
+    
+    sigma = median_heuristic(X, Y, rng=rng)
+
+    n, d = X.shape
+    m, _ = Y.shape
+
+    # Step 1: Compute Kernel Matrices
+    # K_xx[i,j] = exp(-||x_i - x_j||^2 / (2*sigma^2))
+    XX_sq_dists = np.sum((X[:, None, :] - X[None, :, :])**2, axis=2)
+    K_xx = np.exp(-XX_sq_dists / (2 * sigma**2))
+
+    # K_yy[j,k] = exp(-||y_j - y_k||^2 / (2*sigma^2))
+    YY_sq_dists = np.sum((Y[:, None, :] - Y[None, :, :])**2, axis=2)
+    K_yy = np.exp(-YY_sq_dists / (2 * sigma**2))
+
+    # K_xy[i,j] = exp(-||x_i - y_j||^2 / (2*sigma^2))
+    XY_sq_dists = np.sum((X[:, None, :] - Y[None, :, :])**2, axis=2)
+    K_xy = np.exp(-XY_sq_dists / (2 * sigma**2))
+
+    # Step 2: Calculate MMD^2 
+    mmd2 = (
+        K_xx.sum() / (n * n)
+        + K_yy.sum() / (m * m)
+        - 2 * K_xy.sum() / (n * m)
+    )
+
+    return np.sqrt(mmd2)  

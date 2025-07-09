@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Full Experiment Report</title>
+  <title>{{ experiment_name }} – Experiment Report</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -132,10 +132,10 @@
   </script>
 </head>
 <body>
-<h1>Complete Experiment Report</h1>
+<h1>{{ experiment_name }} – Complete Experiment Report</h1>
 
 {% set metrics = metrics or
-  ["wasserstein_distance","mmd_rff","r_hat","ess","runtime"] %}
+  ["wasserstein_distance", "mmd", "mmd_rff","r_hat","ess","runtime"] %}
 
   <!-- Repeat this block per group -->
   {% for group in groups %}
@@ -192,21 +192,29 @@
                     </iframe>
                   </details>
                 {% endif %}
-                  
+
                 {# extra Glass-Δ thumbnails where available #}
                 {% if m == 'wasserstein_distance' and glass_paths.ws is defined %}
                   <div>
                     <div class="plot-title">Glass’s Δ WS</div>
                     <img src="{{ glass_paths.ws }}" alt="Glass Δ WS">
                   </div>
-                {% elif m == 'mmd_rff' and glass_paths.mmd is defined %}
+
+                {% elif m == 'mmd' and glass_paths.mmd is defined %}
                   <div>
                     <div class="plot-title">Glass’s Δ MMD</div>
                     <img src="{{ glass_paths.mmd }}" alt="Glass Δ MMD">
                   </div>
+
+                {% elif m == 'mmd_rff' and glass_paths.mmd_rff is defined %}
+                  <div>
+                    <div class="plot-title">Glass’s Δ MMD-RFF</div>
+                    <img src="{{ glass_paths.mmd_rff }}" alt="Glass Δ MMD-RFF">
+                  </div>
                 {% endif %}
               {% endfor %}
             </div>
+
           </details>
         {%- endmacro %}
 

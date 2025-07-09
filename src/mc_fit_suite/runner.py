@@ -142,18 +142,10 @@ def run_full_experiment(
             experiment_root_folder=exp_root,
             report_pngs_folder=png_root,
             experiments=experiments,
-            output_path=os.path.join(exp_root, f"exp_{experiment_name}_report.html")
+            output_path=os.path.join(exp_root, f"exp_{experiment_name}_report.html"),
+            do_mmd= experiment_settings.get("do_mmd", False),
+            do_mmd_rff= experiment_settings.get("do_mmd_rff", False),
         )
-
-    #def get_folder_size(path='.'):
-    #    """Compute total size of all files in directory."""
-    #    total = 0
-    #    for dirpath, dirnames, filenames in os.walk(path):
-    #        for f in filenames:
-    #            fp = os.path.join(dirpath, f)
-    #            if os.path.isfile(fp):
-    #                total += os.path.getsize(fp)
-    #    return total
 
     size_bytes = get_folder_size(exp_root)
 

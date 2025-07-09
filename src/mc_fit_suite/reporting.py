@@ -10,12 +10,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import arviz as az
 
-from .utils   import extract_varying_value_from_json, ensure_2d, safe_json_dump
-from .metrics import sliced_wasserstein_distance, compute_mmd_rff
+from .utils   import extract_varying_value_from_json, safe_json_dump
 
 logger = logging.getLogger(__name__)
 
-def generate_html_report(experiment_root_folder, report_pngs_folder, experiments, output_path):
+def generate_html_report(experiment_root_folder, report_pngs_folder, experiments, output_path, do_mmd, do_mmd_rff):
     """
     Generates a single HTML report for the entire experiment (all groups and configs).
     """
@@ -51,15 +50,32 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
                 out[m] = rel(full_p)
         return out
 
-    def collect_glass_pngs(base): 
+    def collect_glass_pngs(base, glass_keys): 
         out = {}
-        for k in ("ws", "mmd"):
+        for k in glass_keys:
             full_p = os.path.join(base, f"glass_delta_{k}.png")
             if os.path.exists(full_p):
                 out[k] = rel(full_p)
         return out
 
-    metrics = ["wasserstein_distance", "mmd_rff", "r_hat", "ess", "runtime"]
+    MASTER_ORDER = [
+      "wasserstein_distance",
+      "mmd",
+      "mmd_rff",
+      "r_hat",
+      "ess",
+      "runtime",
+    ]
+    metrics = [
+      m for m in MASTER_ORDER
+      if (m != "mmd"     or do_mmd)
+     and (m != "mmd_rff" or do_mmd_rff)
+    ]
+
+    # Which Glass’s Δ plots to look for:
+    glass_keys = ["ws"]                      
+    if do_mmd:     glass_keys.append("mmd")  
+    if do_mmd_rff: glass_keys.append("mmd_rff")
 
     groups_data = []
 
@@ -106,13 +122,13 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
 
                 # batch
                 "metric_plot_paths_pooled" : collect_metric_pngs(pooled_png_base, metrics),
-                "glass_plot_paths_pooled"  : collect_glass_pngs(pooled_png_base),
+                "glass_plot_paths_pooled"  : collect_glass_pngs(pooled_png_base, glass_keys),
                 "scatter_plot_paths_pooled": collect_scatter_pngs(pooled_png_base, metrics),
                 "scatter_html_paths_pooled": collect_scatter_htmls(pooled_png_base, metrics),
 
                 # chain  (may be None)
                 "metric_plot_paths_chain" : collect_metric_pngs(chain_png_base, metrics),
-                "glass_plot_paths_chain"  : collect_glass_pngs(chain_png_base),
+                "glass_plot_paths_chain"  : collect_glass_pngs(chain_png_base, glass_keys),
                 "scatter_plot_paths_chain": collect_scatter_pngs(chain_png_base, metrics),
                 "scatter_html_paths_chain": collect_scatter_htmls(chain_png_base, metrics),
 
@@ -120,7 +136,6 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
                 "pooled_init_plot_paths": rel_pooled_init_paths,
                 "chain_init_plot_paths": rel_chain_init_paths,
                 "kde_init_triples": list(zip(rel_kde_paths, rel_pooled_init_paths, rel_chain_init_paths)),
-                #"metrics": metrics
             }
 
             config_entries.append(entry)
@@ -143,7 +158,7 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
 
 
 
-def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, varying_attribute_for_plot, csv_folder, plots_folder, run_id, config_descr):
+def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, varying_attribute_for_plot, csv_folder, plots_folder, run_id, config_descr, do_mmd, do_mmd_rff):
     """
     Generates and saves multiple metric plots for different samplers.
 
@@ -158,7 +173,12 @@ def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, var
     """
     
     # Define metric labels
-    metrics = ["wasserstein_distance", "mmd_rff", "r_hat", "ess", "runtime"]
+    metrics = ["wasserstein_distance", "r_hat", "ess", "runtime"]
+
+    if do_mmd:
+        metrics.append("mmd")
+    if do_mmd_rff:
+        metrics.append("mmd_rff")
 
     # Initialize plots for all metrics
     fig_ax_pairs = {key: plt.subplots(figsize=(10, 6)) for key in metrics}
@@ -185,7 +205,7 @@ def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, var
                                os.path.join(plots_folder, f"{metric}_run_{run_id}.pdf"))
         
 
-def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribute, varying_values, runs, num_chains, config_descr, global_results_folder, global_plots_folder, png_folder, iid_ref_stats_dict, scatter_overlay, save_extra_scatter):
+def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribute, varying_values, runs, num_chains, config_descr, global_results_folder, global_plots_folder, png_folder, iid_ref_stats_dict, save_extra_scatter, do_mmd, do_mmd_rff):
     """
     Computes and saves global metric plots (averaged across runs) for different samplers.
 
@@ -200,15 +220,24 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     """
 
     # Define metrics for aggregation
-    metrics = ["wasserstein_distance", "mmd_rff","r_hat", "ess", "runtime"]
+    metrics = ["wasserstein_distance","r_hat", "ess", "runtime"]
+
+    if do_mmd:
+        metrics.append("mmd")
+    if do_mmd_rff:
+        metrics.append("mmd_rff")
 
     attribute_label = varying_attribute.replace("_", " ").title()
-
 
     # New figure set (line + fill)
     fig_ax_pairs_shaded = {metric: plt.subplots(figsize=(10, 6)) for metric in metrics}
     fig_g, ax_g = plt.subplots(figsize=(10, 6))  # Glass delta for wasserstein_distance
-    fig_g_mmd, ax_g_mmd = plt.subplots(figsize=(10, 6))  # Glass delta for mmd
+
+    if do_mmd:
+        fig_g_mmd, ax_g_mmd = plt.subplots(figsize=(10, 6))  # Glass delta for mmd
+    if do_mmd_rff:
+        fig_g_mmd_rff, ax_g_mmd_rff = plt.subplots(figsize=(10, 6)) # Glass delta for mmd_rff
+
 
     global_avg_dfs = {}
     scatter_data = {}
@@ -219,11 +248,20 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     iid_medians_dict_swd = {}
     iid_q25_dict_swd = {}
     iid_q75_dict_swd = {}
-    iid_means_dict_mmd = {}
-    iid_stds_dict_mmd = {}
-    iid_medians_dict_mmd = {}
-    iid_q25_dict_mmd = {}
-    iid_q75_dict_mmd = {}
+
+    if do_mmd:
+        iid_means_dict_mmd = {}
+        iid_stds_dict_mmd = {}
+        iid_medians_dict_mmd = {}
+        iid_q25_dict_mmd = {}
+        iid_q75_dict_mmd = {}
+
+    if do_mmd_rff:
+        iid_means_dict_mmd_rff = {}
+        iid_stds_dict_mmd_rff = {}
+        iid_medians_dict_mmd_rff = {}
+        iid_q25_dict_mmd_rff = {}
+        iid_q75_dict_mmd_rff = {}
 
     for key in df_all_runs[varying_attribute].unique():
         k = tuple(key) if isinstance(key, np.ndarray) else key
@@ -235,11 +273,20 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         iid_medians_dict_swd[k] = iid_entry["median_swd"]
         iid_q25_dict_swd[k] = iid_entry["q25_swd"]
         iid_q75_dict_swd[k] = iid_entry["q75_swd"]
-        iid_means_dict_mmd[k] = iid_entry["mean_mmd"]
-        iid_stds_dict_mmd[k] = iid_entry["std_mmd"]
-        iid_medians_dict_mmd[k] = iid_entry["median_mmd"]
-        iid_q25_dict_mmd[k] = iid_entry["q25_mmd"]
-        iid_q75_dict_mmd[k] = iid_entry["q75_mmd"]
+
+        if do_mmd:
+            iid_means_dict_mmd[k] = iid_entry["mean_mmd"]
+            iid_stds_dict_mmd[k] = iid_entry["std_mmd"]
+            iid_medians_dict_mmd[k] = iid_entry["median_mmd"]
+            iid_q25_dict_mmd[k] = iid_entry["q25_mmd"]
+            iid_q75_dict_mmd[k] = iid_entry["q75_mmd"]
+
+        if do_mmd_rff:
+            iid_means_dict_mmd_rff[k] = iid_entry["mean_mmd_rff"]
+            iid_stds_dict_mmd_rff[k] = iid_entry["std_mmd_rff"]
+            iid_medians_dict_mmd_rff[k] = iid_entry["median_mmd_rff"]
+            iid_q25_dict_mmd_rff[k] = iid_entry["q25_mmd_rff"]
+            iid_q75_dict_mmd_rff[k] = iid_entry["q75_mmd_rff"]
 
 
     for metric in metrics:
@@ -298,25 +345,16 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 ax_shaded.errorbar(medians.index, medians, yerr=yerr, fmt="o", color=color, capsize=5)
 
 
-            if scatter_overlay or save_extra_scatter:
-
-                # ---------------- plot_mode == 'scatter' ------------------
-                # We want *all* points: x = v.attr value repeated per run
+            if save_extra_scatter:
+                # x = v.attr value repeated per run
                 xs, ys = np.broadcast_to(
                     df_pivot.index.to_numpy()[:, None], df_pivot.shape
                 ).ravel(), df_pivot.to_numpy().ravel()
 
-                if scatter_overlay:
-                    ax_shaded.scatter(xs, ys, alpha=0.55, s=30,
-                                    color=color, rasterized=True,
-                                    label=f"{sampler} (runs)")
-
                 # save data for a per-sampler scatter figure later
-                if save_extra_scatter:
-                    scatter_data.setdefault(metric, []).append(
-                        (sampler, xs, ys, color)
-                    )
-
+                scatter_data.setdefault(metric, []).append(
+                    (sampler, xs, ys, color)
+                )
 
             # Save global avg for CSV
             if sampler not in global_avg_dfs:
@@ -349,7 +387,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 # Plot glass delta for this sampler
                 ax_g.plot(means.index, glass_delta, "o-", label=sampler, color=color)
             
-            elif metric == "mmd_rff":
+            elif metric == "mmd":
                 # Get IID mean and std for this varying attribute value
 
 
@@ -368,13 +406,39 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 # Glass Δ
                 glass_delta = (means - iid_mean_mmd) / iid_std_mmd.replace(0, np.nan)
 
-                global_avg_dfs[sampler]["mmd_rff_glass_delta"] = glass_delta
-                global_avg_dfs[sampler]["mmd_rff_mcmc_mean"] = means
-                global_avg_dfs[sampler]["mmd_rff_iid_mean"]  = iid_mean_mmd
-                global_avg_dfs[sampler]["mmd_rff_iid_std"]   = iid_std_mmd
+                global_avg_dfs[sampler]["mmd_glass_delta"] = glass_delta
+                global_avg_dfs[sampler]["mmd_mcmc_mean"] = means
+                global_avg_dfs[sampler]["mmd_iid_mean"]  = iid_mean_mmd
+                global_avg_dfs[sampler]["mmd_iid_std"]   = iid_std_mmd
 
                 # Plot glass delta for this sampler
                 ax_g_mmd.plot(means.index, glass_delta, "o-", label=sampler, color=color)
+
+            elif metric == "mmd_rff":
+                # Get IID mean and std for this varying attribute value
+
+                iid_mean_mmd_rff = pd.Series(
+                    [iid_means_dict_mmd_rff[k] for k in means.index],
+                    index=means.index,                    
+                    name="iid_mean_mmd_rff"
+                )
+
+                iid_std_mmd_rff = pd.Series(
+                    [iid_stds_dict_mmd_rff[k] for k in means.index],
+                    index=means.index,
+                    name="iid_std_mmd_rff"
+                )
+
+                # Glass Δ
+                glass_delta = (means - iid_mean_mmd_rff) / iid_std_mmd_rff.replace(0, np.nan)
+
+                global_avg_dfs[sampler]["mmd_rff_glass_delta"] = glass_delta
+                global_avg_dfs[sampler]["mmd_rff_mcmc_mean"] = means
+                global_avg_dfs[sampler]["mmd_rff_iid_mean"]  = iid_mean_mmd_rff
+                global_avg_dfs[sampler]["mmd_rff_iid_std"]   = iid_std_mmd_rff
+
+                # Plot glass delta for this sampler
+                ax_g_mmd_rff.plot(means.index, glass_delta, "o-", label=sampler, color=color)
 
 
         # Only for wasserstein_distance and mmd: Plot IID baseline once
@@ -393,7 +457,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 alpha=0.1,
             )
 
-        elif metric == "mmd_rff":
+        elif metric == "mmd":
 
             iid_medians = np.array([iid_medians_dict_mmd[k] for k in medians.index])
             iid_q25 = np.array([iid_q25_dict_mmd[k] for k in medians.index])
@@ -408,29 +472,24 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 alpha=0.1,
             )
 
+        elif metric == "mmd_rff":
+
+            iid_medians = np.array([iid_medians_dict_mmd_rff[k] for k in medians.index])
+            iid_q25 = np.array([iid_q25_dict_mmd_rff[k] for k in medians.index])
+            iid_q75 = np.array([iid_q75_dict_mmd_rff[k] for k in medians.index])
+
+            ax_shaded.plot(medians.index, iid_medians, "o--", label="IID Reference", color="black")
+            ax_shaded.fill_between(
+                medians.index,
+                iid_q25,
+                iid_q75,
+                color="black",
+                alpha=0.1,
+            )
 
 
-
-        # ── optional scatter-only twin ──────────────────────────────
+        #  scatter plot for this metric
         if save_extra_scatter and metric in scatter_data:
-            # fig_sc, ax_sc = plt.subplots(figsize=(10, 6))
-            # for s, xs, ys, c in scatter_data[metric]:
-            #     ax_sc.scatter(xs, ys, alpha=0.55, s=30,
-            #                     color=c, rasterized=True, label=s)
-                
-            # finalize_and_save_plot(
-            #     fig_sc, ax_sc,
-            #     attribute_label,
-            #     metric,
-            #     title=(f"All runs {metric.replace('_', ' ').title()} "
-            #             f"({runs} Runs, config = {config_descr})"),
-            #     save_path=os.path.join(global_plots_folder,
-            #                             f"{metric}_global_plot_scatter.pdf"),
-            #     save_path_png=os.path.join(png_folder,
-            #                                 f"{metric}_global_plot_scatter.png"),
-            # )
-
-             # Build an interactive Plotly figure
             fig = go.Figure()
 
             for sampler, xs, ys, color in scatter_data[metric]:
@@ -447,15 +506,15 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 xaxis_title=attribute_label,
                 yaxis_title=metric.replace('_',' ').title(),
                 legend=dict(
-                    itemclick="toggle",         # click to show/hide one sampler
-                    itemdoubleclick="toggleothers"  # dbl-click to isolate one
+                    itemclick="toggle",                     # click to show/hide one sampler
+                    itemdoubleclick="toggleothers"          # dbl-click to isolate one
                 ),
                 width=None,
                 height=None,
                 margin=dict(l=40, r=20, t=50, b=40)
             )
 
-            # Save out as a standalone HTML you can drop into reports/webpages:
+            # Save out as a standalone HTML
             html_path = os.path.join(
                 png_folder,
                 f"{metric}_global_scatter_interactive.html"
@@ -463,14 +522,6 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
 
             fig.write_html(html_path, include_plotlyjs="cdn", config=dict(responsive=True), full_html=True)
 
-            # (Optionally still save a PNG snapshot too—Plotly can do that if you have kaleido:)
-            # png_path = os.path.join(
-            #     png_folder,
-            #     f"{metric}_global_scatter_interactive.png"
-            # )
-            # fig.write_image(png_path)
-
-            # print(f"  • Interactive scatter for {metric} → {html_path}")
 
 
     # Save Global Averages per Sampler to CSV
@@ -485,17 +536,26 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             varying_attribute: metrics_dict["wasserstein_distance"][0].index,
             **{f"global_median_{metric}": metrics_dict[metric][0].values for metric in metrics},
             **{f"global_q25_{metric}": metrics_dict[metric][1].values for metric in metrics},
-            **{f"global_q75_{metric}": metrics_dict[metric][2].values for metric in metrics},
+            **{f"global_q75_{metric}": metrics_dict[metric][2].values for metric in metrics},    
             "ws_mcmc_mean":  metrics_dict["ws_dist_mcmc_mean"].values,
             "ws_iid_mean":   metrics_dict["ws_dist_iid_mean"].values,
             "ws_iid_std":    metrics_dict["ws_dist_iid_std"].values,
-            "mmd_mcmc_mean": metrics_dict["mmd_rff_mcmc_mean"].values,
-            "mmd_iid_mean":  metrics_dict["mmd_rff_iid_mean"].values,
-            "mmd_iid_std":   metrics_dict["mmd_rff_iid_std"].values,
+            
+            **({"mmd_mcmc_mean": metrics_dict["mmd_mcmc_mean"].values,
+                "mmd_iid_mean":  metrics_dict["mmd_iid_mean"].values,
+                "mmd_iid_std":   metrics_dict["mmd_iid_std"].values}
+            if do_mmd else {}),
+
+            **({"mmd_rff_mcmc_mean": metrics_dict["mmd_rff_mcmc_mean"].values,
+                "mmd_rff_iid_mean":  metrics_dict["mmd_rff_iid_mean"].values,
+                "mmd_rff_iid_std":   metrics_dict["mmd_rff_iid_std"].values}
+            if do_mmd_rff else {})
         })
 
         if "ws_dist_glass_delta" in metrics_dict:
             df_global_avg["ws_dist_glass_delta"] = metrics_dict["ws_dist_glass_delta"].values
+        if "mmd_glass_delta" in metrics_dict:
+            df_global_avg["mmd_glass_delta"] = metrics_dict["mmd_glass_delta"].values
         if "mmd_rff_glass_delta" in metrics_dict:
             df_global_avg["mmd_rff_glass_delta"] = metrics_dict["mmd_rff_glass_delta"].values
 
@@ -523,13 +583,22 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     finalize_and_save_plot(fig_g, ax_g, xlabel=attribute_label, ylabel="Glass's Δ", title=title_ws,
                             save_path=pdf_path, save_path_png=png_path)
 
-    # Plot Glass's Δ for MMD
-    pdf_path = os.path.join(global_plots_folder, "glass_delta_mmd.pdf")
-    png_path = os.path.join(png_folder, "glass_delta_mmd.png")
-    title_mmd = f"Glass's Δ for MMD-RFF ({runs} Runs, config = {config_descr})"
+    if do_mmd:
+        # Plot Glass's Δ for MMD
+        pdf_path = os.path.join(global_plots_folder, "glass_delta_mmd.pdf")
+        png_path = os.path.join(png_folder, "glass_delta_mmd.png")
+        title_mmd = f"Glass's Δ for MMD ({runs} Runs, config = {config_descr})"
 
-    finalize_and_save_plot(fig_g_mmd, ax_g_mmd, xlabel=attribute_label, ylabel="Glass's Δ", title=title_mmd,
-                           save_path=pdf_path, save_path_png=png_path)
+        finalize_and_save_plot(fig_g_mmd, ax_g_mmd, xlabel=attribute_label, ylabel="Glass's Δ", title=title_mmd,
+                            save_path=pdf_path, save_path_png=png_path)
+    if do_mmd_rff:
+        # Plot Glass's Δ for MMD-RFF
+        pdf_path = os.path.join(global_plots_folder, "glass_delta_mmd_rff.pdf")
+        png_path = os.path.join(png_folder, "glass_delta_mmd_rff.png")
+        title_mmd_rff = f"Glass's Δ for MMD-RFF ({runs} Runs, config = {config_descr})"
+
+        finalize_and_save_plot(fig_g_mmd_rff, ax_g_mmd_rff, xlabel=attribute_label, ylabel="Glass's Δ", title=title_mmd_rff,
+                            save_path=pdf_path, save_path_png=png_path)
 
 
 
@@ -762,60 +831,5 @@ def save_sample_info(sample_info, json_path, plot_path, png_path=None, varying_a
         with open(metadata_path, "w") as f:
             json.dump({"varying_value": value}, f)
     plt.close(fig)
-
-
-
-
-def compute_and_store_iid_stats(
-    iid_batches,
-    value,
-    num_iid_vs_iid_batches,
-    iid_ref_stats_dict,
-    iid_histogram_folder,
-    png_folder,
-    varying_attribute,
-    posterior_type,
-    rng
-):
-
-    ref_swd_values = []
-    ref_mmd_values = []
-
-    # get dimension of the first batch
-    dim = ensure_2d(iid_batches[0]).shape[1]
-    projections = 1 if dim == 1 else max(50, min(10*dim, 500))
-
-    # Pairwise comparison for SWD/MMD stats
-    for i in range(0, num_iid_vs_iid_batches, 2): 
-        x = ensure_2d(iid_batches[i])
-        y = ensure_2d(iid_batches[i + 1])
-
-        swd = sliced_wasserstein_distance(x, y, L=projections, rng=rng)
-        mmd_rff = compute_mmd_rff(x, y, D=500, sigma=1.0, rng=rng)
-        ref_swd_values.append(swd)
-        ref_mmd_values.append(mmd_rff)
-
-
-    iid_ref_stats_dict[value] = {
-        "mean_swd": np.mean(ref_swd_values),
-        "std_swd": np.std(ref_swd_values, ddof=1),
-        "median_swd": np.median(ref_swd_values),
-        "q25_swd": np.quantile(ref_swd_values, 0.25),
-        "q75_swd": np.quantile(ref_swd_values, 0.75),
-        "mean_mmd": np.mean(ref_mmd_values),
-        "std_mmd": np.std(ref_mmd_values, ddof=1),
-        "median_mmd": np.median(ref_mmd_values),
-        "q25_mmd": np.quantile(ref_mmd_values, 0.25),
-        "q75_mmd": np.quantile(ref_mmd_values, 0.75)
-    }
-
-    plot_histogram(
-        samples=iid_batches[0],
-        title=f"IID Samples Histogram & KDE ({varying_attribute}={value})",
-        save_path=os.path.join(iid_histogram_folder, f"iid_hist_kde_{varying_attribute}_{value}.pdf"),
-        save_path_png=os.path.join(png_folder, f"iid_hist_kde_{varying_attribute}_{value}.png"),
-        posterior_type=posterior_type,
-        value=value
-    )
 
 

@@ -37,6 +37,7 @@ from .metrics import (
     get_scalar_rhat_and_ess,
     sliced_wasserstein_distance,
     compute_mmd_rff,
+    compute_mmd
 )
 
 from .reporting import (
@@ -59,6 +60,8 @@ def eval_trace(
         folders,
         varying_attribute,
         results,
+        do_mmd,
+        do_mmd_rff,
         rng
 ):
     
@@ -114,11 +117,23 @@ def eval_trace(
         projections = 1 if dim == 1 else max(50, min(10*dim, 500))
 
         mcmc_vs_iid_swd = sliced_wasserstein_distance(posterior_samples, iid_batch, L=projections, rng=rng)
-        mmd_rff_value = compute_mmd_rff(posterior_samples, iid_batch, D=500, sigma=1.0, rng=rng)
+        
+        if do_mmd:
+            mmd_value = compute_mmd(posterior_samples, iid_batch, rng=rng)
+        else:
+            mmd_value = np.nan
+
+        if do_mmd_rff:
+            mmd_rff_value = compute_mmd_rff(posterior_samples, iid_batch, D=500, rng=rng)
+        else:
+            mmd_rff_value = np.nan
+
 
     else:
         mcmc_vs_iid_swd = np.nan
+        mmd_value = np.nan
         mmd_rff_value = np.nan
+        
 
     if eval_level == "pooled":
         # Compute R-hat and ESS
@@ -139,6 +154,7 @@ def eval_trace(
         "sampler": sampler_name,
         "wasserstein_distance": mcmc_vs_iid_swd,
         "mmd_rff": mmd_rff_value,
+        "mmd": mmd_value,
         "r_hat": r_hat,
         "ess": ess,
         "runtime": runtime
@@ -178,6 +194,8 @@ def run_experiment(
     num_samples = samples_per_chain*num_chains
 
     component_index = posterior_kwargs.get("varying_component")
+    do_mmd = experiment_settings.get("do_mmd", False)
+    do_mmd_rff = experiment_settings.get("do_mmd_rff", False)
 
     # Number of IID batches for the IID vs IID comparison
     num_iid_vs_iid_batches = 2*runs
@@ -272,7 +290,9 @@ def run_experiment(
             rng=rng,
             group_folder=group_folder,
             png_folder=png_folder_kde,
-            required_parameters=required_parameters 
+            required_parameters=required_parameters,
+            do_mmd=do_mmd,
+            do_mmd_rff= do_mmd_rff,
         )       
 
     # Define fixed colors for each sampler
@@ -542,7 +562,7 @@ def run_experiment(
                 eval_trace(trace=pooled_trace, runtime=pooled_runtime, eval_level="pooled", run_id=run_id, sampler_name=sampler_name, value=value,
                            posterior_type=posterior_type, iid_batch=iid_batch,
                            experiment_settings=experiment_settings, folders={ "var_attr_folder": var_attr_folder},
-                           varying_attribute=varying_attribute, results=results, rng=run_rng)
+                           varying_attribute=varying_attribute, results=results, do_mmd=do_mmd, do_mmd_rff=do_mmd_rff, rng=run_rng)
 
 
                 chain_seed = int(run_rng.integers(1_000_000))
@@ -571,7 +591,7 @@ def run_experiment(
                 eval_trace(trace=chain_trace, runtime=chain_runtime, eval_level="chain", run_id=run_id, sampler_name=sampler_name, value=value,
                         posterior_type=posterior_type, iid_batch=iid_batch,
                         experiment_settings=experiment_settings, folders={ "var_attr_folder": var_attr_folder},
-                        varying_attribute=varying_attribute, results=results, rng=run_rng)
+                        varying_attribute=varying_attribute, results=results, do_mmd=do_mmd, do_mmd_rff=do_mmd_rff, rng=run_rng)
                 
 
             # Now increments the TQDM progress bar if it's provided
@@ -642,7 +662,6 @@ def run_experiment(
     png_folder_pooled = os.path.join(png_folder, "pooled_global_plots")
     create_directories(pooled_results_folder, pooled_plots_folder, png_folder_pooled)
 
-    scatter_overlay = experiment_settings.get("scatter_overlay", False)
     save_extra_scatter = experiment_settings.get("save_extra_scatter", False)
     
     compute_and_save_global_metrics(
@@ -657,8 +676,9 @@ def run_experiment(
         global_plots_folder=pooled_plots_folder,
         png_folder=png_folder_pooled,
         iid_ref_stats_dict=iid_ref_stats_dict,
-        scatter_overlay=scatter_overlay, 
-        save_extra_scatter=save_extra_scatter
+        save_extra_scatter=save_extra_scatter,
+        do_mmd=do_mmd,
+        do_mmd_rff=do_mmd_rff
     )
 
     chain_results_folder = os.path.join(global_folder, "chain_results")
@@ -678,8 +698,9 @@ def run_experiment(
         global_plots_folder= chain_plots_folder,
         png_folder=png_folder_chain,
         iid_ref_stats_dict=iid_ref_stats_dict,
-        scatter_overlay= scatter_overlay,
-        save_extra_scatter= save_extra_scatter
+        save_extra_scatter= save_extra_scatter,
+        do_mmd=do_mmd,
+        do_mmd_rff=do_mmd_rff
     )
 
     logger.info(f"===== Config {config_descr} completed successfully. =====")
