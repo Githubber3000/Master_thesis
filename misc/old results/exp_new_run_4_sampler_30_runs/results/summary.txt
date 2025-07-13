@@ -1,0 +1,17 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-06 22:36:47
+Finished at:                  2025-07-07 12:29:29
+Total duration:               13h 52m 41.9s
+Output folder:                experiments/exp_new_run_4_sampler_30_runs
+Output folder size:           147.6 MB
+Total configurations:         22
+Successful configuration:     17
+Failed configurations:        5
+ - Varying_Mode_distance_with_high_Dimension: unhashable type: 'list'
+ - Varying_Mode_distance_with_high_Correlation: unhashable type: 'list'
+ - Varying_Mode_distance_with_high_Correlation_and_heavy_Tails: unhashable type: 'list'
+ - Line_3_Modes_1D: unhashable type: 'list'
+ - Triangle_3_Modes_2D: unhashable type: 'list'
