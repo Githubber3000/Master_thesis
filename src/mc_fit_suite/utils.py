@@ -54,9 +54,11 @@ def rel_to_root(path, root):
 
     return os.path.relpath(path, start=root)
 
-def extract_varying_value_from_json(png_path):
-    json_path = png_path.replace(".png", ".json")
-   
+def extract_varying_value_from_json(any_plot_path):
+
+    base, _ext = os.path.splitext(any_plot_path)
+    json_path = base + ".json"
+
     with open(json_path, "r") as f:
         data = json.load(f)
 
@@ -68,6 +70,63 @@ def extract_varying_value_from_json(png_path):
             return v[0]
         return tuple(v) if isinstance(v, (list, tuple)) else str(v)
     
+
+def load_meta(any_plot_path):
+
+    base, _ext = os.path.splitext(any_plot_path)
+    json_path = base + ".json"
+
+    with open(json_path) as f:
+        return json.load(f)
+
+
+def build_trace_groups(pooled_plots, chain_plots, rel, type="trace"):
+    """
+    Return a list of groups, each containing one varying_value and
+    a list of sampler blocks (with pooled + chain PNGs, if present).
+    """
+
+    sampler_order = ["HMC", "Metro", "SMC", "DEMetro_Z"]  
+
+    pooled = {}  
+    chain  = {}
+
+    # --- populate pooled dict ----------------------------------------
+    for p in pooled_plots:
+        meta = load_meta(p)                      
+        value   = meta["varying_value"]
+        sampler = meta["sampler"]
+
+        if value not in pooled:                   
+            pooled[value] = {}
+        pooled[value][sampler] = rel(p)
+
+    # --- populate chain dict -----------------------------------------
+    for p in chain_plots:
+        meta = load_meta(p)
+        value   = meta["varying_value"]
+        sampler = meta["sampler"]
+
+        if value not in chain:
+            chain[value] = {}
+        chain[value][sampler] = rel(p)
+
+    # --- merge into ordered list of groups ---------------------------
+    groups = []
+    for value in sorted(pooled):   # all distinct values, sorted
+        samplers_block = []
+        for s in sampler_order:                      # fixed sampler order
+            if s in pooled[value]:
+                samplers_block.append({
+                    "sampler":   s,
+                    f"pooled_{type}": pooled.get(value, {}).get(s),
+                    f"chain_{type}":  chain.get(value, {}).get(s)
+                })
+        groups.append({"varying_value": value, "samplers": samplers_block})
+
+    return groups
+
+
 def build_correlation_cov_matrix(dim, rho):
     cov = np.full((dim, dim), rho)
     np.fill_diagonal(cov, 1.0)

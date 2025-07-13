@@ -426,9 +426,16 @@ def generate_all_iid_batches(
                         dim_value=value
                 )
             else:
-                # Vary only the selected component's parameter
-                iid_kwargs["component_params"][component_index][varying_attribute] = value
 
+                if component_index is None:
+                    target_indices = range(len(posterior_kwargs["component_params"]))
+                else:
+                    target_indices = [component_index]
+
+                for i in target_indices:
+                    posterior_kwargs["component_params"][i][varying_attribute] = value
+
+  
             samples_per_chain = num_samples // num_chains
             num_samples = samples_per_chain*num_chains
 

@@ -70,8 +70,8 @@
     }
 
     .plot-thumb {
-      width: 800px;
-      height: 500px;           /* oder z. B. 600px je nach Platzbedarf */
+      width: 1100px;        /* 16×9 with a base 540px height */
+      height: 619px;       /* 1100 * 9 / 16 */
       border: 1px solid #aaa;
       border-radius: 4px;
       box-shadow: 0 0 4px rgba(0,0,0,0.1);
@@ -116,6 +116,7 @@
     .hidden {
       display: none;
     }
+
   </style>
   <script>
     function toggleGroup(id) {
@@ -183,7 +184,7 @@
                   <details class="interactive-toggle">
                     <summary>
                       <span class="plot-title summary-text">
-                        {{ m.replace('_',' ').title() }} (interactive af)
+                        {{ m.replace('_',' ').title() }} (scatter)
                       </span>
                     </summary>
                     <iframe src="{{ scatter_html_paths[m] }}"
@@ -219,47 +220,150 @@
         {%- endmacro %}
 
 
-      {# ---------- pooled level plots ---------- #}
-      {{ metric_grid(
-          config.metric_plot_paths_pooled,
-          config.glass_plot_paths_pooled,
-          config.scatter_plot_paths_pooled,
-          config.scatter_html_paths_pooled,
-          "Pooled Chains results",
-          true
-      ) }}
-
-      {# ---------- chain level plots (if present) ---------- #}
-      {% if config.metric_plot_paths_chain %}
+        {# ---------- pooled level plots ---------- #}
         {{ metric_grid(
-            config.metric_plot_paths_chain,
-            config.glass_plot_paths_chain,
-            config.scatter_plot_paths_chain,
-            config.scatter_html_paths_chain,
-            "One Chain results",
-            false
+            config.metric_plot_paths_pooled,
+            config.glass_plot_paths_pooled,
+            config.scatter_plot_paths_pooled,
+            config.scatter_html_paths_pooled,
+            "Pooled Chains results",
+            true
         ) }}
-      {% endif %}
 
-      {# ---------- KDE + init ---------- #}
-      {% if config.kde_init_triples %}
-      <details>
-        <summary><b>KDE + Init Plots</b></summary>
+        {# ---------- chain level plots (if present) ---------- #}
+        {% if config.metric_plot_paths_chain %}
+          {{ metric_grid(
+              config.metric_plot_paths_chain,
+              config.glass_plot_paths_chain,
+              config.scatter_plot_paths_chain,
+              config.scatter_html_paths_chain,
+              "One Chain results",
+              false
+          ) }}
+        {% endif %}
 
-        <div class="plot-column-layout">
-          {% for kde, pooled, chain in config.kde_init_triples %}
-            <div class="plot-column">
-              <img src="{{ kde}}" alt="KDE plot" class="kde-plot">
+        {# ---------- KDE + init ---------- #}
+        {% if config.kde_init_triples %}
+        <details>
+          <summary><b>KDE + Init Plots</b></summary>
 
-              <img src="{{ pooled }}" alt="Pooled Init Plot" class="init-plot">
+          <div class="plot-column-layout">
+            {% for kde, pooled, chain in config.kde_init_triples %}
+              <div class="plot-column">
+                <img src="{{ kde}}" alt="KDE plot" class="kde-plot">
 
-              <img src="{{ chain }}" alt="Chain Init Plot" class="init-plot">
+                <img src="{{ pooled }}" alt="Pooled Init Plot" class="init-plot">
 
+                <img src="{{ chain }}" alt="Chain Init Plot" class="init-plot">
+
+              </div>
+            {% endfor %}
+          </div>
+        </details>
+        {% endif %}
+
+        {# ---------- Trace Plots ---------- #}
+        {% if config.trace_groups %}
+        <details>
+          <summary><b>Trace Plots</b></summary>
+
+          {# „Pooled“-Block #}
+          <details open>
+            <summary style="font-weight:bold; cursor:pointer;">Pooled</summary>
+            <div class="plot-column-layout">
+              {% for grp in config.trace_groups %}
+                <div class="plot-column">
+                  <span class="plot-title">{{ grp.varying_value }}</span>
+                  {% for s in grp.samplers %}
+                    {% if s.pooled_trace %}
+                      <img src="{{ s.pooled_trace }}"
+                          alt="{{ s.sampler }} pooled trace"
+                          class="init-plot">
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endfor %}
             </div>
-          {% endfor %}
-        </div>
-      </details>
-      {% endif %}
+          </details>
+
+          {# „Chain“-Block #}
+          <details>
+            <summary style="font-weight:bold; cursor:pointer;">Chain</summary>
+            <div class="plot-column-layout">
+              {% for grp in config.trace_groups %}
+                <div class="plot-column">
+                  <span class="plot-title">{{ grp.varying_value }}</span>
+                  {% for s in grp.samplers %}
+                    {% if s.chain_trace %}
+                      <img src="{{ s.chain_trace }}"
+                          alt="{{ s.sampler }} chain trace"
+                          class="init-plot">
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </div>
+          </details>
+        </details>
+        {% endif %}
+
+        {# ---------- Interactive Pairwise Scatter Plots ---------- #}
+        {% if config.scatter_groups %}
+        <details>
+          <summary><b>Pairwise Scatter Plots</b></summary>
+
+          {# Pooled subsection #}
+          <details open>
+            <summary style="font-weight:bold; cursor:pointer;">Pooled</summary>
+            <div class="plot-column-layout">
+              {% for grp in config.scatter_groups %}
+                <div class="plot-column">
+                  <span class="plot-title">{{ grp.varying_value }}</span>
+                  {% for s in grp.samplers %}
+                    {% if s.pooled_pairwise_scatter %}
+                      <iframe
+                        src="{{ s.pooled_pairwise_scatter }}"
+                        class="interactive-iframe"
+                        frameborder="0"
+                        scrolling="no"
+                        width="100%"
+                        height="300px"
+                        loading="lazy">
+                      </iframe>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </div>
+          </details>
+
+          {# Chain subsection #}
+          <details>
+            <summary style="font-weight:bold; cursor:pointer;">Chain</summary>
+            <div class="plot-column-layout">
+              {% for grp in config.scatter_groups %}
+                <div class="plot-column">
+                  <span class="plot-title">{{ grp.varying_value }}</span>
+                  {% for s in grp.samplers %}
+                    {% if s.chain_pairwise_scatter %}
+                      <iframe
+                        src="{{ s.chain_pairwise_scatter }}"
+                        class="interactive-iframe"
+                        frameborder="0"
+                        scrolling="no"
+                        width="100%"
+                        height="300px"
+                        loading="lazy">
+                      </iframe>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </div>
+          </details>
+
+        </details>
+        {% endif %}
 
       </div>
       {% endfor %}

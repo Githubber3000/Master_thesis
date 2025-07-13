@@ -109,8 +109,6 @@ def compute_mmd_rff(X, Y, D=500, rng=None):
     
     sigma = median_heuristic(X, Y, rng=rng)
 
-    print(f"Using sigma={sigma} for RFF MMD computation")
-
     n, d = X.shape
     m, _ = Y.shape
 

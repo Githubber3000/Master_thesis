@@ -44,6 +44,7 @@ from .reporting import (
     plot_and_save_all_metrics,
     compute_and_save_global_metrics,
     handle_trace_plots,
+    plot_pairwise_scatter
     )
 
 
@@ -55,6 +56,7 @@ def eval_trace(
         sampler_name,
         value,
         posterior_type,
+        posterior_kwargs,
         iid_batch,
         experiment_settings,
         folders,
@@ -62,12 +64,14 @@ def eval_trace(
         results,
         do_mmd,
         do_mmd_rff,
+        save_pairwise_scatter,
         rng
 ):
     
     # Plot trace plots in notebook if requested
     if experiment_settings.get("plot_traces_in_notebook", False):
         handle_trace_plots(
+            eval_level=eval_level,
             trace=trace,
             sampler_name=sampler_name,
             varying_attribute=varying_attribute,
@@ -82,18 +86,37 @@ def eval_trace(
     # Save trace plots to PDF if requested
     if trace_plot_mode == "all" or (trace_plot_mode == "first_run_only" and run_id == 1):
 
-        save_path = os.path.join(folders["var_attr_folder"], f"{sampler_name}_trace_plot.pdf")
+        save_path = os.path.join(folders["var_attr_folder"],f"{eval_level}_{sampler_name}_{value:.4g}_trace_plot.pdf")
+        png_path = os.path.join(folders["png_folder_traces"], f"{eval_level}_{sampler_name}_{value:.4g}_trace_plot.png")
+        html_path = os.path.join(folders["png_folder_scatter"], f"{eval_level}_{sampler_name}_{value:.4g}_pairwise_scatter.html")
+        dim = get_posterior_dim(posterior_type, posterior_kwargs)
 
         handle_trace_plots(
+            eval_level=eval_level,
             trace=trace,
+            iid_samples=iid_batch,
             sampler_name=sampler_name,
             varying_attribute=varying_attribute,
             value=value,
             show=False,
             save_path=save_path,
+            png_path=png_path,
             save_individual=experiment_settings.get("save_individual_traceplots_per_dim", False)
         )
-    
+
+        if save_pairwise_scatter and dim > 1:
+            plot_pairwise_scatter(
+                eval_level=eval_level,
+                mcmc_trace=trace,        
+                iid_samples=iid_batch, 
+                sampler_name=sampler_name, 
+                varying_attribute=varying_attribute,       
+                value=value,
+                marker_size=8,          
+                marker_opacity=0.5,    
+                html_path= html_path
+            )
+
     # Save trace to NetCDF file if requested
     if experiment_settings.get("save_traces", False):
         trace_filename = os.path.join(folders["var_attr_folder"], f"{sampler_name}_trace.nc")
@@ -196,6 +219,7 @@ def run_experiment(
     component_index = posterior_kwargs.get("varying_component")
     do_mmd = experiment_settings.get("do_mmd", False)
     do_mmd_rff = experiment_settings.get("do_mmd_rff", False)
+    save_pairwise_scatter = experiment_settings.get("save_pairwise_scatter", False)
 
     # Number of IID batches for the IID vs IID comparison
     num_iid_vs_iid_batches = 2*runs
@@ -233,7 +257,9 @@ def run_experiment(
     init_folder = os.path.join(group_folder, f"init_info")
     runs_folder = os.path.join(group_folder, f"runs ({runs})")
     png_folder_kde = os.path.join(png_folder, "IID_KDE_and_Histograms")
-    create_directories(group_folder, init_folder, runs_folder, png_folder_kde)
+    png_folder_traces = os.path.join(png_folder, "trace_plots")
+    png_folder_scatter = os.path.join(png_folder, "pairwise_scatter")
+    create_directories(group_folder, init_folder, runs_folder, png_folder_kde, png_folder_traces, png_folder_scatter)
 
     if varying_attribute in ["dimension", "correlation", "circle_radius", "circle_modes"]:
         posterior_kwargs_original = copy.deepcopy(posterior_kwargs)
@@ -419,13 +445,32 @@ def run_experiment(
                                 folder=regular_posteriors_folder,
                                 dim_value=value
                         )
+                elif varying_attribute == "distance":
+                    posterior_dim = get_posterior_dim(posterior_type, posterior_kwargs)
+
+                    for i in range(len(posterior_kwargs["component_params"])):
+                        
+                        posterior_kwargs["component_params"][i][cov_param_key] = build_correlation_cov_matrix(posterior_dim, value)
+ 
+                    if run_id == 1:
+                        save_adjusted_posterior_config(
+                                posterior_kwargs,
+                                folder=regular_posteriors_folder,
+                                dim_value=value
+                        )
                 elif varying_attribute == "num_samples":
                     num_samples = value
                 elif varying_attribute == "num_chains":
                     num_chains = value
                 else:
-                    # Vary only the selected component's parameter
-                    posterior_kwargs["component_params"][component_index][varying_attribute] = value
+
+                    if component_index is None:
+                        target_indices = range(len(posterior_kwargs["component_params"]))
+                    else:
+                        target_indices = [component_index]
+
+                    for i in target_indices:
+                        posterior_kwargs["component_params"][i][varying_attribute] = value
 
             else:
 
@@ -560,9 +605,9 @@ def run_experiment(
 
 
                 eval_trace(trace=pooled_trace, runtime=pooled_runtime, eval_level="pooled", run_id=run_id, sampler_name=sampler_name, value=value,
-                           posterior_type=posterior_type, iid_batch=iid_batch,
-                           experiment_settings=experiment_settings, folders={ "var_attr_folder": var_attr_folder},
-                           varying_attribute=varying_attribute, results=results, do_mmd=do_mmd, do_mmd_rff=do_mmd_rff, rng=run_rng)
+                           posterior_type=posterior_type, posterior_kwargs=posterior_kwargs, iid_batch=iid_batch,
+                           experiment_settings=experiment_settings, folders={ "var_attr_folder": var_attr_folder,"png_folder_traces": png_folder_traces, "png_folder_scatter": png_folder_scatter},
+                           varying_attribute=varying_attribute, results=results, do_mmd=do_mmd, do_mmd_rff=do_mmd_rff, save_pairwise_scatter=save_pairwise_scatter, rng=run_rng)
 
 
                 chain_seed = int(run_rng.integers(1_000_000))
@@ -589,11 +634,10 @@ def run_experiment(
                 chain_runtime = end_time - start_time
 
                 eval_trace(trace=chain_trace, runtime=chain_runtime, eval_level="chain", run_id=run_id, sampler_name=sampler_name, value=value,
-                        posterior_type=posterior_type, iid_batch=iid_batch,
-                        experiment_settings=experiment_settings, folders={ "var_attr_folder": var_attr_folder},
-                        varying_attribute=varying_attribute, results=results, do_mmd=do_mmd, do_mmd_rff=do_mmd_rff, rng=run_rng)
+                        posterior_type=posterior_type, posterior_kwargs=posterior_kwargs, iid_batch=iid_batch,
+                        experiment_settings=experiment_settings, folders={ "var_attr_folder": var_attr_folder, "png_folder_traces": png_folder_traces, "png_folder_scatter": png_folder_scatter},
+                        varying_attribute=varying_attribute, results=results, do_mmd=do_mmd, do_mmd_rff=do_mmd_rff, save_pairwise_scatter=save_pairwise_scatter, rng=run_rng)
                 
-
             # Now increments the TQDM progress bar if it's provided
             if progress_bar is not None:
                 progress_bar.update(1)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 import json, os
 import logging
+import copy
 from jinja2 import Environment, FileSystemLoader 
 from glob import glob
 import numpy as np
@@ -10,7 +11,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import arviz as az
 
-from .utils   import extract_varying_value_from_json, safe_json_dump
+from .utils   import extract_varying_value_from_json, safe_json_dump, build_trace_groups
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +105,27 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
             chain_init_path = os.path.join(report_pngs_folder, group_name, config_descr, "chain_init", "init_*.png")
             chain_init_plots = sorted(glob(chain_init_path), key=extract_varying_value_from_json)
 
-            rel_chain_init_paths = [rel(p) for p in chain_init_plots]
+            rel_chain_init_paths = [rel(p) for p in chain_init_plots]    
+
+            pooled_trace_path = os.path.join(report_pngs_folder, group_name, config_descr, "trace_plots", "pooled_*.png")
+            pooled_trace_plots = sorted(glob(pooled_trace_path), key=extract_varying_value_from_json)
+
+            #rel_pooled_trace_paths = [rel(p) for p in pooled_trace_plots]
+
+            chain_trace_path = os.path.join(report_pngs_folder, group_name, config_descr, "trace_plots", "chain_*.png")
+            chain_trace_plots = sorted(glob(chain_trace_path), key=extract_varying_value_from_json)  #needed?!!
+
+            #rel_chain_trace_paths = [rel(p) for p in chain_trace_plots]
+            trace_groups = build_trace_groups(pooled_trace_plots, chain_trace_plots, rel, type="trace")
+
+            pooled_pairwise_scatter_path = os.path.join(report_pngs_folder, group_name, config_descr, "pairwise_scatter", "pooled_*.html")
+            pooled_pairwise_scatter_plots = sorted(glob(pooled_pairwise_scatter_path), key=extract_varying_value_from_json)
+
+            chain_pairwise_scatter_path = os.path.join(report_pngs_folder, group_name, config_descr, "pairwise_scatter", "chain_*.html")
+            chain_pairwise_scatter_plots = sorted(glob(chain_pairwise_scatter_path), key=extract_varying_value_from_json)
+
+            scatter_groups = build_trace_groups(pooled_pairwise_scatter_plots, chain_pairwise_scatter_plots, rel, type="pairwise_scatter")
+
 
             # Load metadata
             metadata_path = os.path.join(
@@ -136,6 +157,11 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
                 "pooled_init_plot_paths": rel_pooled_init_paths,
                 "chain_init_plot_paths": rel_chain_init_paths,
                 "kde_init_triples": list(zip(rel_kde_paths, rel_pooled_init_paths, rel_chain_init_paths)),
+
+                #"pooled_trace_plot_paths": rel_pooled_trace_paths,
+                #"chain_trace_plot_paths": rel_chain_trace_paths,
+                "trace_groups": trace_groups,
+                "scatter_groups": scatter_groups
             }
 
             config_entries.append(entry)
@@ -351,10 +377,11 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                     df_pivot.index.to_numpy()[:, None], df_pivot.shape
                 ).ravel(), df_pivot.to_numpy().ravel()
 
-                # save data for a per-sampler scatter figure later
-                scatter_data.setdefault(metric, []).append(
-                    (sampler, xs, ys, color)
-                )
+                scatter_data.setdefault(metric, []).append({
+                    "sampler": sampler,
+                    "xs": xs, "ys": ys, "color": color,
+                    "medians": medians, "q25": q25, "q75": q75
+                })
 
             # Save global avg for CSV
             if sampler not in global_avg_dfs:
@@ -492,14 +519,81 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         if save_extra_scatter and metric in scatter_data:
             fig = go.Figure()
 
-            for sampler, xs, ys, color in scatter_data[metric]:
+            for entry in scatter_data[metric]:
+                sampler = entry["sampler"]
+
                 fig.add_trace(go.Scatter(
-                    x=xs,
-                    y=ys,
+                    x=entry["xs"], y=entry["ys"],
                     mode="markers",
-                    name=sampler,
-                    marker=dict(color=color, opacity=0.6, size=6)
+                    name=f"{entry['sampler']} pts",
+                    marker=dict(color=entry["color"], opacity=0.6, size=6)
                 ))
+
+                # median line
+                fig.add_trace(go.Scatter(
+                    x=entry["medians"].index,
+                    y=entry["medians"],
+                    mode="lines+markers",
+                    name=f"{entry['sampler']} median ",
+                    marker=dict(symbol="diamond", size=8, color=entry["color"]),
+                    legendgroup=sampler
+                ))
+
+                # IQR fill
+                fig.add_trace(go.Scatter(
+                    x=list(entry["medians"].index) + list(entry["medians"].index)[::-1],
+                    y=list(entry["q75"]) + list(entry["q25"])[::-1],
+                    fill="toself",
+                    fillcolor=entry["color"],       
+                    opacity=0.2,   
+                    line=dict(width=0),
+                    name=f"{entry['sampler']} IQR",
+                    legendgroup=sampler,
+                    showlegend=False 
+                ))
+
+
+            # grab the x-axis values (they’re the same for every sampler)
+            xvals = list(scatter_data[metric][0]["medians"].index)
+
+            # pick the right IID stats dicts
+            if metric == "wasserstein_distance":
+                iid_med = [iid_medians_dict_swd[k] for k in xvals]
+                iid_q25 = [iid_q25_dict_swd[k]      for k in xvals]
+                iid_q75 = [iid_q75_dict_swd[k]      for k in xvals]
+
+            elif metric == "mmd":
+                iid_med = [iid_medians_dict_mmd[k]   for k in xvals]
+                iid_q25 = [iid_q25_dict_mmd[k]       for k in xvals]
+                iid_q75 = [iid_q75_dict_mmd[k]       for k in xvals]
+
+            elif metric == "mmd_rff":
+                iid_med = [iid_medians_dict_mmd_rff[k] for k in xvals]
+                iid_q25 = [iid_q25_dict_mmd_rff[k]     for k in xvals]
+                iid_q75 = [iid_q75_dict_mmd_rff[k]     for k in xvals]
+
+            # IID median line
+            fig.add_trace(go.Scatter(
+                x=xvals,
+                y=iid_med,
+                mode="lines+markers",
+                name="IID median",
+                legendgroup="IID",                 # so med & IQR toggle together
+                line=dict(color="black", width=2), # solid black line
+                marker=dict(symbol="diamond-open", size=8, color="black"),
+            ))
+
+            # IID IQR fill
+            fig.add_trace(go.Scatter(
+                x=xvals + xvals[::-1],
+                y=iid_q75 + iid_q25[::-1],
+                fill="toself",
+                fillcolor="rgba(100,100,100,0.3)",        # light grey band
+                line=dict(width=0),                # no outline
+                name="IID IQR",
+                legendgroup="IID",
+                showlegend=False 
+            ))
 
             fig.update_layout(
                 title=f"All runs {metric.replace('_',' ').title()} ({runs} runs, {config_descr})",
@@ -509,9 +603,9 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                     itemclick="toggle",                     # click to show/hide one sampler
                     itemdoubleclick="toggleothers"          # dbl-click to isolate one
                 ),
-                width=None,
-                height=None,
-                margin=dict(l=40, r=20, t=50, b=40)
+                width=1100,
+                height=1100 * 9 / 16,      # same 16:9 ratio → 618.75 ≈ 619px
+                margin=dict(l=40, r=40, t=50, b=40)
             )
 
             # Save out as a standalone HTML
@@ -684,7 +778,124 @@ def plot_histogram(samples, title, save_path=None, save_path_png=None, posterior
         plt.show()
 
 
-def handle_trace_plots(trace, sampler_name, varying_attribute, value, save_path=None, show=False, save_individual=False):
+
+def describe_idata(idata, title):
+    print(f"\n=== {title} ===")
+    for group in idata._groups:
+        if getattr(idata, group) is None:
+            continue
+        ds = getattr(idata, group)
+        print(f"{group}:")
+        for var in ds.data_vars:
+            dims = ds[var].dims
+            shape = ds[var].shape
+            print(f"  {var} dims={dims} shape={shape}")
+    print()
+
+
+
+def plot_iid_vs_mcmc_colored(
+        mcmc_trace, 
+        iid_samples
+        ):            
+    """
+    Return a Figure that shows IID draws (red, chain 0) together with the
+    chains from `mcmc_trace` (blue tones).
+    """
+
+    # --- get reference shapes / names from the MCMC trace ------------
+    posterior_var   = mcmc_trace.posterior["posterior"]
+    n_draws_ref     = posterior_var.sizes["draw"]            # integer length
+    param_dims      = [d for d in posterior_var.dims if d not in ("chain", "draw")]
+    param_dim_name  = param_dims[0] if param_dims else None
+
+    # --- trim or thin IID draws to same length -----------------------
+    if iid_samples.shape[0] > n_draws_ref:
+         iid_samples = iid_samples[:n_draws_ref]
+    elif iid_samples.shape[0] < n_draws_ref:
+        raise ValueError(
+            f"IID draws ({iid_samples.shape[0]}) shorter than chain draws "
+            f"({n_draws_ref}); can't concat."
+        )
+
+
+    if param_dim_name is None:          # scalar case
+        iid_idata = az.from_dict(
+            posterior={"posterior": iid_samples[np.newaxis, ...]},  # (1,draw)
+        )
+    else:                               # vector case
+        dim = iid_samples.shape[1]
+        iid_idata = az.from_dict(
+            posterior={"posterior": iid_samples[np.newaxis, ...]},  # (1,draw,dim)
+            dims={"posterior": [param_dim_name]},
+            coords   ={param_dim_name: np.arange(dim)}
+        )
+
+    mcmc_posterior_only = az.InferenceData(posterior=mcmc_trace.posterior)
+
+    describe_idata(mcmc_posterior_only, "MCMC")
+    describe_idata(iid_idata,  "IID wrapper")
+
+
+    # concatenate chains = 1x iid + mcmc_chains
+    combined = az.concat([iid_idata, mcmc_posterior_only], dim="chain", reset_dim=True)
+
+    axes = az.plot_trace(combined, compact=True)
+
+    # # 3 ── recolour & relabel chain 0
+    # for ax in axes.flat:
+    #     first_line = ax.get_lines()[0]  
+    #     first_line.set_color("crimson")
+    #     first_line.set_label("IID")
+    #     ax.legend(fontsize="x-small")
+
+    for ax in axes.flat:
+        for line in ax.get_lines():
+            lbl = line.get_label()
+            if lbl == "chain 0":                  # IID
+                line.set_color("crimson")
+                line.set_linewidth(2.5)
+                line.set_linestyle("-")
+                line.set_alpha(1.0)
+                line.set_label("IID")
+            elif lbl.startswith("chain"):         # real MCMC
+                line.set_color("gray")
+                line.set_linewidth(1.0)
+                line.set_alpha(0.3)
+        ax.legend(fontsize="x-small")
+
+    return axes
+
+def plot_all_dims_combined(mcmc_trace, iid_samples, var_name="posterior"):
+    """
+    Compare the marginal of all dimensions combined in one histogram+KDE.
+    """
+    post = mcmc_trace.posterior[var_name]              # xarray DataArray
+    # flatten *all* axes into one 1‐D array
+    mcmc_flat = post.values.flatten()
+
+    # flatten your IID samples whatever their shape is
+    iid_flat = iid_samples.flatten()
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    # plot MCMC
+    ax.hist(mcmc_flat, bins=50, density=True,
+            alpha=0.2, color="crimson", label="MCMC (all dims)", zorder=3)
+    az.plot_kde(mcmc_flat, ax=ax, plot_kwargs={"color":"crimson"})
+    # plot IID
+    ax.hist(iid_flat, bins=50, density=True,
+            alpha=0.2, color="steelblue", label="IID (all dims)", zorder=1)
+    az.plot_kde(iid_flat, ax=ax, plot_kwargs={"color":"steelblue"}, fill_kwargs={"alpha": 0})
+
+    ax.set_title("Marginal distributions aggregated over all dimensions")
+    ax.set_xlabel(var_name)
+    ax.set_ylabel("density")
+    ax.legend()
+    return fig
+
+
+
+def handle_trace_plots(eval_level, trace, iid_samples, sampler_name, varying_attribute, value, save_path=None, png_path=None, show=False, save_individual=False):
     """
     Handles both displaying and saving trace plots.
 
@@ -699,48 +910,139 @@ def handle_trace_plots(trace, sampler_name, varying_attribute, value, save_path=
     """
     posterior_array = trace.posterior["posterior"]
     dim = posterior_array.shape[-1] if posterior_array.ndim == 3 else 1
+    #fig = plot_iid_vs_mcmc_colored(trace, iid_samples)
+    fig = plot_all_dims_combined(trace, iid_samples)
+    #fig = az.plot_trace(trace, compact=True) 
 
-    if posterior_array.ndim == 3 and dim > 1:
-        # Plot combined
-        fig = az.plot_trace(trace, compact=True)
-        if show:
-            plt.suptitle(f"Trace Plot ({sampler_name}, {varying_attribute} = {value})")
+    plt.suptitle(f"Trace Plot {eval_level} ({sampler_name}, {varying_attribute} = {value})")
+    plt.tight_layout()
+
+    if show:
+        plt.show()
+    if save_path:
+        plt.savefig(save_path, bbox_inches="tight")
+    if png_path:
+        plt.savefig(png_path, bbox_inches="tight")
+        metadata_path = png_path.replace(".png", ".json")
+        meta = {
+            "varying_value": value,       # e.g. 0.10, 0.25, …
+            "eval_level":   eval_level,   # "pooled" or "chain"
+            "sampler":      sampler_name  # "HMC", "NUTS", …
+        }
+        with open(metadata_path, "w") as f:
+            json.dump(meta, f)
+    plt.close()
+
+    # Plot per dimension
+    if posterior_array.ndim == 3 and dim > 1 and save_individual:
+        for i in range(dim):
+            dim_i = posterior_array[..., i]
+            fig = az.plot_trace({f"posterior_{i}": dim_i}, compact=True)
+            title = f"Trace Plot of posterior[{i}] {eval_level} ({sampler_name}, {varying_attribute} = {value})"
+
+            plt.suptitle(title)
             plt.tight_layout()
-            plt.show()
-        if save_path:
-            plt.savefig(save_path, bbox_inches="tight")
+
+            if show:
+                plt.show()
+
+            if save_path:
+                filename = save_path.replace(".pdf", f"_dim_{i}.pdf")
+                plt.savefig(filename, bbox_inches="tight")
+
             plt.close()
 
-        # Plot per dimension
-        if save_individual or show:
-            for i in range(dim):
-                dim_i = posterior_array[..., i]
-                fig = az.plot_trace({f"posterior_{i}": dim_i})
-                title = f"Trace Plot of posterior[{i}] ({sampler_name}, {varying_attribute} = {value})"
-                if show:
-                    plt.suptitle(title)
-                    plt.tight_layout()
-                    plt.show()
-                if save_path and save_individual:
-                    filename = save_path.replace(".pdf", f"_dim_{i}.pdf")
-                    plt.suptitle(title)
-                    plt.tight_layout()
-                    plt.savefig(filename, bbox_inches="tight")
-                    plt.close()
-
-    else:
-        fig = az.plot_trace(trace, compact=True)
-        if show:
-            plt.suptitle(f"Trace Plot ({sampler_name}, {varying_attribute} = {value})")
-            plt.tight_layout()
-            plt.show()
-        if save_path:
-            plt.suptitle(f"Trace Plot ({sampler_name}, {varying_attribute} = {value})")
-            plt.tight_layout()
-            plt.savefig(save_path, bbox_inches="tight")
-            plt.close()
 
 
+def plot_pairwise_scatter(
+    eval_level,
+    mcmc_trace,
+    iid_samples,
+    sampler_name,
+    varying_attribute,
+    value,
+    var_name="posterior",
+    marker_size=6,
+    marker_opacity=0.6,
+    html_path=None,
+):
+    
+    dims= (0, 1)  # default to first two dimensions
+    
+    # 1) extract and flatten MCMC samples
+    post = mcmc_trace.posterior[var_name].values
+    # post.shape == (n_chains, n_draws, D)
+    n_chains, n_draws, D = post.shape
+    if max(dims) >= D:
+        raise ValueError(f"Requested dims {dims}, but posterior has only {D} dimensions.")
+    
+    mcmc_flat = post.reshape(n_chains * n_draws, D)
+    x_mcmc = mcmc_flat[:, dims[0]]
+    y_mcmc = mcmc_flat[:, dims[1]]
+
+    # 2) flatten IID samples
+    iid_arr = np.asarray(iid_samples)
+    if iid_arr.ndim != 2 or iid_arr.shape[1] <= max(dims):
+        raise ValueError(
+            f"IID samples should be 2D with >= {max(dims)+1} columns; got shape {iid_arr.shape}."
+        )
+    iid_flat = iid_arr.reshape(-1, iid_arr.shape[1])
+    x_iid = iid_flat[:, dims[0]]
+    y_iid = iid_flat[:, dims[1]]
+
+    # 3) build Plotly figure
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=x_mcmc,
+            y=y_mcmc,
+            mode="markers",
+            name="MCMC",
+            marker=dict(color="crimson", opacity=marker_opacity, size=marker_size),
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=x_iid,
+            y=y_iid,
+            mode="markers",
+            name="IID",
+            marker=dict(color="steelblue", opacity=marker_opacity, size=marker_size),
+        )
+    )
+
+    fig.update_layout(
+        title=f" {eval_level} ({sampler_name}, {varying_attribute} = {value}  : dim {dims[0]} vs {dims[1]}",
+        xaxis_title=f"Dimension {dims[0]}",
+        yaxis_title=f"Dimension {dims[1]}",
+        legend=dict(
+            itemclick="toggle",          # click to show/hide one sampler
+            itemdoubleclick="toggleothers"  # dbl-click to isolate one
+        ),
+        margin=dict(l=40, r=20, t=50, b=40),
+        template="simple_white",
+    )
+
+    # 4) optional: save standalone HTML
+    if html_path:
+        fig.write_html(
+            html_path,
+            include_plotlyjs="cdn",
+            full_html=True,
+            config={"responsive": True},
+        )
+        
+        metadata_path = html_path.replace(".html", ".json")
+        meta = {
+            "varying_value": value,       # e.g. 0.10, 0.25, …
+            "eval_level":   eval_level,   # "pooled" or "chain"
+            "sampler":      sampler_name  # "HMC", "NUTS", …
+        }
+        with open(metadata_path, "w") as f:
+            json.dump(meta, f)
+    plt.close()
+
+    
 
 def save_sample_info(sample_info, json_path, plot_path, png_path=None, varying_attribute=None, value=None, label="Samples", case=None):
     """

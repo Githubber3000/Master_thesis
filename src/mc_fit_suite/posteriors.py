@@ -2,7 +2,10 @@ from __future__ import annotations
 import os
 import numpy as np
 import pymc as pm
+print(pm.__version__)
 import pytensor.tensor as pt
+import arviz as az
+import matplotlib.pyplot as plt
 
 from .sampling      import get_logp_func
 from .utils         import create_directories, get_posterior_dim
@@ -25,7 +28,36 @@ class PosteriorExample:
         with self.model:
 
             if sampler_name == "SMC":
+
                 trace = pm.sample_smc(num_samples, chains=num_chains, progressbar=False, random_seed=run_random_seed)
+
+                # # Print available diagnostic variables
+                # print("sample_stats variables:", list(trace.sample_stats.data_vars))
+
+                # # Print the beta schedule for each chain (temperature progression)
+                # print("Beta schedule:")
+                # print(trace.sample_stats["beta"])
+
+                # # Print the acceptance rates per chain and stage
+                # print("Acceptance rates:")
+                # print(trace.sample_stats["accept_rate"])
+
+                # # Print the log marginal likelihood (if available)
+                # print("Log marginal likelihood:")
+                # print(trace.sample_stats["log_marginal_likelihood"])
+
+                # if run_id == 1:
+
+                #     Plot how inverse temperature evolves (more stages = more gradual)
+                #     az.plot_ess(trace, kind="evolution")
+                #     plt.title("ESS Evolution")
+                #     plt.show()
+
+                #     Plot posterior distributions
+                #     az.plot_posterior(trace)
+                #     plt.show()
+
+
             else:
                 
                 # Define which sampler to use
