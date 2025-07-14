@@ -3,7 +3,7 @@ save_traces: false                                         # if True, save trace
 trace_plots: first_run_only                                # options: "none", "first_run_only", "all"
 save_individual_traceplots_per_dim: false                  # if True and posterior multidimensional, save individual trace plots for each dimension
 plot_traces_in_notebook: false                             # if True, plot traces in notebook            
-samplers: ["HMC", "Metro", "DEMetro_Z", "SMC"]             # options: "Metro", "HMC", "DEMetro", "DEMetro_Z"
+samplers: ["HMC", "Metro", "DEMetro_Z", "SMC"  ]           # options: "Metro", "HMC", "DEMetro", "DEMetro_Z"
 logging_level: ERROR                                       # options: DEBUG, INFO, ERROR
 plot_first_sample: true                                    # if True, plot the first sample of each chain
 save_extra_scatter: true                                  # if True, save additional scatter plots for each sampler

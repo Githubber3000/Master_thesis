@@ -91,7 +91,7 @@ def build_trace_groups(pooled_plots, chain_plots, rel, type="trace"):
     pooled = {}  
     chain  = {}
 
-    # --- populate pooled dict ----------------------------------------
+    # populate pooled dict 
     for p in pooled_plots:
         meta = load_meta(p)                      
         raw_value   = meta["varying_value"]
@@ -102,7 +102,7 @@ def build_trace_groups(pooled_plots, chain_plots, rel, type="trace"):
             pooled[value] = {}
         pooled[value][sampler] = rel(p)
 
-    # --- populate chain dict -----------------------------------------
+    # populate chain dict
     for p in chain_plots:
         meta = load_meta(p)
         raw_value   = meta["varying_value"]
@@ -113,11 +113,11 @@ def build_trace_groups(pooled_plots, chain_plots, rel, type="trace"):
             chain[value] = {}
         chain[value][sampler] = rel(p)
 
-    # --- merge into ordered list of groups ---------------------------
+    # merge into ordered list of groups
     groups = []
-    for value in sorted(pooled):   # all distinct values, sorted
+    for value in sorted(pooled):   
         samplers_block = []
-        for s in sampler_order:                      # fixed sampler order
+        for s in sampler_order:                      
             if s in pooled[value]:
                 samplers_block.append({
                     "sampler":   s,

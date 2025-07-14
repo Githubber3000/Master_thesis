@@ -1,0 +1,123 @@
+group_name: mm_loc_test
+configs:
+
+  - config_descr: Line_3_Modes_2D
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal", "MvNormal"]
+    component_params:
+      - cov: ID_2
+      - mu: [0, 0]
+        cov: ID_2
+      - mu: [8, 0]
+        cov: ID_2
+    weights: [0.33, 0.33, 0.33]
+    varying_attribute: mu
+    varying_values: [[-8, 0]]
+    varying_component: 0
+
+  - config_descr: Simplex_3_Modes_2D
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal", "MvNormal"]
+    component_params:
+      - cov: ID_2
+      - mu: [-2.309401, 4.0]
+        cov: ID_2
+      - mu: [-2.309401, -4.0]
+        cov: ID_2
+    weights: [0.33, 0.33, 0.33]
+    varying_attribute: mu
+    varying_values: [[4.618802, 0.0]]
+    varying_component: 0
+
+  - config_descr: Line_5_Modes_4D
+    posterior_type: Mixture
+    component_types:
+      ["MvNormal","MvNormal","MvNormal","MvNormal","MvNormal"]
+    component_params:
+      - mu: [ -16,  0, 0, 0 ]
+        cov: ID_4
+      - mu: [  -8,  0, 0, 0 ]
+        cov: ID_4
+      - mu: [   0,  0, 0, 0 ]
+        cov: ID_4
+      - mu: [   8,  0, 0, 0 ]
+        cov: ID_4
+      - mu: [  16,  0, 0, 0 ]
+        cov: ID_4
+    weights: [0.20, 0.20, 0.20, 0.20, 0.20]
+    varying_attribute: mu
+    varying_values:
+      - [ -16,  0, 0, 0 ]
+    varying_component: 0
+
+  - config_descr: Simplex_5_Modes_4D
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal", "MvNormal", "MvNormal", "MvNormal"]
+    component_params:
+      - mu: [  0.000000,  0.000000,  0.000000, -5.059644 ]
+        cov: ID_4
+      - mu: [ -3.810317,  2.528724,  1.756997,  1.264911 ]
+        cov: ID_4
+      - mu: [ -0.181444, -4.600403,  1.674328,  1.264911 ]
+        cov: ID_4
+      - mu: [ -0.181444, -0.035591, -4.895489,  1.264911 ]
+        cov: ID_4
+      - mu: [  4.173205,  2.107270,  1.464164,  1.264911 ]
+        cov: ID_4
+    weights: [0.20, 0.20, 0.20, 0.20, 0.20]
+    varying_attribute: mu
+    varying_values:
+      - [  0.000000,  0.000000,  0.000000, -5.059644 ]
+    varying_component: 0
+
+  - config_descr: Line_6_Modes_5D
+    posterior_type: Mixture
+    component_types:
+      ["MvNormal","MvNormal","MvNormal","MvNormal","MvNormal","MvNormal"]
+    component_params:
+      - mu: [ -20,  0, 0, 0, 0 ]
+        cov: ID_5
+      - mu: [ -12,  0, 0, 0, 0 ]
+        cov: ID_5
+      - mu: [  -4,  0, 0, 0, 0 ]
+        cov: ID_5
+      - mu: [   4,  0, 0, 0, 0 ]
+        cov: ID_5
+      - mu: [  12,  0, 0, 0, 0 ]
+        cov: ID_5
+      - mu: [  20,  0, 0, 0, 0 ]
+        cov: ID_5
+    weights: [0.1667, 0.1667, 0.1667, 0.1667, 0.1667, 0.1667]
+    varying_attribute: mu
+    varying_values:
+      - [ -20,  0, 0, 0, 0 ]
+    varying_component: 0
+
+  - config_descr: Simplex_6_Modes_5D
+    posterior_type: Mixture
+    component_types:
+      ["MvNormal","MvNormal","MvNormal","MvNormal","MvNormal","MvNormal"]
+    component_params:
+      - mu: [ 0.000000,  0.000000, -5.163978,  0.000000,  0.000000 ]
+        cov: ID_5
+      - mu: [ 0.688077, -0.084829,  1.032796, -4.990158,  0.466562 ]
+        cov: ID_5
+      - mu: [ 4.394785,  0.327205,  1.032796,  1.714687, -1.799625 ]
+        cov: ID_5
+      - mu: [ -2.468947,  4.239863,  1.032796,  0.780392, -0.958567 ]
+        cov: ID_5
+      - mu: [ -2.468947, -3.631096,  1.032796,  0.780392, -2.389650 ]
+        cov: ID_5
+      - mu: [ -0.144968, -0.851142,  1.032796,  1.714687,  4.681281 ]
+        cov: ID_5
+    weights: [0.1667, 0.1667, 0.1667, 0.1667, 0.1667, 0.1667]
+    varying_attribute: mu
+    varying_values:
+      - [ 0.000000,  0.000000, -5.163978,  0.000000,  0.000000 ]
+    varying_component: 0
+
+
+
+
+
+
