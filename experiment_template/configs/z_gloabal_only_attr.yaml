@@ -27,7 +27,7 @@ configs:
   - config_descr: Varing_only_Tails
     posterior_type: StudentT
     varying_attribute: nu
-    varying_values: [2.1, 2.5, 3, 3,5, 4, 5, 10, 30]
+    varying_values: [2.1, 2.5, 3, 3.5, 4, 5, 10, 30]
     sigma: 1
     mu: 0
 

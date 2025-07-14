@@ -86,9 +86,9 @@ def eval_trace(
     # Save trace plots to PDF if requested
     if trace_plot_mode == "all" or (trace_plot_mode == "first_run_only" and run_id == 1):
 
-        save_path = os.path.join(folders["var_attr_folder"],f"{eval_level}_{sampler_name}_{value:.4g}_trace_plot.pdf")
-        png_path = os.path.join(folders["png_folder_traces"], f"{eval_level}_{sampler_name}_{value:.4g}_trace_plot.png")
-        html_path = os.path.join(folders["png_folder_scatter"], f"{eval_level}_{sampler_name}_{value:.4g}_pairwise_scatter.html")
+        save_path = os.path.join(folders["var_attr_folder"],f"{eval_level}_{sampler_name}_{value}_trace_plot.pdf")
+        png_path = os.path.join(folders["png_folder_traces"], f"{eval_level}_{sampler_name}_{value}_trace_plot.png")
+        html_path = os.path.join(folders["png_folder_scatter"], f"{eval_level}_{sampler_name}_{value}_pairwise_scatter.html")
         dim = get_posterior_dim(posterior_type, posterior_kwargs)
 
         handle_trace_plots(

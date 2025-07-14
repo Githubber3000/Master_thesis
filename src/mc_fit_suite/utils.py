@@ -94,7 +94,8 @@ def build_trace_groups(pooled_plots, chain_plots, rel, type="trace"):
     # --- populate pooled dict ----------------------------------------
     for p in pooled_plots:
         meta = load_meta(p)                      
-        value   = meta["varying_value"]
+        raw_value   = meta["varying_value"]
+        value = tuple(raw_value) if isinstance(raw_value, (list, tuple)) else raw_value
         sampler = meta["sampler"]
 
         if value not in pooled:                   
@@ -104,7 +105,8 @@ def build_trace_groups(pooled_plots, chain_plots, rel, type="trace"):
     # --- populate chain dict -----------------------------------------
     for p in chain_plots:
         meta = load_meta(p)
-        value   = meta["varying_value"]
+        raw_value   = meta["varying_value"]
+        value = tuple(raw_value) if isinstance(raw_value, (list, tuple)) else raw_value
         sampler = meta["sampler"]
 
         if value not in chain:
