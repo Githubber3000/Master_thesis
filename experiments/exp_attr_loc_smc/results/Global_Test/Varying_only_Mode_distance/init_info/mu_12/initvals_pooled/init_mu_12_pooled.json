@@ -1,0 +1,42 @@
+{
+    "run_id": 1,
+    "case": "multimodal",
+    "dim": 1,
+    "means_array": [
+        [
+            0
+        ],
+        [
+            12
+        ]
+    ],
+    "min_mode": [
+        0
+    ],
+    "max_mode": [
+        12
+    ],
+    "border": [
+        10.0
+    ],
+    "low": [
+        -10.0
+    ],
+    "high": [
+        22.0
+    ],
+    "samples": [
+        {
+            "posterior": 21.43716738335903
+        },
+        {
+            "posterior": 20.10087612232584
+        },
+        {
+            "posterior": 17.146728119458963
+        },
+        {
+            "posterior": 6.047112421355084
+        }
+    ]
+}

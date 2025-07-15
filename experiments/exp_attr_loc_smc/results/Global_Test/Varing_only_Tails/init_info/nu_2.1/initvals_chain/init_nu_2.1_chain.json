@@ -1,0 +1,21 @@
+{
+    "run_id": 1,
+    "case": "unimodal",
+    "dim": 1,
+    "low": [
+        -100
+    ],
+    "high": [
+        100
+    ],
+    "means_array": [
+        [
+            0
+        ]
+    ],
+    "samples": [
+        {
+            "posterior": 74.35039573455643
+        }
+    ]
+}
