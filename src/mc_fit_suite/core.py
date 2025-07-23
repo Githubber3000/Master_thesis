@@ -3,7 +3,6 @@ import copy, logging, time, os
 import arviz as az
 import numpy as np
 import pandas as pd
-import warnings
 from tqdm import tqdm
 
 

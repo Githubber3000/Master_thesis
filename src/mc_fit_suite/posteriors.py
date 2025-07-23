@@ -2,7 +2,6 @@ from __future__ import annotations
 import os
 import numpy as np
 import pymc as pm
-print(pm.__version__)
 import pytensor.tensor as pt
 import arviz as az
 import matplotlib.pyplot as plt

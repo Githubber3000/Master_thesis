@@ -292,6 +292,11 @@ def compute_and_store_iid_stats(
         
 
     iid_ref_stats_dict[value] = {
+        # full lists of distances (needed for scatter plot)
+        "runs_swd":      np.asarray(ref_swd_values,     dtype=float), 
+        "runs_mmd":      np.asarray(ref_mmd_values,     dtype=float) if do_mmd else np.empty(0),  
+        "runs_mmd_rff":  np.asarray(ref_mmd_rff_values, dtype=float) if do_mmd_rff else np.empty(0),  
+
         "mean_swd": np.mean(ref_swd_values),
         "std_swd": np.std(ref_swd_values, ddof=1),
         "median_swd": np.median(ref_swd_values),

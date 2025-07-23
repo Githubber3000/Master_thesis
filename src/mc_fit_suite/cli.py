@@ -72,7 +72,7 @@ def main(
             exp_path = base / f"exp_{experiment_name}"
 
 
-    # 4) Decide which configs to run (union of existing + template)
+    # Decide which configs to run (union of existing + template)
     exp_cfg_dir      = base / f"exp_{experiment_name}" / "configs"
     template_cfg_dir = template / "configs"
 

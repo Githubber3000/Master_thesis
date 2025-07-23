@@ -1,7 +1,6 @@
 from __future__ import annotations
 import os, shutil, traceback, humanize
 import sys
-import json
 import time
 from tqdm import tqdm
 from datetime import datetime

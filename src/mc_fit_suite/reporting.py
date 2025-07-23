@@ -255,9 +255,12 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
 
     attribute_label = varying_attribute.replace("_", " ").title()
 
-    # New figure set (line + fill)
-    fig_ax_pairs_shaded = {metric: plt.subplots(figsize=(10, 6)) for metric in metrics}
-    fig_g, ax_g = plt.subplots(figsize=(10, 6))  # Glass delta for wasserstein_distance
+    # Figure for shaded plots (median + IQR)
+    fig_ax_pairs_shaded = {m: plt.subplots(figsize=(10, 6)) for m in metrics}
+    # Figure for mean of samplers and mean + sd of IID baseline
+    fig_ax_pairs_mean = {m: plt.subplots(figsize=(10, 6)) for m in metrics}
+    # Figure for Glass delta of wasserstein_distance
+    fig_g, ax_g = plt.subplots(figsize=(10, 6))
 
     if do_mmd:
         fig_g_mmd, ax_g_mmd = plt.subplots(figsize=(10, 6))  # Glass delta for mmd
@@ -274,6 +277,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     iid_medians_dict_swd = {}
     iid_q25_dict_swd = {}
     iid_q75_dict_swd = {}
+    iid_runs_dict_swd = {} 
 
     if do_mmd:
         iid_means_dict_mmd = {}
@@ -281,6 +285,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         iid_medians_dict_mmd = {}
         iid_q25_dict_mmd = {}
         iid_q75_dict_mmd = {}
+        iid_runs_dict_mmd = {}
 
     if do_mmd_rff:
         iid_means_dict_mmd_rff = {}
@@ -288,6 +293,8 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         iid_medians_dict_mmd_rff = {}
         iid_q25_dict_mmd_rff = {}
         iid_q75_dict_mmd_rff = {}
+        iid_runs_dict_mmd_rff = {}
+
 
     for key in df_all_runs[varying_attribute].unique():
         k = tuple(key) if isinstance(key, np.ndarray) else key
@@ -299,6 +306,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         iid_medians_dict_swd[k] = iid_entry["median_swd"]
         iid_q25_dict_swd[k] = iid_entry["q25_swd"]
         iid_q75_dict_swd[k] = iid_entry["q75_swd"]
+        iid_runs_dict_swd[k] = iid_entry["runs_swd"]
 
         if do_mmd:
             iid_means_dict_mmd[k] = iid_entry["mean_mmd"]
@@ -306,6 +314,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             iid_medians_dict_mmd[k] = iid_entry["median_mmd"]
             iid_q25_dict_mmd[k] = iid_entry["q25_mmd"]
             iid_q75_dict_mmd[k] = iid_entry["q75_mmd"]
+            iid_runs_dict_mmd[k] = iid_entry["runs_mmd"]
 
         if do_mmd_rff:
             iid_means_dict_mmd_rff[k] = iid_entry["mean_mmd_rff"]
@@ -313,10 +322,12 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             iid_medians_dict_mmd_rff[k] = iid_entry["median_mmd_rff"]
             iid_q25_dict_mmd_rff[k] = iid_entry["q25_mmd_rff"]
             iid_q75_dict_mmd_rff[k] = iid_entry["q75_mmd_rff"]
+            iid_runs_dict_mmd_rff[k] = iid_entry["runs_mmd_rff"]
 
 
     for metric in metrics:
         fig_shaded, ax_shaded = fig_ax_pairs_shaded[metric]
+        fig_mean,   ax_mean   = fig_ax_pairs_mean[metric] 
 
         # For each sampler, plot its line for this metric
         for sampler in df_all_runs["sampler"].unique():
@@ -346,6 +357,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             
             # Compute mean+std and median+quantiles 
             means = df_pivot.mean(axis=1)
+            stds = df_pivot.std(axis=1, ddof=1) 
             medians = df_pivot.median(axis=1)
             q25 = df_pivot.quantile(0.25, axis=1)
             q75 = df_pivot.quantile(0.75, axis=1)
@@ -353,13 +365,17 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             # Custom ordering based on config (only if needed)
             if isinstance(medians.index[0], str):
                 custom_order = [str(t) for t in varying_values]
-                means = means.reindex(custom_order) 
+                means = means.reindex(custom_order)
+                stds = stds.reindex(custom_order) 
                 medians = medians.reindex(custom_order)
                 q25 = q25.reindex(custom_order)
                 q75 = q75.reindex(custom_order)
                 
             # Plot median line
             ax_shaded.plot(medians.index, medians, "o-", label=sampler, color=color)
+
+            # Plot mean line
+            ax_mean.plot(means.index, means, "o-", label=sampler, color=color)
 
             # Plot uncertainty: interquartile range (q25–q75)
             if len(medians.index) > 1:
@@ -380,7 +396,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 scatter_data.setdefault(metric, []).append({
                     "sampler": sampler,
                     "xs": xs, "ys": ys, "color": color,
-                    "medians": medians, "q25": q25, "q75": q75
+                    "medians": medians, "q25": q25, "q75": q75, "means": means, "stds": stds
                 })
 
             # Save global avg for CSV
@@ -416,7 +432,6 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             
             elif metric == "mmd":
                 # Get IID mean and std for this varying attribute value
-
 
                 iid_mean_mmd = pd.Series(
                     [iid_means_dict_mmd[k] for k in means.index],
@@ -475,11 +490,25 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             iid_q25 = np.array([iid_q25_dict_swd[k] for k in medians.index])
             iid_q75 = np.array([iid_q75_dict_swd[k] for k in medians.index])
 
+            iid_means = np.array([iid_means_dict_swd[k] for k in medians.index])
+            iid_stds = np.array([iid_stds_dict_swd[k] for k in medians.index])
+
+            # Plot IID median line + IQR fill
             ax_shaded.plot(medians.index, iid_medians, "o--", label="IID Reference", color="black")
             ax_shaded.fill_between(
                 medians.index,
                 iid_q25,
                 iid_q75,
+                color="black",
+                alpha=0.1,
+            )
+
+            # Plot IID mean line + std fill
+            ax_mean.plot(means.index, iid_means, "o--", label="IID Reference", color="black") 
+            ax_mean.fill_between(
+                means.index,
+                iid_means + iid_stds,
+                iid_means - iid_stds,
                 color="black",
                 alpha=0.1,
             )
@@ -490,11 +519,23 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             iid_q25 = np.array([iid_q25_dict_mmd[k] for k in medians.index])
             iid_q75 = np.array([iid_q75_dict_mmd[k] for k in medians.index])
 
+            iid_means = np.array([iid_means_dict_mmd[k] for k in medians.index])
+            iid_stds = np.array([iid_stds_dict_mmd[k] for k in medians.index])
+
             ax_shaded.plot(medians.index, iid_medians, "o--", label="IID Reference", color="black")
             ax_shaded.fill_between(
                 medians.index,
                 iid_q25,
                 iid_q75,
+                color="black",
+                alpha=0.1,
+            )
+
+            ax_mean.plot(means.index, iid_means, "o--", label="IID Reference", color="black")
+            ax_mean.fill_between(
+                means.index,
+                iid_means + iid_stds,
+                iid_means - iid_stds,
                 color="black",
                 alpha=0.1,
             )
@@ -505,11 +546,23 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             iid_q25 = np.array([iid_q25_dict_mmd_rff[k] for k in medians.index])
             iid_q75 = np.array([iid_q75_dict_mmd_rff[k] for k in medians.index])
 
+            iid_means = np.array([iid_means_dict_mmd_rff[k] for k in medians.index])
+            iid_stds = np.array([iid_stds_dict_mmd_rff[k] for k in medians.index])
+
             ax_shaded.plot(medians.index, iid_medians, "o--", label="IID Reference", color="black")
             ax_shaded.fill_between(
                 medians.index,
                 iid_q25,
                 iid_q75,
+                color="black",
+                alpha=0.1,
+            )
+
+            ax_mean.plot(means.index, iid_means, "o--", label="IID Reference", color="black")
+            ax_mean.fill_between(
+                means.index,
+                iid_means + iid_stds,
+                iid_means - iid_stds,
                 color="black",
                 alpha=0.1,
             )
@@ -522,11 +575,15 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             for entry in scatter_data[metric]:
                 sampler = entry["sampler"]
 
+                median_legend  = f"{sampler}-median"      
+                mean_legend = f"{sampler}-mean" 
+
                 fig.add_trace(go.Scatter(
                     x=entry["xs"], y=entry["ys"],
                     mode="markers",
-                    name=f"{entry['sampler']} pts",
-                    marker=dict(color=entry["color"], opacity=0.6, size=6)
+                    name=f"{sampler} pts",
+                    marker=dict(color=entry["color"], opacity=0.6, size=6),
+                    visible="legendonly"
                 ))
 
                 # median line
@@ -534,9 +591,9 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                     x=entry["medians"].index,
                     y=entry["medians"],
                     mode="lines+markers",
-                    name=f"{entry['sampler']} median ",
+                    name=f"{sampler} median ",
                     marker=dict(symbol="diamond", size=8, color=entry["color"]),
-                    legendgroup=sampler
+                    legendgroup=median_legend
                 ))
 
                 # IQR fill
@@ -547,40 +604,89 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                     fillcolor=entry["color"],       
                     opacity=0.2,   
                     line=dict(width=0),
-                    name=f"{entry['sampler']} IQR",
-                    legendgroup=sampler,
+                    name=f"{sampler} IQR",
+                    legendgroup=median_legend,
                     showlegend=False 
                 ))
 
+                # mean line
+                fig.add_trace(go.Scatter(
+                    x=entry["medians"].index,
+                    y=entry["means"],
+                    mode="lines+markers",
+                    name=f"{sampler} mean",
+                    line=dict(dash="dash", color=entry["color"], width=2),
+                    marker=dict(symbol="triangle-up", size=8, color=entry["color"]),
+                    legendgroup=mean_legend,
+                    visible="legendonly"
+                ))
 
-            # grab the x-axis values (they’re the same for every sampler)
+                # std fill
+                fig.add_trace(go.Scatter(
+                    x=list(entry["medians"].index) + list(entry["medians"].index)[::-1],
+                    y=list(entry["means"] + entry["stds"]) + list(entry["means"] - entry["stds"])[::-1],
+                    fill="toself",
+                    fillcolor=entry["color"],       
+                    opacity=0.1,   
+                    line=dict(width=0),
+                    name=f"{sampler} ±1 SD",
+                    legendgroup=mean_legend,
+                    showlegend=False,
+                    visible="legendonly" 
+                ))
+
+            # grab the x-axis values
             xvals = list(scatter_data[metric][0]["medians"].index)
 
             # pick the right IID stats dicts
             if metric == "wasserstein_distance":
-                iid_med = [iid_medians_dict_swd[k] for k in xvals]
-                iid_q25 = [iid_q25_dict_swd[k]      for k in xvals]
-                iid_q75 = [iid_q75_dict_swd[k]      for k in xvals]
+                iid_median = [iid_medians_dict_swd[k]  for k in xvals]
+                iid_q25 = [iid_q25_dict_swd[k]         for k in xvals]
+                iid_q75 = [iid_q75_dict_swd[k]         for k in xvals]
+                iid_mean = [iid_means_dict_swd[k]      for k in xvals]
+                iid_std = [iid_stds_dict_swd[k]        for k in xvals]
+                iid_runs = [iid_runs_dict_swd[k]       for k in xvals]
 
             elif metric == "mmd":
-                iid_med = [iid_medians_dict_mmd[k]   for k in xvals]
-                iid_q25 = [iid_q25_dict_mmd[k]       for k in xvals]
-                iid_q75 = [iid_q75_dict_mmd[k]       for k in xvals]
+                iid_median = [iid_medians_dict_mmd[k]  for k in xvals]
+                iid_q25 = [iid_q25_dict_mmd[k]         for k in xvals]
+                iid_q75 = [iid_q75_dict_mmd[k]         for k in xvals]
+                iid_mean = [iid_means_dict_mmd[k]      for k in xvals]
+                iid_std = [iid_stds_dict_mmd[k]        for k in xvals]
+                iid_runs = [iid_runs_dict_mmd[k]       for k in xvals]
 
             elif metric == "mmd_rff":
-                iid_med = [iid_medians_dict_mmd_rff[k] for k in xvals]
-                iid_q25 = [iid_q25_dict_mmd_rff[k]     for k in xvals]
-                iid_q75 = [iid_q75_dict_mmd_rff[k]     for k in xvals]
+                iid_median = [iid_medians_dict_mmd_rff[k]  for k in xvals]
+                iid_q25 = [iid_q25_dict_mmd_rff[k]         for k in xvals]
+                iid_q75 = [iid_q75_dict_mmd_rff[k]         for k in xvals]
+                iid_mean = [iid_means_dict_mmd_rff[k]      for k in xvals]
+                iid_std = [iid_stds_dict_mmd_rff[k]        for k in xvals]
+                iid_runs = [iid_runs_dict_mmd_rff[k]       for k in xvals]
+
+            # Flatten xs & ys of IID runs
+            xs_iid, ys_iid = [], []
+            for x, arr in zip(xvals, iid_runs):
+                xs_iid.extend([x] * len(arr))  
+                ys_iid.extend(arr)               
+
+            fig.add_trace(go.Scatter(
+                x=xs_iid,
+                y=ys_iid,
+                mode="markers",
+                name="IID pts",
+                marker=dict(color="black", opacity=0.6, size=6),
+                visible="legendonly"
+            ))
 
             # IID median line
             fig.add_trace(go.Scatter(
                 x=xvals,
-                y=iid_med,
+                y=iid_median,
                 mode="lines+markers",
-                name="IID median",
-                legendgroup="IID",                 # so med & IQR toggle together
-                line=dict(color="black", width=2), # solid black line
-                marker=dict(symbol="diamond-open", size=8, color="black"),
+                name= f"IID median",
+                legendgroup="IID_median",                 
+                line=dict(color="black", width=2), 
+                marker=dict(symbol="diamond", size=8, color="black"),
             ))
 
             # IID IQR fill
@@ -588,11 +694,36 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 x=xvals + xvals[::-1],
                 y=iid_q75 + iid_q25[::-1],
                 fill="toself",
-                fillcolor="rgba(100,100,100,0.3)",        # light grey band
-                line=dict(width=0),                # no outline
+                fillcolor="rgba(100,100,100,0.3)",       
+                line=dict(width=0),               
                 name="IID IQR",
-                legendgroup="IID",
+                legendgroup="IID_median",
                 showlegend=False 
+            ))
+
+            # IID mean line
+            fig.add_trace(go.Scatter(
+                x=xvals,
+                y=iid_mean,  
+                mode="lines+markers",
+                name="IID mean",
+                legendgroup="IID_mean",                 
+                line=dict(dash="dash", color="black", width=2), 
+                marker=dict(symbol="triangle-up-open", size=8, color="black"),
+                visible="legendonly"
+            ))
+
+            # IID std fill
+            fig.add_trace(go.Scatter(
+                x=xvals + xvals[::-1],
+                y=[m + s for m, s in zip(iid_mean, iid_std)] + [m - s for m, s in zip(iid_mean, iid_std)][::-1],
+                fill="toself",
+                fillcolor="rgba(0,0,0,0.25)",       
+                line=dict(width=0),             
+                name="IID ±1 SD",
+                legendgroup="IID_mean",
+                showlegend=False,
+                visible="legendonly"
             ))
 
             fig.update_layout(
@@ -600,12 +731,59 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 xaxis_title=attribute_label,
                 yaxis_title=metric.replace('_',' ').title(),
                 legend=dict(
-                    itemclick="toggle",                     # click to show/hide one sampler
-                    itemdoubleclick="toggleothers"          # dbl-click to isolate one
+                    itemclick="toggle",                     
+                    itemdoubleclick="toggleothers"          
                 ),
                 width=1100,
-                height=1100 * 9 / 16,      # same 16:9 ratio → 618.75 ≈ 619px
+                height=1100 * 9 / 16,     
                 margin=dict(l=40, r=40, t=50, b=40)
+            )
+
+            median_mask_on  = [
+                (" median" in t.name and "mean" not in t.name) or ("IQR"  in t.name)
+                for t in fig.data
+            ]
+
+            median_mask_off = ["legendonly" if v else None for v in median_mask_on]
+
+            mean_mask_on    = [
+                (" mean" in t.name) or ("IID ±1 SD" in t.name)    
+                for t in fig.data
+            ]
+
+            mean_mask_off   = ["legendonly" if v else None for v in mean_mask_on]
+
+            fig.update_layout(
+                updatemenus=[dict(
+                    type="buttons",
+                    direction="left",
+                    x=0.99, y=1.15,
+                    showactive=False,
+                    xanchor="right",       
+                    yanchor="top",
+                    pad=dict(l=12, r=12, t=4, b=4),
+                    bgcolor="rgba(19, 143, 214, 0.38)",
+                    bordercolor="darkgrey",
+                    borderwidth=1,
+                    font=dict(size=12),
+
+
+                    buttons=[
+                        dict(
+                            label="md",
+                            method="update",
+                            args=[{"visible": median_mask_on}],
+                            args2=[{"visible": median_mask_off}]
+         
+                        ),
+                        dict(
+                            label="me",
+                            method="update",
+                            args=[{"visible": mean_mask_on}],
+                            args2=[{"visible": mean_mask_off}]
+                        )
+                    ]
+                )]
             )
 
             # Save out as a standalone HTML
@@ -659,15 +837,23 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     # Save plots
     for metric in metrics:
 
-        title = (f"Averaged {metric.replace('_', ' ').title()} "
+        title_md = (f"Averaged {metric.replace('_', ' ').title()} "
                 f"({runs} Runs, config = {config_descr})")   
         fig_shaded, ax_shaded = fig_ax_pairs_shaded[metric]
-        pdf_path = os.path.join(global_plots_folder, f"{metric}_global_plot_shaded.pdf")
-        png_path = os.path.join(png_folder, f"{metric}_global_plot_shaded.png")
+        pdf_path_md = os.path.join(global_plots_folder, f"{metric}_global_plot_shaded.pdf")
+        png_path_md = os.path.join(png_folder, f"{metric}_global_plot_shaded.png")
 
         finalize_and_save_plot(fig_shaded, ax_shaded, attribute_label, metric,
-                               title, save_path=pdf_path, save_path_png=png_path)
-        
+                               title_md, save_path=pdf_path_md, save_path_png=png_path_md)
+
+        title_me = (f"Mean {metric.replace('_', ' ').title()} "
+                      f"({runs} Runs, config = {config_descr})")
+        fig_mean, ax_mean = fig_ax_pairs_mean[metric]
+        pdf_path_me = os.path.join(global_plots_folder, f"{metric}_global_plot_mean.pdf")
+        png_path_me = os.path.join(png_folder, f"{metric}_global_plot_mean.png")
+
+        finalize_and_save_plot(fig_mean, ax_mean, attribute_label, metric,
+                               title_me, save_path=pdf_path_me, save_path_png=png_path_me)
 
     # Plot Glass's Δ for wasserstein_distance
     pdf_path = os.path.join(global_plots_folder, "glass_delta_ws_dist.pdf")
@@ -980,6 +1166,11 @@ def plot_pairwise_scatter(
     x_mcmc = mcmc_flat[:, dims[0]]
     y_mcmc = mcmc_flat[:, dims[1]]
 
+    max_pts = 1000
+    if len(x_mcmc) > max_pts:
+        idx = np.random.choice(len(x_mcmc), max_pts, replace=False)
+        x_mcmc, y_mcmc = x_mcmc[idx], y_mcmc[idx]
+
     # 2) flatten IID samples
     iid_arr = np.asarray(iid_samples)
     if iid_arr.ndim != 2 or iid_arr.shape[1] <= max(dims):
@@ -990,10 +1181,14 @@ def plot_pairwise_scatter(
     x_iid = iid_flat[:, dims[0]]
     y_iid = iid_flat[:, dims[1]]
 
+    if len(x_iid) > max_pts:
+        idx = np.random.choice(len(x_iid), max_pts, replace=False)
+        x_iid, y_iid = x_iid[idx], y_iid[idx]
+
     # 3) build Plotly figure
     fig = go.Figure()
     fig.add_trace(
-        go.Scatter(
+        go.Scattergl(
             x=x_mcmc,
             y=y_mcmc,
             mode="markers",
@@ -1002,7 +1197,7 @@ def plot_pairwise_scatter(
         )
     )
     fig.add_trace(
-        go.Scatter(
+        go.Scattergl(
             x=x_iid,
             y=y_iid,
             mode="markers",
