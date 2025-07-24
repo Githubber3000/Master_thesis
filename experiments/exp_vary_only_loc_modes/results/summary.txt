@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-23 18:13:12
+Finished at:                  2025-07-23 19:38:31
+Total duration:               1h 25m 18.5s
+Output folder:                experiments/exp_vary_only_loc_modes
+Output folder size:           18.7 MB
+Total configurations:         6
+Successful configuration:     6
+Failed configurations:        0
