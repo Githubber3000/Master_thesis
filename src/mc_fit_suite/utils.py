@@ -1,6 +1,8 @@
 from __future__ import annotations
 import logging, os, json
 import numpy as np
+from glob import glob
+import pandas as pd
 import subprocess
 import sys
 
@@ -78,6 +80,87 @@ def load_meta(any_plot_path):
 
     with open(json_path) as f:
         return json.load(f)
+    
+
+def load_selected_global_stats(result_folder, metric_prefixes, mode="stats"):
+    """
+    Load selected global stats (glass delta, t-stat, p-value) for each sampler and given metric.
+    Example metric_prefix: "ws_dist", "mmd", "mmd_rff"
+    
+    Returns:
+        {
+            "HMC": {
+                "glass_delta": [...],
+                "t_stat": [...],
+                "p_value": [...],
+                "varying_value": [...]
+            },
+            ...
+        }
+    """
+    stats = {}
+    pattern = os.path.join(result_folder, "Global_results_*.csv")
+
+    for file in glob(pattern):
+        sampler = os.path.basename(file).replace("Global_results_", "").replace(".csv", "")
+        df = pd.read_csv(file)
+
+        print(f"File: {file} → Columns: {df.columns.tolist()}")
+
+        sampler_stats = {}
+
+        if mode == "stats":
+        # Dynamically detect column names
+            for metric in metric_prefixes:
+                columns = {
+                    "glass_delta": f"{metric}_glass_delta",
+                    "t_stat": f"{metric}_t_stat",
+                    "p_value": f"{metric}_p_value"
+                }
+
+                if all(col in df.columns for col in columns.values()):
+                    sampler_stats[metric] = {
+                        "glass_delta": df[columns["glass_delta"]].tolist(),
+                        "t_stat": df[columns["t_stat"]].tolist(),
+                        "p_value": df[columns["p_value"]].tolist(),
+                        "varying_value": df[df.columns[0]].tolist()  
+                    }
+
+        elif mode == "delta":
+            # For delta stats, we assume the first column is varying_value
+            sampler_stats["varying_value"] = df[df.columns[0]].tolist()
+            for metric in metric_prefixes:
+                columns = {
+                    "mcmc_mean": f"{metric}_mcmc_mean",
+                    "iid_mean": f"{metric}_iid_mean",
+                    "iid_std": f"{metric}_iid_std"
+                }
+
+                if all(col in df.columns for col in columns.values()):
+                    sampler_stats[metric] = {
+
+                        "mcmc_mean": df[columns["mcmc_mean"]].tolist(),
+                        "iid_mean": df[columns["iid_mean"]].tolist(),
+                        "iid_std": df[columns["iid_std"]].tolist()
+                    }
+
+        stats[sampler] = sampler_stats
+
+    return stats
+
+
+def load_pairwise_sampler_stats(result_folder, prefix):
+    """
+    Loads sampler-vs-sampler pairwise stats for a given metric prefix (e.g. 'ws', 'mmd').
+    Returns a dict: { "HMC_vs_Metro": {column_name: values_list, ...}, ... }
+    """
+    stats = {}
+    pattern = os.path.join(result_folder, f"Pairwise_results_*_{prefix}.csv")
+    for file in glob(pattern):
+        key = os.path.basename(file).replace(f"Pairwise_results_", "").replace(f"_{prefix}.csv", "")
+        df = pd.read_csv(file)
+        stats[key] = df.to_dict(orient="list")
+    return stats
 
 
 def build_trace_groups(pooled_plots, chain_plots, rel, type="trace"):

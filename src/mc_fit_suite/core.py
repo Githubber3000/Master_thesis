@@ -177,9 +177,10 @@ def eval_trace(
         "wasserstein_distance": mcmc_vs_iid_swd,
         "mmd_rff": mmd_rff_value,
         "mmd": mmd_value,
-        "r_hat": r_hat,
+        "runtime": runtime,
         "ess": ess,
-        "runtime": runtime
+        "ess_per_sec": ess / runtime,
+        "r_hat": r_hat
     })
 
 
@@ -275,6 +276,8 @@ def run_experiment(
 
     experiment_metadata = {
         "config_descr": config_descr,
+        "samplers": experiment_settings["samplers"],
+        "group_name": group_name,
         "runs": runs,
         "total_iid_batches": num_total_iid_batches,
         "iid_vs_iid_comparisons": num_iid_vs_iid_batches // 2,  
@@ -523,20 +526,20 @@ def run_experiment(
             else:
                 base_posterior = SinglePosterior(dist_name=posterior_type, dist_params=posterior_kwargs)
 
+            # Get IID samples for the current varying value
+            if posterior_type != "Custom" and varying_attribute not in ["init_scheme", "num_chains"]:
+                iid_batches = iid_batches_dict[value]
+            elif posterior_type == "Custom":
+                iid_batches = None
+
             means = None
             init_pooled = None
             init_chain = None
   
             if init_scheme is not None:
                     means = extract_means_from_posterior(posterior_type, posterior_kwargs)
-                    init_pooled = get_initvals(init_scheme, means, pooled_eval_mode, num_chains, rng, run_id, init_value_folder, png_folder_init_pooled, varying_attribute, value, unimodal_init_margin=unimodal_init_margin)
-                    init_chain = get_initvals(init_scheme, means, chain_eval_mode, 1, rng, run_id, init_value_folder, png_folder_init_chain, varying_attribute, value, unimodal_init_margin=unimodal_init_margin)
-        
-            # Get IID samples for the current varying value
-            if posterior_type != "Custom" and varying_attribute not in ["init_scheme", "num_chains"]:
-                iid_batches = iid_batches_dict[value]
-            elif posterior_type == "Custom":
-                iid_batches = None
+                    init_pooled = get_initvals(init_scheme, means, pooled_eval_mode, num_chains, rng, run_id, init_value_folder, png_folder_init_pooled, varying_attribute, value, iid_batch=iid_batches[0], unimodal_init_margin=unimodal_init_margin)
+                    init_chain = get_initvals(init_scheme, means, chain_eval_mode, 1, rng, run_id, init_value_folder, png_folder_init_chain, varying_attribute, value, iid_batch=iid_batches[0], unimodal_init_margin=unimodal_init_margin)
 
 
             # Run sampling for all samplers
@@ -557,7 +560,7 @@ def run_experiment(
 
                     if posterior_type == "Mixture":
                         #compute higher and lower bound for init prior
-                        low, high,_,_,_  = get_uniform_prior_bounds(means_array=means_array, expansion_factor=0.25)   
+                        low, high,_,_,_  = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batches[0], quantile_mass=0.9999, expansion_factor=0.25)   
                         posterior = MixturePosterior(
                             component_types=posterior_kwargs["component_types"],
                             component_params=posterior_kwargs["component_params"],
@@ -569,7 +572,7 @@ def run_experiment(
 
                     else :
                         # compute higher and lower bound for init prior
-                        low, high, _,_,_ = get_uniform_prior_bounds(means_array=means_array, expansion_factor=0.25, unimodal_init_margin=unimodal_init_margin)
+                        low, high, _,_,_ = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batches[0], quantile_mass=0.9999, expansion_factor=0.25, unimodal_init_margin=unimodal_init_margin)
                         posterior = SinglePosterior(dist_name=posterior_type, dist_params=posterior_kwargs, use_smc=True, low=low, high=high)
 
 

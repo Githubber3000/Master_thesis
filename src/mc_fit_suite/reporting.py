@@ -8,12 +8,29 @@ import numpy as np
 import seaborn as sns
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+from scipy.stats import ttest_ind
+from scipy.stats import ttest_rel
+from itertools import combinations
+import pprint
 import pandas as pd
 import arviz as az
 
-from .utils   import extract_varying_value_from_json, safe_json_dump, build_trace_groups
+from .utils   import extract_varying_value_from_json, safe_json_dump, build_trace_groups, load_pairwise_sampler_stats, load_selected_global_stats
 
 logger = logging.getLogger(__name__)
+
+plt.rcParams.update({
+    "font.family":           "serif",
+    "axes.titlesize":        14,   
+    "axes.labelsize":        22,  
+    "xtick.labelsize":       18,    
+    "ytick.labelsize":       18,
+    "legend.fontsize":       8,    
+    "legend.title_fontsize": 9,
+    "lines.linewidth":       1.5,
+    "lines.markersize":      6,
+})
+
 
 def generate_html_report(experiment_root_folder, report_pngs_folder, experiments, output_path, do_mmd, do_mmd_rff):
     """
@@ -63,20 +80,21 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
       "wasserstein_distance",
       "mmd",
       "mmd_rff",
-      "r_hat",
-      "ess",
       "runtime",
+      "ess",
+      "ess_per_sec",
+      "r_hat",
     ]
+
     metrics = [
       m for m in MASTER_ORDER
       if (m != "mmd"     or do_mmd)
      and (m != "mmd_rff" or do_mmd_rff)
     ]
 
-    # Which Glass’s Δ plots to look for:
-    glass_keys = ["ws"]                      
-    if do_mmd:     glass_keys.append("mmd")  
-    if do_mmd_rff: glass_keys.append("mmd_rff")
+    keys = ["ws"]                      
+    if do_mmd:     keys.append("mmd")  
+    if do_mmd_rff: keys.append("mmd_rff")
 
     groups_data = []
 
@@ -84,8 +102,32 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
         config_entries = []
 
         for config in configs:
+
             config_descr = config["config_descr"]
-            
+
+            result_folder_chain  = os.path.join(experiment_root_folder, "results", group_name, config_descr, "global_results", "chain_results")
+            result_folder_pooled = os.path.join(experiment_root_folder, "results", group_name, config_descr, "global_results", "pooled_results")
+
+
+            global_stats_chain  = load_selected_global_stats(result_folder_chain, keys, "stats")
+            global_stats_pooled = load_selected_global_stats(result_folder_pooled, keys, "stats")
+
+
+            # Load pairwise sampler comparison stats
+            pairwise_stats_chain  = {
+                "ws": load_pairwise_sampler_stats(result_folder_chain, "ws"),
+                "mmd": load_pairwise_sampler_stats(result_folder_chain, "mmd") if do_mmd else {},
+                "mmd_rff": load_pairwise_sampler_stats(result_folder_chain, "mmd_rff") if do_mmd_rff else {}
+            }
+            pairwise_stats_pooled = {
+                "ws": load_pairwise_sampler_stats(result_folder_pooled, "ws"),
+                "mmd": load_pairwise_sampler_stats(result_folder_pooled, "mmd") if do_mmd else {},
+                "mmd_rff": load_pairwise_sampler_stats(result_folder_pooled, "mmd_rff") if do_mmd_rff else {}
+            }
+
+            delta_data_chain = load_selected_global_stats(result_folder_chain, keys, "delta")
+            delta_data_pooled = load_selected_global_stats(result_folder_pooled, keys, "delta")
+
             png_base = os.path.join(experiment_root_folder, "results", "z_html_pngs", group_name, config_descr)
             pooled_png_base = os.path.join(png_base, "pooled_global_plots")
             chain_png_base = os.path.join(png_base, "chain_global_plots")
@@ -110,12 +152,9 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
             pooled_trace_path = os.path.join(report_pngs_folder, group_name, config_descr, "trace_plots", "pooled_*.png")
             pooled_trace_plots = sorted(glob(pooled_trace_path), key=extract_varying_value_from_json)
 
-            #rel_pooled_trace_paths = [rel(p) for p in pooled_trace_plots]
-
             chain_trace_path = os.path.join(report_pngs_folder, group_name, config_descr, "trace_plots", "chain_*.png")
-            chain_trace_plots = sorted(glob(chain_trace_path), key=extract_varying_value_from_json)  #needed?!!
+            chain_trace_plots = sorted(glob(chain_trace_path), key=extract_varying_value_from_json)
 
-            #rel_chain_trace_paths = [rel(p) for p in chain_trace_plots]
             trace_groups = build_trace_groups(pooled_trace_plots, chain_trace_plots, rel, type="trace")
 
             pooled_pairwise_scatter_path = os.path.join(report_pngs_folder, group_name, config_descr, "pairwise_scatter", "pooled_*.html")
@@ -125,7 +164,6 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
             chain_pairwise_scatter_plots = sorted(glob(chain_pairwise_scatter_path), key=extract_varying_value_from_json)
 
             scatter_groups = build_trace_groups(pooled_pairwise_scatter_plots, chain_pairwise_scatter_plots, rel, type="pairwise_scatter")
-
 
             # Load metadata
             metadata_path = os.path.join(
@@ -143,23 +181,32 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
 
                 # batch
                 "metric_plot_paths_pooled" : collect_metric_pngs(pooled_png_base, metrics),
-                "glass_plot_paths_pooled"  : collect_glass_pngs(pooled_png_base, glass_keys),
+                "glass_plot_paths_pooled"  : collect_glass_pngs(pooled_png_base, keys),
                 "scatter_plot_paths_pooled": collect_scatter_pngs(pooled_png_base, metrics),
                 "scatter_html_paths_pooled": collect_scatter_htmls(pooled_png_base, metrics),
 
                 # chain  (may be None)
                 "metric_plot_paths_chain" : collect_metric_pngs(chain_png_base, metrics),
-                "glass_plot_paths_chain"  : collect_glass_pngs(chain_png_base, glass_keys),
+                "glass_plot_paths_chain"  : collect_glass_pngs(chain_png_base, keys),
                 "scatter_plot_paths_chain": collect_scatter_pngs(chain_png_base, metrics),
                 "scatter_html_paths_chain": collect_scatter_htmls(chain_png_base, metrics),
 
+                # KDE and init plots
                 "iid_kde_plot_paths": rel_kde_paths,
                 "pooled_init_plot_paths": rel_pooled_init_paths,
                 "chain_init_plot_paths": rel_chain_init_paths,
                 "kde_init_triples": list(zip(rel_kde_paths, rel_pooled_init_paths, rel_chain_init_paths)),
 
-                #"pooled_trace_plot_paths": rel_pooled_trace_paths,
-                #"chain_trace_plot_paths": rel_chain_trace_paths,
+                # sampler stats
+                "sampler_stats_chain": global_stats_chain,
+                "sampler_stats_pooled": global_stats_pooled,
+                "pairwise_stats_chain": pairwise_stats_chain,
+                "pairwise_stats_pooled": pairwise_stats_pooled,
+
+                # delta data
+                "delta_data_chain": delta_data_chain,
+                "delta_data_pooled": delta_data_pooled,
+
                 "trace_groups": trace_groups,
                 "scatter_groups": scatter_groups
             }
@@ -199,7 +246,7 @@ def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, var
     """
     
     # Define metric labels
-    metrics = ["wasserstein_distance", "r_hat", "ess", "runtime"]
+    metrics = ["wasserstein_distance", "runtime", "ess", "ess_per_sec", "r_hat"]
 
     if do_mmd:
         metrics.append("mmd")
@@ -246,7 +293,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     """
 
     # Define metrics for aggregation
-    metrics = ["wasserstein_distance","r_hat", "ess", "runtime"]
+    metrics = ["wasserstein_distance","runtime", "ess", "ess_per_sec", "r_hat"]
 
     if do_mmd:
         metrics.append("mmd")
@@ -326,6 +373,9 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
 
 
     for metric in metrics:
+
+        sampler_metric_values = {}
+
         fig_shaded, ax_shaded = fig_ax_pairs_shaded[metric]
         fig_mean,   ax_mean   = fig_ax_pairs_mean[metric] 
 
@@ -355,22 +405,30 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                     continue
             
             
-            # Compute mean+std and median+quantiles 
+            # Custom ordering based on config (only if needed)
+            if isinstance(df_pivot.index[0], str):
+                # Reorder the index to match the varying values
+                custom_order = [str(t) for t in varying_values]
+                df_pivot = df_pivot.reindex(custom_order)
+
+            # # reverse order for tail wei
+            # if varying_attribute == "nu":
+            #     custom_order = sorted(varying_values, reverse=True)
+            #     df_pivot = df_pivot.reindex(custom_order)   
+
+            # Compute mean+std and median+quantiles
             means = df_pivot.mean(axis=1)
             stds = df_pivot.std(axis=1, ddof=1) 
             medians = df_pivot.median(axis=1)
             q25 = df_pivot.quantile(0.25, axis=1)
             q75 = df_pivot.quantile(0.75, axis=1)
+            values = df_pivot.values
+            
+            sampler_metric_values[sampler] = {
+                "values": df_pivot.values,
+                "index": df_pivot.index
+            }
 
-            # Custom ordering based on config (only if needed)
-            if isinstance(medians.index[0], str):
-                custom_order = [str(t) for t in varying_values]
-                means = means.reindex(custom_order)
-                stds = stds.reindex(custom_order) 
-                medians = medians.reindex(custom_order)
-                q25 = q25.reindex(custom_order)
-                q75 = q75.reindex(custom_order)
-                
             # Plot median line
             ax_shaded.plot(medians.index, medians, "o-", label=sampler, color=color)
 
@@ -404,10 +462,13 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 global_avg_dfs[sampler] = {}
             global_avg_dfs[sampler][metric] = (medians, q25, q75)
 
-            # Compute glass delta for wasserstein_distance only
+            # Compute glass delta and significance for wasserstein_distance
             if metric == "wasserstein_distance":
-                # Get IID mean and std for this varying attribute value
+                
+                # Effect size and significance of MCMC/SMC vs IID
 
+                # compute Glass Δ for wasserstein_distance
+                # Get IID mean and std for this varying attribute value
                 iid_mean_swd = pd.Series(
                     [iid_means_dict_swd[k] for k in means.index],
                     index=means.index,                   
@@ -422,14 +483,89 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 # Glass Δ
                 glass_delta = (means - iid_mean_swd) / iid_std_swd.replace(0, np.nan)
         
-                global_avg_dfs[sampler]["ws_dist_glass_delta"] = glass_delta
-                global_avg_dfs[sampler]["ws_dist_mcmc_mean"]   = means          
-                global_avg_dfs[sampler]["ws_dist_iid_mean"]    = iid_mean_swd   
-                global_avg_dfs[sampler]["ws_dist_iid_std"]     = iid_std_swd 
+                global_avg_dfs[sampler]["ws_glass_delta"] = glass_delta
+                global_avg_dfs[sampler]["ws_mcmc_mean"]   = means          
+                global_avg_dfs[sampler]["ws_iid_mean"]    = iid_mean_swd   
+                global_avg_dfs[sampler]["ws_iid_std"]     = iid_std_swd 
 
                 # Plot glass delta for this sampler
                 ax_g.plot(means.index, glass_delta, "o-", label=sampler, color=color)
-            
+
+                # Compute significance of difference in distances for MCMC vs IID and IID vs IID for each varying value
+
+                iid_distances = np.array([iid_runs_dict_swd[k] for k in means.index])
+                mcmc_distances = np.array(values)
+
+                #print(f"\nMCMC global shape = {mcmc_distances.shape}, IID global shape = {iid_distances.shape}")
+                #print(f"MCMC full array:\n{mcmc_distances}")
+                #print(f"IID full array:\n{iid_distances}\n")
+
+                tt_stats_mc_iid = {}
+                tt_pvals_mc_iid = {}
+
+                for varying_value, iid_distance, mcmc_distance in zip(means.index, iid_distances, mcmc_distances):
+
+                    #print(f"MCMC shape = {mcmc_distance.shape}, IID shape = {iid_distance.shape}")
+                    #print(f"--- {varying_value} ---")
+                    #print(f"MCMC shape = {mcmc_distance.shape}, values = {mcmc_distance}")
+                    #print(f"IID shape  = {iid_distance.shape}, values  = {iid_distance}")
+
+                    stat, p_value = ttest_ind(
+                        mcmc_distance, iid_distance, equal_var=False, nan_policy="omit"
+                    )
+                    tt_stats_mc_iid[varying_value] = stat
+                    tt_pvals_mc_iid[varying_value] = p_value
+
+                global_avg_dfs[sampler]["ws_t_stat"] = pd.Series(tt_stats_mc_iid)
+                global_avg_dfs[sampler]["ws_p_value"] = pd.Series(tt_pvals_mc_iid)
+
+                # Effect size and significance of MCMC/SMC vs MCMC/SMC
+
+                for sampler_a, sampler_b in combinations(sampler_metric_values.keys(), 2):
+
+                    key = f"{sampler_a}_vs_{sampler_b}"
+                    if key not in global_avg_dfs:
+                        global_avg_dfs[key] = {}
+
+                    values_a = sampler_metric_values[sampler_a]["values"]
+                    values_b = sampler_metric_values[sampler_b]["values"]
+                    index = sampler_metric_values[sampler_a]["index"]
+
+                    assert index.equals(sampler_metric_values[sampler_b]["index"]), \
+                        f"Sampler indices mismatch for {sampler_a} vs {sampler_b}"
+
+                    tt_stats_mc_mc = {}
+                    tt_pvals_mc_mc = {}
+                    paired_d = {}
+
+                    # Loop over each varying value
+                    for i, varying_value in enumerate(index):
+                        a_vals = values_a[i]  
+                        b_vals = values_b[i]
+
+                        # Optional: check shapes and nan
+                        if len(a_vals) != len(b_vals):
+                            print(f"WARNING: Unequal runs for {sampler_a} vs {sampler_b} at {varying_value}")
+                        
+                        # Perform t-test
+                        stat, p_value = ttest_rel(a_vals, b_vals, nan_policy="omit")
+
+                        # compute effect size (paired Cohen's d)
+                        paired_d[varying_value] = stat / np.sqrt(runs)
+
+                        tt_stats_mc_mc[varying_value] = stat
+                        tt_pvals_mc_mc[varying_value] = p_value
+
+                    # Save as DataFrame
+                    df_pairwise = pd.DataFrame({
+                        f"{varying_attribute}": index,
+                        "ws_t_stat": pd.Series(tt_stats_mc_mc, index=index),
+                        "ws_p_value": pd.Series(tt_pvals_mc_mc, index=index),
+                        "ws_paired_cohens_d": pd.Series(paired_d, index=index)
+                    })
+
+                    global_avg_dfs[key]["ws_pairwise"] = df_pairwise
+
             elif metric == "mmd":
                 # Get IID mean and std for this varying attribute value
 
@@ -456,6 +592,71 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 # Plot glass delta for this sampler
                 ax_g_mmd.plot(means.index, glass_delta, "o-", label=sampler, color=color)
 
+                # Compute significance of difference in distances for MCMC vs IID and IID vs IID for each varying value
+                iid_distances = np.array([iid_runs_dict_mmd[k] for k in means.index])
+                mcmc_distances = np.array(values)
+
+                tt_stats_mc_iid = {}
+                tt_pvals_mc_iid = {}
+
+                for varying_value, iid_distance, mcmc_distance in zip(means.index, iid_distances, mcmc_distances):
+
+                    stat, p_value = ttest_ind(
+                        mcmc_distance, iid_distance, equal_var=False, nan_policy="omit"
+                    )
+                    tt_stats_mc_iid[varying_value] = stat
+                    tt_pvals_mc_iid[varying_value] = p_value
+
+                global_avg_dfs[sampler]["mmd_t_stat"] = pd.Series(tt_stats_mc_iid)
+                global_avg_dfs[sampler]["mmd_p_value"] = pd.Series(tt_pvals_mc_iid)
+
+                # Effect size and significance of MCMC/SMC vs MCMC/SMC
+
+                for sampler_a, sampler_b in combinations(sampler_metric_values.keys(), 2):
+
+                    key = f"{sampler_a}_vs_{sampler_b}"
+                    if key not in global_avg_dfs:
+                        global_avg_dfs[key] = {}
+
+                    values_a = sampler_metric_values[sampler_a]["values"]
+                    values_b = sampler_metric_values[sampler_b]["values"]
+                    index = sampler_metric_values[sampler_a]["index"]
+
+                    assert index.equals(sampler_metric_values[sampler_b]["index"]), \
+                        f"Sampler indices mismatch for {sampler_a} vs {sampler_b}"
+
+                    tt_stats_mc_mc = {}
+                    tt_pvals_mc_mc = {}
+                    paired_d = {}
+
+                    # Loop over each varying value
+                    for i, varying_value in enumerate(index):
+                        a_vals = values_a[i]  
+                        b_vals = values_b[i]
+
+                        # Optional: check shapes and nan
+                        if len(a_vals) != len(b_vals):
+                            print(f"WARNING: Unequal runs for {sampler_a} vs {sampler_b} at {varying_value}")
+                        
+                        # Perform t-test
+                        stat, p_value = ttest_rel(a_vals, b_vals, nan_policy="omit")
+
+                        # compute effect size (paired Cohen's d)
+                        paired_d[varying_value] = stat / np.sqrt(runs)
+
+                        tt_stats_mc_mc[varying_value] = stat
+                        tt_pvals_mc_mc[varying_value] = p_value
+
+                    # Save as DataFrame
+                    df_pairwise = pd.DataFrame({
+                        f"{varying_attribute}": index,
+                        "mmd_t_stat": pd.Series(tt_stats_mc_mc, index=index),
+                        "mmd_p_value": pd.Series(tt_pvals_mc_mc, index=index),
+                        "mmd_paired_cohens_d": pd.Series(paired_d, index=index)
+                    })
+
+                    global_avg_dfs[key]["mmd_pairwise"] = df_pairwise
+
             elif metric == "mmd_rff":
                 # Get IID mean and std for this varying attribute value
 
@@ -481,6 +682,71 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
 
                 # Plot glass delta for this sampler
                 ax_g_mmd_rff.plot(means.index, glass_delta, "o-", label=sampler, color=color)
+
+                # Compute significance of difference in distances for MCMC vs IID and IID vs IID for each varying value
+                iid_distances = np.array([iid_runs_dict_mmd_rff[k] for k in means.index])
+                mcmc_distances = np.array(values)
+
+                tt_stats_mc_iid = {}
+                tt_pvals_mc_iid = {}
+
+                for varying_value, iid_distance, mcmc_distance in zip(means.index, iid_distances, mcmc_distances):
+
+                    stat, p_value = ttest_ind(
+                        mcmc_distance, iid_distance, equal_var=False, nan_policy="omit"
+                    )
+                    tt_stats_mc_iid[varying_value] = stat
+                    tt_pvals_mc_iid[varying_value] = p_value
+
+                global_avg_dfs[sampler]["mmd_rff_t_stat"] = pd.Series(tt_stats_mc_iid)
+                global_avg_dfs[sampler]["mmd_rff_p_value"] = pd.Series(tt_pvals_mc_iid)
+
+                # Effect size and significance of MCMC/SMC vs MCMC/SMC
+
+                for sampler_a, sampler_b in combinations(sampler_metric_values.keys(), 2):
+
+                    key = f"{sampler_a}_vs_{sampler_b}"
+                    if key not in global_avg_dfs:
+                        global_avg_dfs[key] = {}
+
+                    values_a = sampler_metric_values[sampler_a]["values"]
+                    values_b = sampler_metric_values[sampler_b]["values"]
+                    index = sampler_metric_values[sampler_a]["index"]
+
+                    assert index.equals(sampler_metric_values[sampler_b]["index"]), \
+                        f"Sampler indices mismatch for {sampler_a} vs {sampler_b}"
+
+                    tt_stats_mc_mc = {}
+                    tt_pvals_mc_mc = {}
+                    paired_d = {}
+
+                    # Loop over each varying value
+                    for i, varying_value in enumerate(index):
+                        a_vals = values_a[i]  
+                        b_vals = values_b[i]
+
+                        # Optional: check shapes and nan
+                        if len(a_vals) != len(b_vals):
+                            print(f"WARNING: Unequal runs for {sampler_a} vs {sampler_b} at {varying_value}")
+                        
+                        # Perform t-test
+                        stat, p_value = ttest_rel(a_vals, b_vals, nan_policy="omit")
+
+                        # compute effect size (paired Cohen's d)
+                        paired_d[varying_value] = stat / np.sqrt(runs)
+
+                        tt_stats_mc_mc[varying_value] = stat
+                        tt_pvals_mc_mc[varying_value] = p_value
+
+                    # Save as DataFrame
+                    df_pairwise = pd.DataFrame({
+                        f"{varying_attribute}": index,
+                        "mmd_rff_t_stat": pd.Series(tt_stats_mc_mc, index=index),
+                        "mmd_rff_p_value": pd.Series(tt_pvals_mc_mc, index=index),
+                        "mmd_rff_paired_cohens_d": pd.Series(paired_d, index=index)
+                    })
+
+                    global_avg_dfs[key]["mmd_rff_pairwise"] = df_pairwise
 
 
         # Only for wasserstein_distance and mmd: Plot IID baseline once
@@ -798,6 +1064,21 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
 
     # Save Global Averages per Sampler to CSV
     for sampler, metrics_dict in global_avg_dfs.items():
+        
+        wrote_pairwise = False
+
+        for pairwise_key in ["ws_pairwise", "mmd_pairwise", "mmd_rff_pairwise"]:
+            if pairwise_key in metrics_dict:
+                # Handle pairwise case: export the full df_pairwise
+                df_pairwise = metrics_dict[pairwise_key]
+                csv_filename = os.path.join(global_results_folder, f"Pairwise_results_{sampler}_{pairwise_key.replace('_pairwise', '')}.csv")
+                df_pairwise.to_csv(csv_filename, index=False)
+                wrote_pairwise = True
+        
+        # If only pairwise results exist, skip the global metric CSV
+        if wrote_pairwise:
+            continue
+
         # Fill missing metrics with NaNs so CSV is complete
         for m in metrics:
             if m not in metrics_dict:
@@ -809,10 +1090,10 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             **{f"global_median_{metric}": metrics_dict[metric][0].values for metric in metrics},
             **{f"global_q25_{metric}": metrics_dict[metric][1].values for metric in metrics},
             **{f"global_q75_{metric}": metrics_dict[metric][2].values for metric in metrics},    
-            "ws_mcmc_mean":  metrics_dict["ws_dist_mcmc_mean"].values,
-            "ws_iid_mean":   metrics_dict["ws_dist_iid_mean"].values,
-            "ws_iid_std":    metrics_dict["ws_dist_iid_std"].values,
-            
+            "ws_mcmc_mean":  metrics_dict["ws_mcmc_mean"].values,
+            "ws_iid_mean":   metrics_dict["ws_iid_mean"].values,
+            "ws_iid_std":    metrics_dict["ws_iid_std"].values,
+
             **({"mmd_mcmc_mean": metrics_dict["mmd_mcmc_mean"].values,
                 "mmd_iid_mean":  metrics_dict["mmd_iid_mean"].values,
                 "mmd_iid_std":   metrics_dict["mmd_iid_std"].values}
@@ -824,12 +1105,19 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             if do_mmd_rff else {})
         })
 
-        if "ws_dist_glass_delta" in metrics_dict:
-            df_global_avg["ws_dist_glass_delta"] = metrics_dict["ws_dist_glass_delta"].values
+        if "ws_glass_delta" in metrics_dict:
+            df_global_avg["ws_glass_delta"] = metrics_dict["ws_glass_delta"].values
+            df_global_avg["ws_t_stat"] = metrics_dict["ws_t_stat"].values
+            df_global_avg["ws_p_value"] = metrics_dict["ws_p_value"].values
         if "mmd_glass_delta" in metrics_dict:
             df_global_avg["mmd_glass_delta"] = metrics_dict["mmd_glass_delta"].values
+            df_global_avg["mmd_t_stat"] = metrics_dict["mmd_t_stat"].values
+            df_global_avg["mmd_p_value"] = metrics_dict["mmd_p_value"].values
         if "mmd_rff_glass_delta" in metrics_dict:
             df_global_avg["mmd_rff_glass_delta"] = metrics_dict["mmd_rff_glass_delta"].values
+            df_global_avg["mmd_rff_t_stat"] = metrics_dict["mmd_rff_t_stat"].values
+            df_global_avg["mmd_rff_p_value"] = metrics_dict["mmd_rff_p_value"].values
+
 
         csv_filename = os.path.join(global_results_folder, f"Global_results_{sampler}.csv")
         df_global_avg.to_csv(csv_filename, index=False)
@@ -856,7 +1144,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                                title_me, save_path=pdf_path_me, save_path_png=png_path_me)
 
     # Plot Glass's Δ for wasserstein_distance
-    pdf_path = os.path.join(global_plots_folder, "glass_delta_ws_dist.pdf")
+    pdf_path = os.path.join(global_plots_folder, "glass_delta_ws.pdf")
     png_path = os.path.join(png_folder, "glass_delta_ws.png")
     title_ws= f"Glass's Δ for Wasserstein Distance ({runs} Runs, config = {config_descr})"
 
@@ -909,6 +1197,10 @@ def finalize_and_save_plot(fig, ax, xlabel, ylabel, title, save_path, save_path_
         fig.savefig(save_path_png, dpi=150, bbox_inches="tight")
 
     plt.close(fig)
+
+
+
+    
 
 
 

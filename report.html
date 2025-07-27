@@ -35,6 +35,7 @@
       overflow-x: auto;
       gap: 1em;
       padding-bottom: 1em;
+      align-items: flex-start;
     }
 
     .plot-row > div,
@@ -70,19 +71,19 @@
     }
 
     .plot-thumb {
-      width: 1100px;        /* 16×9 with a base 540px height */
-      height: 619px;       /* 1100 * 9 / 16 */
+      width: 1100px;        
+      height: 619px;       
       border: 1px solid #aaa;
       border-radius: 4px;
       box-shadow: 0 0 4px rgba(0,0,0,0.1);
-      max-height: none;        /* verhindert Zwangsbegrenzung durch alte Regeln */
+      max-height: none;        
     }
 
     .plot-row details.interactive-toggle {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 0;       /* no extra gaps */
+      margin: 0;     
       padding: 0;
     }
 
@@ -136,7 +137,151 @@
 <h1>{{ experiment_name }} – Complete Experiment Report</h1>
 
 {% set metrics = metrics or
-  ["wasserstein_distance", "mmd", "mmd_rff","r_hat","ess","runtime"] %}
+  ["wasserstein_distance", "mmd", "mmd_rff", "runtime", "ess", "ess_per_sec", "r_hat"] %}
+
+{# --- Sampler vs IID (global, per sampler) --- #}
+{% macro render_sampler_iid_table(sampler_stats, metric_key) %}
+<table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+  <thead>
+    <tr>
+      <th style="padding:4px 8px;">Sampler</th>
+      <th style="padding:4px 8px;">Varying</th>
+      <th style="padding:4px 8px;">t-stat</th>
+      <th style="padding:4px 8px;">p-value</th>
+      <th style="padding:4px 8px;">Glass&nbsp;Δ</th>
+    </tr>
+  </thead>
+  <tbody>
+
+  {% for sampler, per_metric in sampler_stats.items() if metric_key in per_metric %}
+    {% set s = per_metric[metric_key] %}
+    {% for i in range(s["varying_value"]|length) %}
+
+    {% set p = s["p_value"][i] %}
+    {% set bg_color = "#b6fcb6" %}
+    {% if p < 0.0125 %}
+      {% set bg_color = "#fcb6b6" %}
+    {% elif p < 0.025 %}
+      {% set bg_color = "#fff3b0" %}
+    {% endif %}
+
+      <tr>
+        <td style="padding:4px 8px;">{{ sampler }}</td>
+        <td style="padding:4px 8px;">{{ s["varying_value"][i] }}</td>
+        <td style="padding:4px 8px;">{{ "%.3f"|format(s["t_stat"][i]) }}</td>
+        <td style="padding:4px 8px; background-color: {{ bg_color }};">{{ "%.3g"|format(p) }}</td>
+        <td style="padding:4px 8px;">{{ "%.3f"|format(s["glass_delta"][i]) }}</td>
+      </tr>
+    {% endfor %}
+  {% endfor %}
+  </tbody>
+</table>
+{% endmacro %}
+
+
+
+
+{# --- Sampler vs Sampler (pairwise) --- #}
+{% macro render_sampler_pairwise_table(pairwise_stats, metric_base_key) %}
+  {% if metric_base_key not in pairwise_stats %}
+    <p style="color:#888; margin:0.5em 0;">No pairwise stats for {{ metric_base_key }}</p>
+  {% else %}
+      <table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="padding:4px 8px;">Sampler Pair</th>
+            <th style="padding:4px 8px;">Varying</th>
+            <th style="padding:4px 8px;">t-stat</th>
+            <th style="padding:4px 8px;">p-value</th>
+            <th style="padding:4px 8px;">Cohen’s d</th>
+          </tr>
+        </thead>
+        <tbody>
+        
+
+        
+        {% for pair, cols in pairwise_stats[metric_base_key].items() %}
+          {% set n = (cols.get(metric_base_key ~ "_t_stat") or []) | length %}
+          {% for i in range(n) %}
+
+            {# Compute background color for p-value #}
+            {% set p = (cols.get(metric_base_key ~ "_p_value"))[i] %}
+            {% set bg_color = "#b6fcb6" %}
+            {% if p < 0.0083 %}
+              {% set bg_color = "#fcb6b6" %}
+            {% elif p < 0.0167 %}
+              {% set bg_color = "#fff3b0" %}
+            {% endif %}
+
+
+            <tr>
+              <td style="padding:4px 8px;">{{ pair }}</td>
+              <td style="padding:4px 8px;">
+                {# Try common varying columns; fall back gracefully #}
+                {% if "correlation" in cols %}
+                  {{ cols["correlation"][i] }}
+                {% elif "varying_value" in cols %}
+                  {{ cols["varying_value"][i] }}
+                {% else %}
+                  {{ i }}
+                {% endif %}
+              </td>
+              <td style="padding:4px 8px;">
+                {{ "%.3f"|format(
+                    (cols.get(metric_base_key ~ "_t_stat"))[i]
+                  )
+                }}
+              </td>
+              <td style="padding:4px 8px; background-color: {{ bg_color }};">
+                {{ "%.3g"|format(p) }}
+              </td>
+              <td style="padding:4px 8px;">
+                {{ "%.3f"|format(
+                    (cols.get(metric_base_key ~ "_paired_cohens_d") or cols.get("ws_paired_cohens_d", [None]*n))[i]
+                  ) if (cols.get(metric_base_key ~ "_paired_cohens_d") or cols.get("ws_paired_cohens_d")) else "–" }}
+              </td>
+            </tr>
+          {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endmacro %}
+
+
+{% macro render_glass_delta_table(delta_data, metric_base_key) %}
+  <table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th style="padding:4px 8px;">Sampler</th>
+        <th style="padding:4px 8px;">Varying</th>
+        <th style="padding:4px 8px;">MCMC Mean</th>
+        <th style="padding:4px 8px;">IID Mean</th>
+        <th style="padding:4px 8px;">IID Std</th>
+        <th style="padding:4px 8px;">Glass’s Δ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sampler, sampler_data in delta_data.items() %}
+        {% if metric_base_key in sampler_data %}
+          {% set stats = sampler_data[metric_base_key] %}
+          {% set n = stats["mcmc_mean"] | length %}
+          {% for i in range(n) %}
+            <tr>
+              <td style="padding:4px 8px;">{{ sampler }}</td>
+              <td style="padding:4px 8px;">{{ sampler_data.varying_value[i] }}</td>
+              <td style="padding:4px 8px;">{{ "%.3f"|format(stats.mcmc_mean[i]) }}</td>
+              <td style="padding:4px 8px;">{{ "%.3f"|format(stats.iid_mean[i]) }}</td>
+              <td style="padding:4px 8px;">{{ "%.3f"|format(stats.iid_std[i]) }}</td>
+              <td style="padding:4px 8px;">{{ "%.3f"|format(stats.glass_delta[i]) if stats.glass_delta is defined else "%.3f"|format((stats.mcmc_mean[i] - stats.iid_mean[i]) / stats.iid_std[i]) }}</td>
+            </tr>
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+{% endmacro %}
+
 
   <!-- Repeat this block per group -->
   {% for group in groups %}
@@ -158,7 +303,14 @@
         </h3>
 
         {# ---------- helper macro ---------- #}
-        {% macro metric_grid(metric_paths, glass_paths, scatter_paths, scatter_html_paths, title, open=false) -%}
+        {% macro metric_grid(metric_paths, glass_paths, scatter_paths, scatter_html_paths, title, open, sampler_stats, pairwise_stats, delta_data) -%}
+
+        {% set metric_key_map = {
+          'wasserstein_distance': 'ws',
+          'mmd': 'mmd',
+          'mmd_rff': 'mmd_rff'
+        } %}
+
           <details {% if open %}open{% endif %}>
             <summary><b>{{ title }}</b></summary>
         
@@ -168,13 +320,27 @@
                   <div>
                     <div class="plot-title">{{ m.replace('_',' ').title() }}</div>
                     <img src="{{ metric_paths[m] }}" alt="{{ m }} plot">
+                    {% set metric_key = metric_key_map.get(m) %}
+                    {% if metric_key %}
+
+                      <details>
+                        <summary><b>Sampler vs IID stats</b></summary>
+                        {{ render_sampler_iid_table(sampler_stats, metric_key) }}
+                      </details>
+
+                      <details>
+                        <summary><b>Sampler vs Sampler stats</b></summary>
+                        {{ render_sampler_pairwise_table(pairwise_stats, metric_key.replace('_dist', '')) }}
+
+                      </details>
+                      {% endif %}
                   </div>
                 {% endif %}
-                
+
                 {# scatter thumbnails where available #}
                 {% if scatter_paths[m] is defined %}
                   <div>
-                    <div class="plot-title">{{ m.replace('_',' ').title() }} (scatter)</div>
+                    <div class="plot-title">{{ m.replace('_',' ').title() }} (interactive)</div>
                     <img src="{{ scatter_paths[m] }}" alt="{{ m }} scatter plot">
                   </div>
                 {% endif %}
@@ -199,23 +365,35 @@
                   <div>
                     <div class="plot-title">Glass’s Δ WS</div>
                     <img src="{{ glass_paths.ws }}" alt="Glass Δ WS">
+                        <details>
+                          <summary><b>Glass’s Δ table</b></summary>
+                          {{ render_glass_delta_table(delta_data, 'ws') }}
+                        </details>
                   </div>
 
                 {% elif m == 'mmd' and glass_paths.mmd is defined %}
                   <div>
                     <div class="plot-title">Glass’s Δ MMD</div>
                     <img src="{{ glass_paths.mmd }}" alt="Glass Δ MMD">
+                    <details>
+                      <summary><b>Glass’s Δ table</b></summary>
+                      {{ render_glass_delta_table(delta_data, 'mmd') }}
+                    </details>
                   </div>
 
                 {% elif m == 'mmd_rff' and glass_paths.mmd_rff is defined %}
                   <div>
                     <div class="plot-title">Glass’s Δ MMD-RFF</div>
                     <img src="{{ glass_paths.mmd_rff }}" alt="Glass Δ MMD-RFF">
+                    <details>
+                      <summary><b>Glass’s Δ table</b></summary>
+                      {{ render_glass_delta_table(delta_data, 'mmd_rff') }}
+                    </details>
                   </div>
                 {% endif %}
               {% endfor %}
             </div>
-
+            
           </details>
         {%- endmacro %}
 
@@ -227,10 +405,13 @@
             config.scatter_plot_paths_pooled,
             config.scatter_html_paths_pooled,
             "Pooled Chains results",
-            true
+            true,
+            config.sampler_stats_pooled,
+            config.pairwise_stats_pooled,
+            config.delta_data_pooled
         ) }}
 
-        {# ---------- chain level plots (if present) ---------- #}
+        {# ---------- chain level plots ---------- #}
         {% if config.metric_plot_paths_chain %}
           {{ metric_grid(
               config.metric_plot_paths_chain,
@@ -238,7 +419,10 @@
               config.scatter_plot_paths_chain,
               config.scatter_html_paths_chain,
               "One Chain results",
-              false
+              false,
+              config.sampler_stats_chain,
+              config.pairwise_stats_chain,
+              config.delta_data_chain
           ) }}
         {% endif %}
 
