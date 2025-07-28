@@ -1,0 +1,13 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-28 15:37:46
+Finished at:                  2025-07-28 15:37:59
+Total duration:               0h 0m 13.1s
+Output folder:                experiments/exp_test_label
+Output folder size:           381.9 kB
+Total configurations:         1
+Successful configuration:     0
+Failed configurations:        1
+ - Vary_Correlation_with_heavy_Tails: bad operand type for unary ~: 'list'

@@ -15,7 +15,7 @@ from .metrics       import sliced_wasserstein_distance, compute_mmd_rff, compute
 logger = logging.getLogger(__name__)
 
 
-def get_uniform_prior_bounds(means_array, iid_samples=None, quantile_mass=0.9999, expansion_factor=0.25, unimodal_init_margin=None):
+def get_uniform_prior_bounds(means_array, iid_samples=None, quantile_mass=0.9999, expansion_factor=0.25):
     
     min_mode = np.min(means_array, axis=0)
     max_mode = np.max(means_array, axis=0)
@@ -28,12 +28,7 @@ def get_uniform_prior_bounds(means_array, iid_samples=None, quantile_mass=0.9999
         print(f"Computed bounds from iid_samples: low={low}, high={high}, min_mode={min_mode}, max_mode={max_mode}, border={border}")
         return low, high, min_mode, max_mode, border
 
-    if len(means_array) == 1 and unimodal_init_margin is not None:
-        # For unimodal: use a fixed margin
-        border = unimodal_init_margin
-        low = min_mode - border
-        high = max_mode + border
-    else:
+    if not (len(means_array) == 1):
         # For multimodal: compute bounding box
         diff = (max_mode - min_mode)
         min_margin = np.where(diff > 40, diff, 40.0)
@@ -56,7 +51,7 @@ def enforce_min_bound_width(low, high, min_width=20.0):
     return low, high
 
 
-def get_initvals(init_scheme, means, eval_mode, num_chains, rng=None, run_id=None, init_folder=None, png_folder=None, varying_attribute=None, value=None, iid_batch=None, unimodal_init_margin = None):
+def get_initvals(init_scheme, means, eval_mode, num_chains, rng=None, run_id=None, init_folder=None, png_folder=None, varying_attribute=None, value=None, iid_batch=None):
     """Generates initialization values based on the chosen scheme.""" 
 
     if np.isscalar(means[0]):
@@ -90,7 +85,7 @@ def get_initvals(init_scheme, means, eval_mode, num_chains, rng=None, run_id=Non
                 }  
         else:
 
-            low, high,_,_,_ = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batch, quantile_mass=0.9999, expansion_factor=0.25, unimodal_init_margin=unimodal_init_margin)
+            low, high,_,_,_ = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batch, quantile_mass=0.9999, expansion_factor=0.25)
             initvals = [{"posterior": rng.uniform(low, high).item() if dim == 1 else rng.uniform(low, high)} for _ in range(num_chains)]
 
             if run_id == 1:          

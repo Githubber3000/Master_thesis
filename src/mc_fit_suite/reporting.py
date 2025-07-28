@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import ttest_ind
 from scipy.stats import ttest_rel
 from itertools import combinations
+import matplotlib.gridspec as gridspec
 import pprint
 import pandas as pd
 import arviz as az
@@ -1199,11 +1200,6 @@ def finalize_and_save_plot(fig, ax, xlabel, ylabel, title, save_path, save_path_
     plt.close(fig)
 
 
-
-    
-
-
-
 def plot_histogram(samples, title, save_path=None, save_path_png=None, posterior_type=None, value=None, xlim=(-20, 40)):
     """
     Plots a histogram and KDE of the given samples.
@@ -1272,105 +1268,85 @@ def describe_idata(idata, title):
 
 
 
-def plot_iid_vs_mcmc_colored(
-        mcmc_trace, 
-        iid_samples
-        ):            
-    """
-    Return a Figure that shows IID draws (red, chain 0) together with the
-    chains from `mcmc_trace` (blue tones).
-    """
-
-    # --- get reference shapes / names from the MCMC trace ------------
-    posterior_var   = mcmc_trace.posterior["posterior"]
-    n_draws_ref     = posterior_var.sizes["draw"]            # integer length
-    param_dims      = [d for d in posterior_var.dims if d not in ("chain", "draw")]
-    param_dim_name  = param_dims[0] if param_dims else None
-
-    # --- trim or thin IID draws to same length -----------------------
-    if iid_samples.shape[0] > n_draws_ref:
-         iid_samples = iid_samples[:n_draws_ref]
-    elif iid_samples.shape[0] < n_draws_ref:
-        raise ValueError(
-            f"IID draws ({iid_samples.shape[0]}) shorter than chain draws "
-            f"({n_draws_ref}); can't concat."
-        )
-
-
-    if param_dim_name is None:          # scalar case
-        iid_idata = az.from_dict(
-            posterior={"posterior": iid_samples[np.newaxis, ...]},  # (1,draw)
-        )
-    else:                               # vector case
-        dim = iid_samples.shape[1]
-        iid_idata = az.from_dict(
-            posterior={"posterior": iid_samples[np.newaxis, ...]},  # (1,draw,dim)
-            dims={"posterior": [param_dim_name]},
-            coords   ={param_dim_name: np.arange(dim)}
-        )
-
-    mcmc_posterior_only = az.InferenceData(posterior=mcmc_trace.posterior)
-
-    describe_idata(mcmc_posterior_only, "MCMC")
-    describe_idata(iid_idata,  "IID wrapper")
-
-
-    # concatenate chains = 1x iid + mcmc_chains
-    combined = az.concat([iid_idata, mcmc_posterior_only], dim="chain", reset_dim=True)
-
-    axes = az.plot_trace(combined, compact=True)
-
-    # # 3 ── recolour & relabel chain 0
-    # for ax in axes.flat:
-    #     first_line = ax.get_lines()[0]  
-    #     first_line.set_color("crimson")
-    #     first_line.set_label("IID")
-    #     ax.legend(fontsize="x-small")
-
-    for ax in axes.flat:
-        for line in ax.get_lines():
-            lbl = line.get_label()
-            if lbl == "chain 0":                  # IID
-                line.set_color("crimson")
-                line.set_linewidth(2.5)
-                line.set_linestyle("-")
-                line.set_alpha(1.0)
-                line.set_label("IID")
-            elif lbl.startswith("chain"):         # real MCMC
-                line.set_color("gray")
-                line.set_linewidth(1.0)
-                line.set_alpha(0.3)
-        ax.legend(fontsize="x-small")
-
-    return axes
-
 def plot_all_dims_combined(mcmc_trace, iid_samples, var_name="posterior"):
     """
     Compare the marginal of all dimensions combined in one histogram+KDE.
     """
-    post = mcmc_trace.posterior[var_name]              # xarray DataArray
-    # flatten *all* axes into one 1‐D array
-    mcmc_flat = post.values.flatten()
 
-    # flatten your IID samples whatever their shape is
+    num_dims = mcmc_trace.posterior[var_name].shape[-1]
+    height_per_dim = 0.35
+    base_height = 4
+    fig_height = min(20, base_height + num_dims * height_per_dim)
+
+    fig = plt.figure(figsize=(20, fig_height), constrained_layout=True)
+    outer_spec = gridspec.GridSpec(nrows=1, ncols=3, width_ratios=[1, 1, 1], figure=fig)
+
+    # Left: forest plot
+    ax0 = fig.add_subplot(outer_spec[0, 0])
+    # Middle: ridge plot
+    ax1 = fig.add_subplot(outer_spec[0, 1])
+
+    # Right: aggregated plot in its own vertical slice with inner spec
+    inner_spec = gridspec.GridSpecFromSubplotSpec(
+        nrows=3, ncols=1, subplot_spec=outer_spec[0, 2], height_ratios=[1, 4, 1]
+    )
+    ax2 = fig.add_subplot(inner_spec[1, 0])  
+
+
+    if iid_samples.ndim == 2:
+        iid_samples = iid_samples[np.newaxis, ...] 
+
+    # Wrap in InferenceData
+    idata_iid = az.from_dict(posterior={var_name: iid_samples})
+
+    az.plot_forest(
+        [idata_iid, mcmc_trace],
+        model_names=["IID", "MCMC"],
+        var_names=[var_name],
+        combined=True,
+        kind="forestplot",
+        quartiles=True,
+        hdi_prob=0.95,
+        ax=ax0,
+        colors=["steelblue", "crimson"]
+    )
+    ax0.set_title("Forest per Dimension")
+
+    az.plot_forest(
+            [idata_iid, mcmc_trace],
+            model_names=["IID", "MCMC"],
+            var_names= [var_name],
+            combined=True,
+            kind="ridgeplot",
+            ax=ax1,
+            colors=["steelblue", "crimson"]
+    )
+
+    ax1.set_title("Ridge per Dimension")
+
+    # flatten *all* axes into one 1‐D array
+    post = mcmc_trace.posterior[var_name]             
+    mcmc_flat = post.values.flatten()
     iid_flat = iid_samples.flatten()
 
-    fig, ax = plt.subplots(figsize=(6, 4))
-    # plot MCMC
-    ax.hist(mcmc_flat, bins=50, density=True,
-            alpha=0.2, color="crimson", label="MCMC (all dims)", zorder=3)
-    az.plot_kde(mcmc_flat, ax=ax, plot_kwargs={"color":"crimson"})
-    # plot IID
-    ax.hist(iid_flat, bins=50, density=True,
-            alpha=0.2, color="steelblue", label="IID (all dims)", zorder=1)
-    az.plot_kde(iid_flat, ax=ax, plot_kwargs={"color":"steelblue"}, fill_kwargs={"alpha": 0})
+    # wrap flattened samples into new InferenceData objects
+    idata_mcmc_flat = az.from_dict(posterior={"": mcmc_flat[np.newaxis, :]})
+    idata_iid_flat = az.from_dict(posterior={"": iid_flat[np.newaxis, :]})
 
-    ax.set_title("Marginal distributions aggregated over all dimensions")
-    ax.set_xlabel(var_name)
-    ax.set_ylabel("density")
-    ax.legend()
+    # plot ridgeplot of aggregated marginals (right panel)
+    az.plot_forest(
+        [idata_iid_flat, idata_mcmc_flat],
+        model_names=["IID", "MCMC"],
+        var_names= [""],
+        combined=True,
+        kind="ridgeplot",
+        ax=ax2,
+        colors=["steelblue", "crimson"]
+)
+
+    ax2.set_title("aggregated marginals")
+
     return fig
-
 
 
 def handle_trace_plots(eval_level, trace, iid_samples, sampler_name, varying_attribute, value, save_path=None, png_path=None, show=False, save_individual=False):
@@ -1386,13 +1362,12 @@ def handle_trace_plots(eval_level, trace, iid_samples, sampler_name, varying_att
     - show: if True, show plot in notebook
     - save_individual: if True and dim > 1, save individual dim plots
     """
+
     posterior_array = trace.posterior["posterior"]
     dim = posterior_array.shape[-1] if posterior_array.ndim == 3 else 1
-    #fig = plot_iid_vs_mcmc_colored(trace, iid_samples)
     fig = plot_all_dims_combined(trace, iid_samples)
-    #fig = az.plot_trace(trace, compact=True) 
 
-    plt.suptitle(f"Trace Plot {eval_level} ({sampler_name}, {varying_attribute} = {value})")
+    plt.suptitle(f"Marginal Comparison for {eval_level} ({sampler_name}, {varying_attribute} = {value})")
     plt.tight_layout()
 
     if show:
@@ -1447,7 +1422,7 @@ def plot_pairwise_scatter(
     
     dims= (0, 1)  # default to first two dimensions
     
-    # 1) extract and flatten MCMC samples
+    #  extract and flatten MCMC samples
     post = mcmc_trace.posterior[var_name].values
     # post.shape == (n_chains, n_draws, D)
     n_chains, n_draws, D = post.shape
@@ -1463,7 +1438,7 @@ def plot_pairwise_scatter(
         idx = np.random.choice(len(x_mcmc), max_pts, replace=False)
         x_mcmc, y_mcmc = x_mcmc[idx], y_mcmc[idx]
 
-    # 2) flatten IID samples
+    #  flatten IID samples
     iid_arr = np.asarray(iid_samples)
     if iid_arr.ndim != 2 or iid_arr.shape[1] <= max(dims):
         raise ValueError(
@@ -1477,10 +1452,10 @@ def plot_pairwise_scatter(
         idx = np.random.choice(len(x_iid), max_pts, replace=False)
         x_iid, y_iid = x_iid[idx], y_iid[idx]
 
-    # 3) build Plotly figure
+    # build Plotly figure
     fig = go.Figure()
     fig.add_trace(
-        go.Scattergl(
+        go.Scatter(
             x=x_mcmc,
             y=y_mcmc,
             mode="markers",
@@ -1489,7 +1464,7 @@ def plot_pairwise_scatter(
         )
     )
     fig.add_trace(
-        go.Scattergl(
+        go.Scatter(
             x=x_iid,
             y=y_iid,
             mode="markers",
@@ -1510,7 +1485,7 @@ def plot_pairwise_scatter(
         template="simple_white",
     )
 
-    # 4) optional: save standalone HTML
+    # save standalone HTML
     if html_path:
         fig.write_html(
             html_path,

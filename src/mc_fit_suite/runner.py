@@ -114,14 +114,13 @@ def run_full_experiment(
                         num_samples="varies" if config["varying_attribute"] == "num_samples" else config["num_samples"],
                         num_chains="varies" if config["varying_attribute"] == "num_chains" else config["num_chains"],
                         base_random_seed=config.get("base_random_seed"),
-                        unimodal_init_margin=config.get("unimodal_init_margin"),
                         group_name=group_name,
                         progress_bar=pbar, 
                         # Pass remaining keys as posterior_kwargs
                         **{k: v for k, v in config.items() if k not in [
                             "config_descr", "runs", "varying_attribute", "varying_values", 
                             "num_samples", "num_chains", "init_scheme", 
-                            "base_random_seed", "posterior_type", "unimodal_init_margin"
+                            "base_random_seed", "posterior_type"
                         ]} 
                     )
                 except Exception as e:

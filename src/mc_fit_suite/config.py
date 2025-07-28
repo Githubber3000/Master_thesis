@@ -310,15 +310,7 @@ def validate_config(config):
 
             if isinstance(val, list) and len(val) < max_dim:
                 raise ValueError(f"Parameter '{key}' in config '{config['config_descr']}' is too short for max dimension {max_dim}")
-
-        
-    if posterior_type == "Mixture" and varying_attr not in ("num_samples", "num_chains", "init_scheme", "weights", "dimension", "correlation", "circle_radius", "circle_modes"):
-        if "varying_component" not in config:
-            raise ValueError(
-                f"Config '{config_descr}' must have 'varying_component' defined "
-                f"when varying '{varying_attr}' for a Mixture."
-            )
-        
+  
     vc = config.get("varying_component")    
     if vc is not None and not (0 <= vc < len(config["component_types"])):
         raise ValueError(

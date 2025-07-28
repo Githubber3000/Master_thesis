@@ -105,8 +105,6 @@ def load_selected_global_stats(result_folder, metric_prefixes, mode="stats"):
         sampler = os.path.basename(file).replace("Global_results_", "").replace(".csv", "")
         df = pd.read_csv(file)
 
-        print(f"File: {file} → Columns: {df.columns.tolist()}")
-
         sampler_stats = {}
 
         if mode == "stats":

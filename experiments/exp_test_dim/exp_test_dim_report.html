@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>exp_test_dim – Experiment Report</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 2em;
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    .group-section {
+      margin-bottom: 3em;
+      border: 1px solid #ccc;
+      padding: 1em;
+      border-radius: 6px;
+    }
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .group-header h2 {
+      margin: 0;
+    }
+    .config-section {
+      margin-top: 1em;
+    }
+    .plot-row {
+      display: flex;
+      overflow-x: auto;
+      gap: 1em;
+      padding-bottom: 1em;
+      align-items: flex-start;
+    }
+
+    .plot-row > div,
+    .plot-row details.interactive-toggle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* force every tile to exactly 300px wide */
+      flex: 0 0 auto;
+      max-width: none;
+    }
+    .plot-row img,
+    .plot-row iframe {
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+    }
+
+    .plot-row img:not(.kde-plot) {
+      max-height: 200px;
+    }
+
+    img.kde-plot,
+    img.init-plot {
+      max-height: 180px;
+      max-width: 300px;
+      object-fit: contain;
+    }
+
+    .plot-title {
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .plot-thumb {
+      width: 1100px;        
+      height: 619px;       
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+      max-height: none;        
+    }
+
+    .plot-row details.interactive-toggle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;     
+      padding: 0;
+    }
+
+
+    .plot-row details.interactive-toggle:not([open])
+       summary .summary-text {
+        display: none;
+    }
+
+    .plot-column-layout {
+      display: flex;
+      flex-direction: row;
+      gap: 1em;
+      overflow-x: auto;
+      padding-bottom: 1em;
+      align-items: flex-start;
+    }
+
+    .plot-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    .plot-column span {
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+  </style>
+  <script>
+    function toggleGroup(id) {
+      const content = document.getElementById(id);
+      const arrow = document.getElementById(id + '-arrow');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        arrow.textContent = '▼';
+      } else {
+        content.classList.add('hidden');
+        arrow.textContent = '▶';
+      }
+    }
+  </script>
+</head>
+<body>
+<h1>exp_test_dim – Complete Experiment Report</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- Repeat this block per group -->
+  
+  <div class="group-section">
+    <div class="group-header" onclick="toggleGroup('group-1')">
+      <h2>Dimension</h2>
+      <span id="group-1-arrow">▼</span>
+    </div>
+
+
+    <div id="group-1">
+      
+      <div class="config-section">
+        <h3>
+          Vary_only_Dimension 
+          (MvNormal, 
+          dimension, 
+          3 runs)
+        </h3>
+
+        
+        
+
+
+        
+        
+
+          <details open>
+            <summary><b>Pooled Chains results</b></summary>
+        
+            <div class="plot-row">
+              
+                
+                  <div>
+                    <div class="plot-title">Wasserstein Distance</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+                    
+                    
+
+                      <details>
+                        <summary><b>Sampler vs IID stats</b></summary>
+                        
+<table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+  <thead>
+    <tr>
+      <th style="padding:4px 8px;">Sampler</th>
+      <th style="padding:4px 8px;">Varying</th>
+      <th style="padding:4px 8px;">t-stat</th>
+      <th style="padding:4px 8px;">p-value</th>
+      <th style="padding:4px 8px;">Glass&nbsp;Δ</th>
+    </tr>
+  </thead>
+  <tbody>
+
+  
+    
+    
+
+    
+    
+    
+      
+    
+
+      <tr>
+        <td style="padding:4px 8px;">DEMetro_Z</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">15.544</td>
+        <td style="padding:4px 8px; background-color: #fcb6b6;">0.00411</td>
+        <td style="padding:4px 8px;">4818.628</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+      
+    
+
+      <tr>
+        <td style="padding:4px 8px;">Metro</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">13.677</td>
+        <td style="padding:4px 8px; background-color: #fcb6b6;">0.00321</td>
+        <td style="padding:4px 8px;">31.923</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+
+      <tr>
+        <td style="padding:4px 8px;">HMC</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">-0.444</td>
+        <td style="padding:4px 8px; background-color: #b6fcb6;">0.69</td>
+        <td style="padding:4px 8px;">-0.654</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+
+      <tr>
+        <td style="padding:4px 8px;">SMC</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">1.887</td>
+        <td style="padding:4px 8px; background-color: #b6fcb6;">0.149</td>
+        <td style="padding:4px 8px;">1.263</td>
+      </tr>
+    
+  
+  </tbody>
+</table>
+
+                      </details>
+
+                      <details>
+                        <summary><b>Sampler vs Sampler stats</b></summary>
+                        
+  
+      <table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="padding:4px 8px;">Sampler Pair</th>
+            <th style="padding:4px 8px;">Varying</th>
+            <th style="padding:4px 8px;">t-stat</th>
+            <th style="padding:4px 8px;">p-value</th>
+            <th style="padding:4px 8px;">Cohen’s d</th>
+          </tr>
+        </thead>
+        <tbody>
+        
+
+        
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">Metro_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                12.253
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.0066
+              </td>
+              <td style="padding:4px 8px;">
+                7.074
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">DEMetro_Z_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                15.547
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00411
+              </td>
+              <td style="padding:4px 8px;">
+                8.976
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_DEMetro_Z</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -15.519
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00413
+              </td>
+              <td style="padding:4px 8px;">
+                -8.960
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -1.648
+              </td>
+              <td style="padding:4px 8px; background-color: #b6fcb6;">
+                0.241
+              </td>
+              <td style="padding:4px 8px;">
+                -0.952
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_Metro</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -13.084
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00579
+              </td>
+              <td style="padding:4px 8px;">
+                -7.554
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">Metro_vs_DEMetro_Z</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -15.333
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00423
+              </td>
+              <td style="padding:4px 8px;">
+                -8.853
+              </td>
+            </tr>
+          
+        
+      </tbody>
+    </table>
+  
+
+
+                      </details>
+                      
+                  </div>
+                
+
+                
+                
+
+                
+                
+                  <details class="interactive-toggle">
+                    <summary>
+                      <span class="plot-title summary-text">
+                        Wasserstein Distance (scatter)
+                      </span>
+                    </summary>
+                    <iframe src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/wasserstein_distance_global_scatter_interactive.html"
+                      class="plot-thumb"
+                      loading="lazy">
+                    </iframe>
+                  </details>
+                
+
+                
+                
+                  <div>
+                    <div class="plot-title">Glass’s Δ WS</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/glass_delta_ws.png" alt="Glass Δ WS">
+                        <details>
+                          <summary><b>Glass’s Δ table</b></summary>
+                          
+  <table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th style="padding:4px 8px;">Sampler</th>
+        <th style="padding:4px 8px;">Varying</th>
+        <th style="padding:4px 8px;">MCMC Mean</th>
+        <th style="padding:4px 8px;">IID Mean</th>
+        <th style="padding:4px 8px;">IID Std</th>
+        <th style="padding:4px 8px;">Glass’s Δ</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">DEMetro_Z</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">1.865</td>
+              <td style="padding:4px 8px;">0.028</td>
+              <td style="padding:4px 8px;">0.000</td>
+              <td style="padding:4px 8px;">4818.628</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">Metro</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.041</td>
+              <td style="padding:4px 8px;">0.028</td>
+              <td style="padding:4px 8px;">0.000</td>
+              <td style="padding:4px 8px;">31.923</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">HMC</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.028</td>
+              <td style="padding:4px 8px;">0.028</td>
+              <td style="padding:4px 8px;">0.000</td>
+              <td style="padding:4px 8px;">-0.654</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">SMC</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.029</td>
+              <td style="padding:4px 8px;">0.028</td>
+              <td style="padding:4px 8px;">0.000</td>
+              <td style="padding:4px 8px;">1.263</td>
+            </tr>
+          
+        
+      
+    </tbody>
+  </table>
+
+                        </details>
+                  </div>
+
+                
+              
+                
+                  <div>
+                    <div class="plot-title">Mmd Rff</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+                    
+                    
+
+                      <details>
+                        <summary><b>Sampler vs IID stats</b></summary>
+                        
+<table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+  <thead>
+    <tr>
+      <th style="padding:4px 8px;">Sampler</th>
+      <th style="padding:4px 8px;">Varying</th>
+      <th style="padding:4px 8px;">t-stat</th>
+      <th style="padding:4px 8px;">p-value</th>
+      <th style="padding:4px 8px;">Glass&nbsp;Δ</th>
+    </tr>
+  </thead>
+  <tbody>
+
+  
+    
+    
+
+    
+    
+    
+      
+    
+
+      <tr>
+        <td style="padding:4px 8px;">DEMetro_Z</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">123.864</td>
+        <td style="padding:4px 8px; background-color: #fcb6b6;">4.55e-05</td>
+        <td style="padding:4px 8px;">491.290</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+      
+    
+
+      <tr>
+        <td style="padding:4px 8px;">Metro</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">6.912</td>
+        <td style="padding:4px 8px; background-color: #fcb6b6;">0.00683</td>
+        <td style="padding:4px 8px;">9.051</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+
+      <tr>
+        <td style="padding:4px 8px;">HMC</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">-3.218</td>
+        <td style="padding:4px 8px; background-color: #b6fcb6;">0.0511</td>
+        <td style="padding:4px 8px;">-2.066</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+
+      <tr>
+        <td style="padding:4px 8px;">SMC</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">-1.966</td>
+        <td style="padding:4px 8px; background-color: #b6fcb6;">0.126</td>
+        <td style="padding:4px 8px;">-1.422</td>
+      </tr>
+    
+  
+  </tbody>
+</table>
+
+                      </details>
+
+                      <details>
+                        <summary><b>Sampler vs Sampler stats</b></summary>
+                        
+  
+      <table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="padding:4px 8px;">Sampler Pair</th>
+            <th style="padding:4px 8px;">Varying</th>
+            <th style="padding:4px 8px;">t-stat</th>
+            <th style="padding:4px 8px;">p-value</th>
+            <th style="padding:4px 8px;">Cohen’s d</th>
+          </tr>
+        </thead>
+        <tbody>
+        
+
+        
+        
+          
+          
+
+            
+            
+            
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">Metro_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                6.866
+              </td>
+              <td style="padding:4px 8px; background-color: #b6fcb6;">
+                0.0206
+              </td>
+              <td style="padding:4px 8px;">
+                3.964
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">DEMetro_Z_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                124.625
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                6.44e-05
+              </td>
+              <td style="padding:4px 8px;">
+                71.952
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_DEMetro_Z</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -124.301
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                6.47e-05
+              </td>
+              <td style="padding:4px 8px;">
+                -71.765
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_Metro</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -7.872
+              </td>
+              <td style="padding:4px 8px; background-color: #fff3b0;">
+                0.0158
+              </td>
+              <td style="padding:4px 8px;">
+                -4.545
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">Metro_vs_DEMetro_Z</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -149.098
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                4.5e-05
+              </td>
+              <td style="padding:4px 8px;">
+                -86.082
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -4.027
+              </td>
+              <td style="padding:4px 8px; background-color: #b6fcb6;">
+                0.0565
+              </td>
+              <td style="padding:4px 8px;">
+                -2.325
+              </td>
+            </tr>
+          
+        
+      </tbody>
+    </table>
+  
+
+
+                      </details>
+                      
+                  </div>
+                
+
+                
+                
+
+                
+                
+                  <details class="interactive-toggle">
+                    <summary>
+                      <span class="plot-title summary-text">
+                        Mmd Rff (scatter)
+                      </span>
+                    </summary>
+                    <iframe src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/mmd_rff_global_scatter_interactive.html"
+                      class="plot-thumb"
+                      loading="lazy">
+                    </iframe>
+                  </details>
+                
+
+                
+                
+                  <div>
+                    <div class="plot-title">Glass’s Δ MMD-RFF</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/glass_delta_mmd_rff.png" alt="Glass Δ MMD-RFF">
+                    <details>
+                      <summary><b>Glass’s Δ table</b></summary>
+                      
+  <table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th style="padding:4px 8px;">Sampler</th>
+        <th style="padding:4px 8px;">Varying</th>
+        <th style="padding:4px 8px;">MCMC Mean</th>
+        <th style="padding:4px 8px;">IID Mean</th>
+        <th style="padding:4px 8px;">IID Std</th>
+        <th style="padding:4px 8px;">Glass’s Δ</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">DEMetro_Z</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.524</td>
+              <td style="padding:4px 8px;">0.015</td>
+              <td style="padding:4px 8px;">0.001</td>
+              <td style="padding:4px 8px;">491.290</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">Metro</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.024</td>
+              <td style="padding:4px 8px;">0.015</td>
+              <td style="padding:4px 8px;">0.001</td>
+              <td style="padding:4px 8px;">9.051</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">HMC</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.013</td>
+              <td style="padding:4px 8px;">0.015</td>
+              <td style="padding:4px 8px;">0.001</td>
+              <td style="padding:4px 8px;">-2.066</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">SMC</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.013</td>
+              <td style="padding:4px 8px;">0.015</td>
+              <td style="padding:4px 8px;">0.001</td>
+              <td style="padding:4px 8px;">-1.422</td>
+            </tr>
+          
+        
+      
+    </tbody>
+  </table>
+
+                    </details>
+                  </div>
+                
+              
+                
+                  <div>
+                    <div class="plot-title">Runtime</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/runtime_global_plot_shaded.png" alt="runtime plot">
+                    
+                    
+                  </div>
+                
+
+                
+                
+
+                
+                
+                  <details class="interactive-toggle">
+                    <summary>
+                      <span class="plot-title summary-text">
+                        Runtime (scatter)
+                      </span>
+                    </summary>
+                    <iframe src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/runtime_global_scatter_interactive.html"
+                      class="plot-thumb"
+                      loading="lazy">
+                    </iframe>
+                  </details>
+                
+
+                
+                
+              
+                
+                  <div>
+                    <div class="plot-title">Ess</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/ess_global_plot_shaded.png" alt="ess plot">
+                    
+                    
+                  </div>
+                
+
+                
+                
+
+                
+                
+                  <details class="interactive-toggle">
+                    <summary>
+                      <span class="plot-title summary-text">
+                        Ess (scatter)
+                      </span>
+                    </summary>
+                    <iframe src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/ess_global_scatter_interactive.html"
+                      class="plot-thumb"
+                      loading="lazy">
+                    </iframe>
+                  </details>
+                
+
+                
+                
+              
+                
+                  <div>
+                    <div class="plot-title">Ess Per Sec</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/ess_per_sec_global_plot_shaded.png" alt="ess_per_sec plot">
+                    
+                    
+                  </div>
+                
+
+                
+                
+
+                
+                
+                  <details class="interactive-toggle">
+                    <summary>
+                      <span class="plot-title summary-text">
+                        Ess Per Sec (scatter)
+                      </span>
+                    </summary>
+                    <iframe src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/ess_per_sec_global_scatter_interactive.html"
+                      class="plot-thumb"
+                      loading="lazy">
+                    </iframe>
+                  </details>
+                
+
+                
+                
+              
+                
+                  <div>
+                    <div class="plot-title">R Hat</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/r_hat_global_plot_shaded.png" alt="r_hat plot">
+                    
+                    
+                  </div>
+                
+
+                
+                
+
+                
+                
+                  <details class="interactive-toggle">
+                    <summary>
+                      <span class="plot-title summary-text">
+                        R Hat (scatter)
+                      </span>
+                    </summary>
+                    <iframe src="results/z_html_pngs/Dimension/Vary_only_Dimension/pooled_global_plots/r_hat_global_scatter_interactive.html"
+                      class="plot-thumb"
+                      loading="lazy">
+                    </iframe>
+                  </details>
+                
+
+                
+                
+              
+            </div>
+            
+          </details>
+
+        
+        
+          
+
+          <details >
+            <summary><b>One Chain results</b></summary>
+        
+            <div class="plot-row">
+              
+                
+                  <div>
+                    <div class="plot-title">Wasserstein Distance</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/wasserstein_distance_global_plot_shaded.png" alt="wasserstein_distance plot">
+                    
+                    
+
+                      <details>
+                        <summary><b>Sampler vs IID stats</b></summary>
+                        
+<table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+  <thead>
+    <tr>
+      <th style="padding:4px 8px;">Sampler</th>
+      <th style="padding:4px 8px;">Varying</th>
+      <th style="padding:4px 8px;">t-stat</th>
+      <th style="padding:4px 8px;">p-value</th>
+      <th style="padding:4px 8px;">Glass&nbsp;Δ</th>
+    </tr>
+  </thead>
+  <tbody>
+
+  
+    
+    
+
+    
+    
+    
+      
+    
+
+      <tr>
+        <td style="padding:4px 8px;">DEMetro_Z</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">15.961</td>
+        <td style="padding:4px 8px; background-color: #fcb6b6;">0.0039</td>
+        <td style="padding:4px 8px;">3974.395</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+      
+    
+
+      <tr>
+        <td style="padding:4px 8px;">Metro</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">45.795</td>
+        <td style="padding:4px 8px; background-color: #fcb6b6;">1.93e-06</td>
+        <td style="padding:4px 8px;">34.395</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+
+      <tr>
+        <td style="padding:4px 8px;">HMC</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">-0.769</td>
+        <td style="padding:4px 8px; background-color: #b6fcb6;">0.511</td>
+        <td style="padding:4px 8px;">-1.540</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+
+      <tr>
+        <td style="padding:4px 8px;">SMC</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">0.135</td>
+        <td style="padding:4px 8px; background-color: #b6fcb6;">0.905</td>
+        <td style="padding:4px 8px;">0.550</td>
+      </tr>
+    
+  
+  </tbody>
+</table>
+
+                      </details>
+
+                      <details>
+                        <summary><b>Sampler vs Sampler stats</b></summary>
+                        
+  
+      <table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="padding:4px 8px;">Sampler Pair</th>
+            <th style="padding:4px 8px;">Varying</th>
+            <th style="padding:4px 8px;">t-stat</th>
+            <th style="padding:4px 8px;">p-value</th>
+            <th style="padding:4px 8px;">Cohen’s d</th>
+          </tr>
+        </thead>
+        <tbody>
+        
+
+        
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">Metro_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                9.084
+              </td>
+              <td style="padding:4px 8px; background-color: #fff3b0;">
+                0.0119
+              </td>
+              <td style="padding:4px 8px;">
+                5.244
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">DEMetro_Z_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                15.718
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00402
+              </td>
+              <td style="padding:4px 8px;">
+                9.075
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_DEMetro_Z</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -15.857
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00395
+              </td>
+              <td style="padding:4px 8px;">
+                -9.155
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -0.696
+              </td>
+              <td style="padding:4px 8px; background-color: #b6fcb6;">
+                0.558
+              </td>
+              <td style="padding:4px 8px;">
+                -0.402
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_Metro</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -18.150
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00302
+              </td>
+              <td style="padding:4px 8px;">
+                -10.479
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">Metro_vs_DEMetro_Z</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -15.810
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00398
+              </td>
+              <td style="padding:4px 8px;">
+                -9.128
+              </td>
+            </tr>
+          
+        
+      </tbody>
+    </table>
+  
+
+
+                      </details>
+                      
+                  </div>
+                
+
+                
+                
+
+                
+                
+                  <details class="interactive-toggle">
+                    <summary>
+                      <span class="plot-title summary-text">
+                        Wasserstein Distance (scatter)
+                      </span>
+                    </summary>
+                    <iframe src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/wasserstein_distance_global_scatter_interactive.html"
+                      class="plot-thumb"
+                      loading="lazy">
+                    </iframe>
+                  </details>
+                
+
+                
+                
+                  <div>
+                    <div class="plot-title">Glass’s Δ WS</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/glass_delta_ws.png" alt="Glass Δ WS">
+                        <details>
+                          <summary><b>Glass’s Δ table</b></summary>
+                          
+  <table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th style="padding:4px 8px;">Sampler</th>
+        <th style="padding:4px 8px;">Varying</th>
+        <th style="padding:4px 8px;">MCMC Mean</th>
+        <th style="padding:4px 8px;">IID Mean</th>
+        <th style="padding:4px 8px;">IID Std</th>
+        <th style="padding:4px 8px;">Glass’s Δ</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">DEMetro_Z</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">1.543</td>
+              <td style="padding:4px 8px;">0.028</td>
+              <td style="padding:4px 8px;">0.000</td>
+              <td style="padding:4px 8px;">3974.395</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">Metro</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.041</td>
+              <td style="padding:4px 8px;">0.028</td>
+              <td style="padding:4px 8px;">0.000</td>
+              <td style="padding:4px 8px;">34.395</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">HMC</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.028</td>
+              <td style="padding:4px 8px;">0.028</td>
+              <td style="padding:4px 8px;">0.000</td>
+              <td style="padding:4px 8px;">-1.540</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">SMC</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.029</td>
+              <td style="padding:4px 8px;">0.028</td>
+              <td style="padding:4px 8px;">0.000</td>
+              <td style="padding:4px 8px;">0.550</td>
+            </tr>
+          
+        
+      
+    </tbody>
+  </table>
+
+                        </details>
+                  </div>
+
+                
+              
+                
+                  <div>
+                    <div class="plot-title">Mmd Rff</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/mmd_rff_global_plot_shaded.png" alt="mmd_rff plot">
+                    
+                    
+
+                      <details>
+                        <summary><b>Sampler vs IID stats</b></summary>
+                        
+<table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+  <thead>
+    <tr>
+      <th style="padding:4px 8px;">Sampler</th>
+      <th style="padding:4px 8px;">Varying</th>
+      <th style="padding:4px 8px;">t-stat</th>
+      <th style="padding:4px 8px;">p-value</th>
+      <th style="padding:4px 8px;">Glass&nbsp;Δ</th>
+    </tr>
+  </thead>
+  <tbody>
+
+  
+    
+    
+
+    
+    
+    
+      
+    
+
+      <tr>
+        <td style="padding:4px 8px;">DEMetro_Z</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">31.586</td>
+        <td style="padding:4px 8px; background-color: #fcb6b6;">0.000993</td>
+        <td style="padding:4px 8px;">671.905</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+      
+    
+
+      <tr>
+        <td style="padding:4px 8px;">Metro</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">8.834</td>
+        <td style="padding:4px 8px; background-color: #fcb6b6;">0.00146</td>
+        <td style="padding:4px 8px;">8.859</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+
+      <tr>
+        <td style="padding:4px 8px;">HMC</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">-3.143</td>
+        <td style="padding:4px 8px; background-color: #b6fcb6;">0.0564</td>
+        <td style="padding:4px 8px;">-1.996</td>
+      </tr>
+    
+  
+    
+    
+
+    
+    
+    
+
+      <tr>
+        <td style="padding:4px 8px;">SMC</td>
+        <td style="padding:4px 8px;">30</td>
+        <td style="padding:4px 8px;">-1.158</td>
+        <td style="padding:4px 8px; background-color: #b6fcb6;">0.332</td>
+        <td style="padding:4px 8px;">-1.487</td>
+      </tr>
+    
+  
+  </tbody>
+</table>
+
+                      </details>
+
+                      <details>
+                        <summary><b>Sampler vs Sampler stats</b></summary>
+                        
+  
+      <table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="padding:4px 8px;">Sampler Pair</th>
+            <th style="padding:4px 8px;">Varying</th>
+            <th style="padding:4px 8px;">t-stat</th>
+            <th style="padding:4px 8px;">p-value</th>
+            <th style="padding:4px 8px;">Cohen’s d</th>
+          </tr>
+        </thead>
+        <tbody>
+        
+
+        
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">Metro_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                27.257
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00134
+              </td>
+              <td style="padding:4px 8px;">
+                15.737
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">DEMetro_Z_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                30.050
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00111
+              </td>
+              <td style="padding:4px 8px;">
+                17.349
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_DEMetro_Z</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -31.327
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00102
+              </td>
+              <td style="padding:4px 8px;">
+                -18.087
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_Metro</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -19.475
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.00263
+              </td>
+              <td style="padding:4px 8px;">
+                -11.244
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+              
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">Metro_vs_DEMetro_Z</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -30.060
+              </td>
+              <td style="padding:4px 8px; background-color: #fcb6b6;">
+                0.0011
+              </td>
+              <td style="padding:4px 8px;">
+                -17.355
+              </td>
+            </tr>
+          
+        
+          
+          
+
+            
+            
+            
+            
+
+
+            <tr>
+              <td style="padding:4px 8px;">HMC_vs_SMC</td>
+              <td style="padding:4px 8px;">
+                
+                
+                  0
+                
+              </td>
+              <td style="padding:4px 8px;">
+                -0.568
+              </td>
+              <td style="padding:4px 8px; background-color: #b6fcb6;">
+                0.628
+              </td>
+              <td style="padding:4px 8px;">
+                -0.328
+              </td>
+            </tr>
+          
+        
+      </tbody>
+    </table>
+  
+
+
+                      </details>
+                      
+                  </div>
+                
+
+                
+                
+
+                
+                
+                  <details class="interactive-toggle">
+                    <summary>
+                      <span class="plot-title summary-text">
+                        Mmd Rff (scatter)
+                      </span>
+                    </summary>
+                    <iframe src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/mmd_rff_global_scatter_interactive.html"
+                      class="plot-thumb"
+                      loading="lazy">
+                    </iframe>
+                  </details>
+                
+
+                
+                
+                  <div>
+                    <div class="plot-title">Glass’s Δ MMD-RFF</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/glass_delta_mmd_rff.png" alt="Glass Δ MMD-RFF">
+                    <details>
+                      <summary><b>Glass’s Δ table</b></summary>
+                      
+  <table border="1" style="margin:0.75em 0; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th style="padding:4px 8px;">Sampler</th>
+        <th style="padding:4px 8px;">Varying</th>
+        <th style="padding:4px 8px;">MCMC Mean</th>
+        <th style="padding:4px 8px;">IID Mean</th>
+        <th style="padding:4px 8px;">IID Std</th>
+        <th style="padding:4px 8px;">Glass’s Δ</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">DEMetro_Z</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.711</td>
+              <td style="padding:4px 8px;">0.015</td>
+              <td style="padding:4px 8px;">0.001</td>
+              <td style="padding:4px 8px;">671.905</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">Metro</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.024</td>
+              <td style="padding:4px 8px;">0.015</td>
+              <td style="padding:4px 8px;">0.001</td>
+              <td style="padding:4px 8px;">8.859</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">HMC</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.013</td>
+              <td style="padding:4px 8px;">0.015</td>
+              <td style="padding:4px 8px;">0.001</td>
+              <td style="padding:4px 8px;">-1.996</td>
+            </tr>
+          
+        
+      
+        
+          
+          
+          
+            <tr>
+              <td style="padding:4px 8px;">SMC</td>
+              <td style="padding:4px 8px;">30</td>
+              <td style="padding:4px 8px;">0.013</td>
+              <td style="padding:4px 8px;">0.015</td>
+              <td style="padding:4px 8px;">0.001</td>
+              <td style="padding:4px 8px;">-1.487</td>
+            </tr>
+          
+        
+      
+    </tbody>
+  </table>
+
+                    </details>
+                  </div>
+                
+              
+                
+                  <div>
+                    <div class="plot-title">Runtime</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/runtime_global_plot_shaded.png" alt="runtime plot">
+                    
+                    
+                  </div>
+                
+
+                
+                
+
+                
+                
+                  <details class="interactive-toggle">
+                    <summary>
+                      <span class="plot-title summary-text">
+                        Runtime (scatter)
+                      </span>
+                    </summary>
+                    <iframe src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/runtime_global_scatter_interactive.html"
+                      class="plot-thumb"
+                      loading="lazy">
+                    </iframe>
+                  </details>
+                
+
+                
+                
+              
+                
+                  <div>
+                    <div class="plot-title">Ess</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/ess_global_plot_shaded.png" alt="ess plot">
+                    
+                    
+                  </div>
+                
+
+                
+                
+
+                
+                
+
+                
+                
+              
+                
+                  <div>
+                    <div class="plot-title">Ess Per Sec</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/ess_per_sec_global_plot_shaded.png" alt="ess_per_sec plot">
+                    
+                    
+                  </div>
+                
+
+                
+                
+
+                
+                
+
+                
+                
+              
+                
+                  <div>
+                    <div class="plot-title">R Hat</div>
+                    <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/chain_global_plots/r_hat_global_plot_shaded.png" alt="r_hat plot">
+                    
+                    
+                  </div>
+                
+
+                
+                
+
+                
+                
+
+                
+                
+              
+            </div>
+            
+          </details>
+        
+
+        
+        
+
+        
+        
+        <details>
+          <summary><b>Trace Plots</b></summary>
+
+          
+          <details open>
+            <summary style="font-weight:bold; cursor:pointer;">Pooled</summary>
+            <div class="plot-column-layout">
+              
+                <div class="plot-column">
+                  <span class="plot-title">30</span>
+                  
+                    
+                      <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/trace_plots/pooled_HMC_30_trace_plot.png"
+                          alt="HMC pooled trace"
+                          class="init-plot">
+                    
+                  
+                    
+                      <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/trace_plots/pooled_Metro_30_trace_plot.png"
+                          alt="Metro pooled trace"
+                          class="init-plot">
+                    
+                  
+                    
+                      <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/trace_plots/pooled_SMC_30_trace_plot.png"
+                          alt="SMC pooled trace"
+                          class="init-plot">
+                    
+                  
+                    
+                      <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/trace_plots/pooled_DEMetro_Z_30_trace_plot.png"
+                          alt="DEMetro_Z pooled trace"
+                          class="init-plot">
+                    
+                  
+                </div>
+              
+            </div>
+          </details>
+
+          
+          <details>
+            <summary style="font-weight:bold; cursor:pointer;">Chain</summary>
+            <div class="plot-column-layout">
+              
+                <div class="plot-column">
+                  <span class="plot-title">30</span>
+                  
+                    
+                      <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/trace_plots/chain_HMC_30_trace_plot.png"
+                          alt="HMC chain trace"
+                          class="init-plot">
+                    
+                  
+                    
+                      <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/trace_plots/chain_Metro_30_trace_plot.png"
+                          alt="Metro chain trace"
+                          class="init-plot">
+                    
+                  
+                    
+                      <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/trace_plots/chain_SMC_30_trace_plot.png"
+                          alt="SMC chain trace"
+                          class="init-plot">
+                    
+                  
+                    
+                      <img src="results/z_html_pngs/Dimension/Vary_only_Dimension/trace_plots/chain_DEMetro_Z_30_trace_plot.png"
+                          alt="DEMetro_Z chain trace"
+                          class="init-plot">
+                    
+                  
+                </div>
+              
+            </div>
+          </details>
+        </details>
+        
+
+        
+        
+        <details>
+          <summary><b>Pairwise Scatter Plots</b></summary>
+
+          
+          <details open>
+            <summary style="font-weight:bold; cursor:pointer;">Pooled</summary>
+            <div class="plot-column-layout">
+              
+                <div class="plot-column">
+                  <span class="plot-title">30</span>
+                  
+                    
+                      <iframe
+                        src="results/z_html_pngs/Dimension/Vary_only_Dimension/pairwise_scatter/pooled_HMC_30_pairwise_scatter.html"
+                        class="interactive-iframe"
+                        frameborder="0"
+                        scrolling="no"
+                        width="100%"
+                        height="300px"
+                        loading="lazy">
+                      </iframe>
+                    
+                  
+                    
+                      <iframe
+                        src="results/z_html_pngs/Dimension/Vary_only_Dimension/pairwise_scatter/pooled_Metro_30_pairwise_scatter.html"
+                        class="interactive-iframe"
+                        frameborder="0"
+                        scrolling="no"
+                        width="100%"
+                        height="300px"
+                        loading="lazy">
+                      </iframe>
+                    
+                  
+                    
+                      <iframe
+                        src="results/z_html_pngs/Dimension/Vary_only_Dimension/pairwise_scatter/pooled_SMC_30_pairwise_scatter.html"
+                        class="interactive-iframe"
+                        frameborder="0"
+                        scrolling="no"
+                        width="100%"
+                        height="300px"
+                        loading="lazy">
+                      </iframe>
+                    
+                  
+                    
+                      <iframe
+                        src="results/z_html_pngs/Dimension/Vary_only_Dimension/pairwise_scatter/pooled_DEMetro_Z_30_pairwise_scatter.html"
+                        class="interactive-iframe"
+                        frameborder="0"
+                        scrolling="no"
+                        width="100%"
+                        height="300px"
+                        loading="lazy">
+                      </iframe>
+                    
+                  
+                </div>
+              
+            </div>
+          </details>
+
+          
+          <details>
+            <summary style="font-weight:bold; cursor:pointer;">Chain</summary>
+            <div class="plot-column-layout">
+              
+                <div class="plot-column">
+                  <span class="plot-title">30</span>
+                  
+                    
+                      <iframe
+                        src="results/z_html_pngs/Dimension/Vary_only_Dimension/pairwise_scatter/chain_HMC_30_pairwise_scatter.html"
+                        class="interactive-iframe"
+                        frameborder="0"
+                        scrolling="no"
+                        width="100%"
+                        height="300px"
+                        loading="lazy">
+                      </iframe>
+                    
+                  
+                    
+                      <iframe
+                        src="results/z_html_pngs/Dimension/Vary_only_Dimension/pairwise_scatter/chain_Metro_30_pairwise_scatter.html"
+                        class="interactive-iframe"
+                        frameborder="0"
+                        scrolling="no"
+                        width="100%"
+                        height="300px"
+                        loading="lazy">
+                      </iframe>
+                    
+                  
+                    
+                      <iframe
+                        src="results/z_html_pngs/Dimension/Vary_only_Dimension/pairwise_scatter/chain_SMC_30_pairwise_scatter.html"
+                        class="interactive-iframe"
+                        frameborder="0"
+                        scrolling="no"
+                        width="100%"
+                        height="300px"
+                        loading="lazy">
+                      </iframe>
+                    
+                  
+                    
+                      <iframe
+                        src="results/z_html_pngs/Dimension/Vary_only_Dimension/pairwise_scatter/chain_DEMetro_Z_30_pairwise_scatter.html"
+                        class="interactive-iframe"
+                        frameborder="0"
+                        scrolling="no"
+                        width="100%"
+                        height="300px"
+                        loading="lazy">
+                      </iframe>
+                    
+                  
+                </div>
+              
+            </div>
+          </details>
+        </details>
+        
+
+      </div>
+      
+    </div>
+  </div>
+  
+
+</body>
+</html>

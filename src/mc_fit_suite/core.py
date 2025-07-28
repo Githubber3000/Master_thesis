@@ -197,7 +197,6 @@ def run_experiment(
     num_chains,
     init_scheme=None,
     base_random_seed=None,
-    unimodal_init_margin=None,
     progress_bar=None,
     group_name="default",
     **posterior_kwargs
@@ -538,8 +537,8 @@ def run_experiment(
   
             if init_scheme is not None:
                     means = extract_means_from_posterior(posterior_type, posterior_kwargs)
-                    init_pooled = get_initvals(init_scheme, means, pooled_eval_mode, num_chains, rng, run_id, init_value_folder, png_folder_init_pooled, varying_attribute, value, iid_batch=iid_batches[0], unimodal_init_margin=unimodal_init_margin)
-                    init_chain = get_initvals(init_scheme, means, chain_eval_mode, 1, rng, run_id, init_value_folder, png_folder_init_chain, varying_attribute, value, iid_batch=iid_batches[0], unimodal_init_margin=unimodal_init_margin)
+                    init_pooled = get_initvals(init_scheme, means, pooled_eval_mode, num_chains, rng, run_id, init_value_folder, png_folder_init_pooled, varying_attribute, value, iid_batch=iid_batches[0])
+                    init_chain = get_initvals(init_scheme, means, chain_eval_mode, 1, rng, run_id, init_value_folder, png_folder_init_chain, varying_attribute, value, iid_batch=iid_batches[0])
 
 
             # Run sampling for all samplers
@@ -572,7 +571,7 @@ def run_experiment(
 
                     else :
                         # compute higher and lower bound for init prior
-                        low, high, _,_,_ = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batches[0], quantile_mass=0.9999, expansion_factor=0.25, unimodal_init_margin=unimodal_init_margin)
+                        low, high, _,_,_ = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batches[0], quantile_mass=0.9999, expansion_factor=0.25)
                         posterior = SinglePosterior(dist_name=posterior_type, dist_params=posterior_kwargs, use_smc=True, low=low, high=high)
 
 

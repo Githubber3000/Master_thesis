@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-28 16:52:34
+Finished at:                  2025-07-28 16:55:29
+Total duration:               0h 2m 55.1s
+Output folder:                experiments/exp_yolo_2
+Output folder size:           4.4 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0
