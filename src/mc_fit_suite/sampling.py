@@ -15,7 +15,7 @@ from .metrics       import sliced_wasserstein_distance, compute_mmd_rff, compute
 logger = logging.getLogger(__name__)
 
 
-def get_uniform_prior_bounds(means_array, iid_samples=None, quantile_mass=0.9999, expansion_factor=0.25):
+def get_uniform_prior_bounds(means_array, iid_samples=None, quantile_mass=0.9999, expansion_factor= 1.0):
     
     min_mode = np.min(means_array, axis=0)
     max_mode = np.max(means_array, axis=0)
@@ -24,7 +24,9 @@ def get_uniform_prior_bounds(means_array, iid_samples=None, quantile_mass=0.9999
         low = np.quantile(iid_samples, (1 - quantile_mass) / 2, axis=0)
         high = np.quantile(iid_samples, 1 - (1 - quantile_mass) / 2, axis=0)
         low, high = enforce_min_bound_width(low, high, min_width=20.0)
-        border = (high - low) / 2.0
+        border = (high - low) * expansion_factor
+        low = low - border
+        high = high + border
         print(f"Computed bounds from iid_samples: low={low}, high={high}, min_mode={min_mode}, max_mode={max_mode}, border={border}")
         return low, high, min_mode, max_mode, border
 
@@ -67,7 +69,7 @@ def get_initvals(init_scheme, means, eval_mode, num_chains, rng=None, run_id=Non
         if len(means_array) >= 2:
             # Multimodal case
             # Compute bounding box across all dimensions
-            low, high, min_mode, max_mode, border  = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batch, quantile_mass=0.9999, expansion_factor=0.25)
+            low, high, min_mode, max_mode, border  = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batch, quantile_mass=0.9999, expansion_factor=1.0)
             initvals = [{"posterior": rng.uniform(low, high).item() if dim == 1 else rng.uniform(low, high)} for _ in range(num_chains)]
 
             if run_id == 1:
@@ -85,7 +87,7 @@ def get_initvals(init_scheme, means, eval_mode, num_chains, rng=None, run_id=Non
                 }  
         else:
 
-            low, high,_,_,_ = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batch, quantile_mass=0.9999, expansion_factor=0.25)
+            low, high,_,_,_ = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batch, quantile_mass=0.9999, expansion_factor=1.0)
             initvals = [{"posterior": rng.uniform(low, high).item() if dim == 1 else rng.uniform(low, high)} for _ in range(num_chains)]
 
             if run_id == 1:          

@@ -559,7 +559,7 @@ def run_experiment(
 
                     if posterior_type == "Mixture":
                         #compute higher and lower bound for init prior
-                        low, high,_,_,_  = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batches[0], quantile_mass=0.9999, expansion_factor=0.25)   
+                        low, high,_,_,_  = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batches[0], quantile_mass=0.9999, expansion_factor=1.0)   
                         posterior = MixturePosterior(
                             component_types=posterior_kwargs["component_types"],
                             component_params=posterior_kwargs["component_params"],
@@ -571,7 +571,7 @@ def run_experiment(
 
                     else :
                         # compute higher and lower bound for init prior
-                        low, high, _,_,_ = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batches[0], quantile_mass=0.9999, expansion_factor=0.25)
+                        low, high, _,_,_ = get_uniform_prior_bounds(means_array=means_array, iid_samples=iid_batches[0], quantile_mass=0.9999, expansion_factor=1.0)
                         posterior = SinglePosterior(dist_name=posterior_type, dist_params=posterior_kwargs, use_smc=True, low=low, high=high)
 
 

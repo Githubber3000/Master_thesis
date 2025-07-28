@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-28 18:24:35
+Finished at:                  2025-07-28 18:28:47
+Total duration:               0h 4m 11.3s
+Output folder:                experiments/exp_checls
+Output folder size:           7.0 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0
