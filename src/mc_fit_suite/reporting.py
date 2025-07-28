@@ -1286,12 +1286,14 @@ def plot_all_dims_combined(mcmc_trace, iid_samples, var_name="posterior"):
     # Middle: ridge plot
     ax1 = fig.add_subplot(outer_spec[0, 1])
 
-    # Right: aggregated plot in its own vertical slice with inner spec
+    agg_height = min(2 + np.sqrt(num_dims), 10)
     inner_spec = gridspec.GridSpecFromSubplotSpec(
-        nrows=3, ncols=1, subplot_spec=outer_spec[0, 2], height_ratios=[1, 4, 1]
+        nrows=3,
+        ncols=1,
+        subplot_spec=outer_spec[0, 2],
+        height_ratios=[1, agg_height, 1]
     )
     ax2 = fig.add_subplot(inner_spec[1, 0])  
-
 
     if iid_samples.ndim == 2:
         iid_samples = iid_samples[np.newaxis, ...] 
