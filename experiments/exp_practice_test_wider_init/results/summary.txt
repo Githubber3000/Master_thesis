@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-28 17:01:21
+Finished at:                  2025-07-29 06:55:35
+Total duration:               13h 54m 14.1s
+Output folder:                experiments/exp_practice_test_wider_init
+Output folder size:           214.4 MB
+Total configurations:         15
+Successful configuration:     15
+Failed configurations:        0
