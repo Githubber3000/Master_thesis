@@ -78,13 +78,15 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
         return out
 
     MASTER_ORDER = [
-      "wasserstein_distance",
-      "mmd",
-      "mmd_rff",
-      "runtime",
-      "ess",
-      "ess_per_sec",
-      "r_hat",
+        "mean_rmse",
+        "var_rmse",
+        "wasserstein_distance",
+        "mmd",
+        "mmd_rff",
+        "runtime",
+        "ess",
+        "ess_per_sec",
+        "r_hat",
     ]
 
     metrics = [
@@ -93,7 +95,7 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
      and (m != "mmd_rff" or do_mmd_rff)
     ]
 
-    keys = ["ws"]                      
+    keys = ["ws", "mean_rmse", "var_rmse"]                      
     if do_mmd:     keys.append("mmd")  
     if do_mmd_rff: keys.append("mmd_rff")
 
@@ -117,11 +119,15 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
             # Load pairwise sampler comparison stats
             pairwise_stats_chain  = {
                 "ws": load_pairwise_sampler_stats(result_folder_chain, "ws"),
+                "mean_rmse": load_pairwise_sampler_stats(result_folder_chain, "mean_rmse"),
+                "var_rmse": load_pairwise_sampler_stats(result_folder_chain, "var_rmse"),
                 "mmd": load_pairwise_sampler_stats(result_folder_chain, "mmd") if do_mmd else {},
                 "mmd_rff": load_pairwise_sampler_stats(result_folder_chain, "mmd_rff") if do_mmd_rff else {}
             }
             pairwise_stats_pooled = {
                 "ws": load_pairwise_sampler_stats(result_folder_pooled, "ws"),
+                "mean_rmse": load_pairwise_sampler_stats(result_folder_pooled, "mean_rmse"),
+                "var_rmse": load_pairwise_sampler_stats(result_folder_pooled, "var_rmse"),
                 "mmd": load_pairwise_sampler_stats(result_folder_pooled, "mmd") if do_mmd else {},
                 "mmd_rff": load_pairwise_sampler_stats(result_folder_pooled, "mmd_rff") if do_mmd_rff else {}
             }
@@ -186,7 +192,7 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
                 "scatter_plot_paths_pooled": collect_scatter_pngs(pooled_png_base, metrics),
                 "scatter_html_paths_pooled": collect_scatter_htmls(pooled_png_base, metrics),
 
-                # chain  (may be None)
+                # chain 
                 "metric_plot_paths_chain" : collect_metric_pngs(chain_png_base, metrics),
                 "glass_plot_paths_chain"  : collect_glass_pngs(chain_png_base, keys),
                 "scatter_plot_paths_chain": collect_scatter_pngs(chain_png_base, metrics),
@@ -247,7 +253,7 @@ def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, var
     """
     
     # Define metric labels
-    metrics = ["wasserstein_distance", "runtime", "ess", "ess_per_sec", "r_hat"]
+    metrics = [ "mean_rmse", "var_rmse",  "wasserstein_distance", "runtime", "ess", "ess_per_sec", "r_hat"]
 
     if do_mmd:
         metrics.append("mmd")
@@ -277,7 +283,98 @@ def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, var
         finalize_and_save_plot(fig,ax, attribute_label, metric, 
                                f"{metric} for Samplers (config =_{config_descr})",
                                os.path.join(plots_folder, f"{metric}_run_{run_id}.pdf"))
-        
+
+
+
+def compute_delta_and_stats(metric_name, means, values, sampler, sampler_metric_values, iid_means_dict, iid_stds_dict, iid_runs_dict, ax_g, color, global_avg_dfs, varying_attribute, runs):
+    # Glass Δ
+    iid_mean = pd.Series([iid_means_dict[k] for k in means.index], index=means.index)
+    iid_std = pd.Series([iid_stds_dict[k] for k in means.index], index=means.index)
+    glass_delta = (means - iid_mean) / iid_std.replace(0, np.nan)
+
+    global_avg_dfs[sampler][f"{metric_name}_glass_delta"] = glass_delta
+    global_avg_dfs[sampler][f"{metric_name}_mcmc_mean"] = means
+    global_avg_dfs[sampler][f"{metric_name}_iid_mean"] = iid_mean
+    global_avg_dfs[sampler][f"{metric_name}_iid_std"] = iid_std
+
+    ax_g.plot(means.index, glass_delta, "o-", label=sampler, color=color)
+
+    # MCMC vs IID
+    iid_distances = np.array([iid_runs_dict[k] for k in means.index])
+    mcmc_distances = np.array(values)
+
+    tt_stats_mc_iid = {}
+    tt_pvals_mc_iid = {}
+
+    for varying_value, iid_distance, mcmc_distance in zip(means.index, iid_distances, mcmc_distances):
+        stat, p_value = ttest_ind(mcmc_distance, iid_distance, equal_var=False, nan_policy="omit")
+        tt_stats_mc_iid[varying_value] = stat
+        tt_pvals_mc_iid[varying_value] = p_value
+
+    global_avg_dfs[sampler][f"{metric_name}_t_stat"] = pd.Series(tt_stats_mc_iid)
+    global_avg_dfs[sampler][f"{metric_name}_p_value"] = pd.Series(tt_pvals_mc_iid)
+
+    # MCMC vs MCMC
+    for sampler_a, sampler_b in combinations(sampler_metric_values.keys(), 2):
+        key = f"{sampler_a}_vs_{sampler_b}"
+        if key not in global_avg_dfs:
+            global_avg_dfs[key] = {}
+
+        values_a = sampler_metric_values[sampler_a]["values"]
+        values_b = sampler_metric_values[sampler_b]["values"]
+        index = sampler_metric_values[sampler_a]["index"]
+
+        assert index.equals(sampler_metric_values[sampler_b]["index"]), f"Index mismatch for {key}"
+
+        tt_stats_mc_mc = {}
+        tt_pvals_mc_mc = {}
+        paired_d = {}
+
+        for i, varying_value in enumerate(index):
+            a_vals = values_a[i]
+            b_vals = values_b[i]
+            stat, p_value = ttest_rel(a_vals, b_vals, nan_policy="omit")
+            paired_d[varying_value] = stat / np.sqrt(runs)
+
+            tt_stats_mc_mc[varying_value] = stat
+            tt_pvals_mc_mc[varying_value] = p_value
+
+        df_pairwise = pd.DataFrame({
+            f"{varying_attribute}": index,
+            f"{metric_name}_t_stat": pd.Series(tt_stats_mc_mc, index=index),
+            f"{metric_name}_p_value": pd.Series(tt_pvals_mc_mc, index=index),
+            f"{metric_name}_paired_cohens_d": pd.Series(paired_d, index=index),
+        })
+
+        global_avg_dfs[key][f"{metric_name}_pairwise"] = df_pairwise
+
+
+def plot_iid_baseline(
+    metric_name,
+    medians,
+    means,
+    ax_shaded,
+    ax_mean,
+    iid_medians_dict,
+    iid_q25_dict,
+    iid_q75_dict,
+    iid_means_dict,
+    iid_stds_dict
+):
+    iid_medians = np.array([iid_medians_dict[k] for k in medians.index])
+    iid_q25     = np.array([iid_q25_dict[k] for k in medians.index])
+    iid_q75     = np.array([iid_q75_dict[k] for k in medians.index])
+    iid_means   = np.array([iid_means_dict[k] for k in means.index])
+    iid_stds    = np.array([iid_stds_dict[k] for k in means.index])
+
+    # Plot IID median line + IQR fill
+    ax_shaded.plot(medians.index, iid_medians, "o--", label=None, color="black")
+    ax_shaded.fill_between(medians.index, iid_q25, iid_q75, color="black", alpha=0.1)
+
+    # Plot IID mean line + std fill
+    ax_mean.plot(means.index, iid_means, "o--", label= "IID Reference", color="black")
+    ax_mean.fill_between(means.index, iid_means + iid_stds, iid_means - iid_stds, color="black", alpha=0.1)
+
 
 def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribute, varying_values, runs, num_chains, config_descr, global_results_folder, global_plots_folder, png_folder, iid_ref_stats_dict, save_extra_scatter, do_mmd, do_mmd_rff):
     """
@@ -294,7 +391,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     """
 
     # Define metrics for aggregation
-    metrics = ["wasserstein_distance","runtime", "ess", "ess_per_sec", "r_hat"]
+    metrics = ["mean_rmse", "var_rmse", "wasserstein_distance","runtime", "ess", "ess_per_sec", "r_hat"]
 
     if do_mmd:
         metrics.append("mmd")
@@ -309,11 +406,13 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     fig_ax_pairs_mean = {m: plt.subplots(figsize=(10, 6)) for m in metrics}
     # Figure for Glass delta of wasserstein_distance
     fig_g, ax_g = plt.subplots(figsize=(10, 6))
+    fig_g_mean, ax_g_mean = plt.subplots(figsize=(10, 6)) 
+    fig_g_var, ax_g_var = plt.subplots(figsize=(10, 6))  
 
     if do_mmd:
-        fig_g_mmd, ax_g_mmd = plt.subplots(figsize=(10, 6))  # Glass delta for mmd
+        fig_g_mmd, ax_g_mmd = plt.subplots(figsize=(10, 6)) 
     if do_mmd_rff:
-        fig_g_mmd_rff, ax_g_mmd_rff = plt.subplots(figsize=(10, 6)) # Glass delta for mmd_rff
+        fig_g_mmd_rff, ax_g_mmd_rff = plt.subplots(figsize=(10, 6)) 
 
 
     global_avg_dfs = {}
@@ -326,6 +425,20 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     iid_q25_dict_swd = {}
     iid_q75_dict_swd = {}
     iid_runs_dict_swd = {} 
+
+    iid_means_dict_mean_rmse = {}
+    iid_stds_dict_mean_rmse = {}
+    iid_medians_dict_mean_rmse = {}
+    iid_q25_dict_mean_rmse = {}
+    iid_q75_dict_mean_rmse = {}
+    iid_runs_dict_mean_rmse = {}
+
+    iid_means_dict_var_rmse = {}
+    iid_stds_dict_var_rmse = {}
+    iid_medians_dict_var_rmse = {}
+    iid_q25_dict_var_rmse = {}
+    iid_q75_dict_var_rmse = {}
+    iid_runs_dict_var_rmse = {}
 
     if do_mmd:
         iid_means_dict_mmd = {}
@@ -355,6 +468,20 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         iid_q25_dict_swd[k] = iid_entry["q25_swd"]
         iid_q75_dict_swd[k] = iid_entry["q75_swd"]
         iid_runs_dict_swd[k] = iid_entry["runs_swd"]
+
+        iid_means_dict_mean_rmse[k] = iid_entry["mean_mean_rmse"]
+        iid_stds_dict_mean_rmse[k] = iid_entry["std_mean_rmse"]
+        iid_medians_dict_mean_rmse[k] = iid_entry["median_mean_rmse"]
+        iid_q25_dict_mean_rmse[k] = iid_entry["q25_mean_rmse"]
+        iid_q75_dict_mean_rmse[k] = iid_entry["q75_mean_rmse"]
+        iid_runs_dict_mean_rmse[k] = iid_entry["runs_mean_rmse"]
+
+        iid_means_dict_var_rmse[k] = iid_entry["mean_var_rmse"]
+        iid_stds_dict_var_rmse[k] = iid_entry["std_var_rmse"]
+        iid_medians_dict_var_rmse[k] = iid_entry["median_var_rmse"]
+        iid_q25_dict_var_rmse[k] = iid_entry["q25_var_rmse"]
+        iid_q75_dict_var_rmse[k] = iid_entry["q75_var_rmse"]
+        iid_runs_dict_var_rmse[k] = iid_entry["runs_var_rmse"]
 
         if do_mmd:
             iid_means_dict_mmd[k] = iid_entry["mean_mmd"]
@@ -463,376 +590,95 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 global_avg_dfs[sampler] = {}
             global_avg_dfs[sampler][metric] = (medians, q25, q75)
 
-            # Compute glass delta and significance for wasserstein_distance
-            if metric == "wasserstein_distance":
-                
-                # Effect size and significance of MCMC/SMC vs IID
 
-                # compute Glass Δ for wasserstein_distance
-                # Get IID mean and std for this varying attribute value
-                iid_mean_swd = pd.Series(
-                    [iid_means_dict_swd[k] for k in means.index],
-                    index=means.index,                   
-                    name="iid_mean_swd"
-                )
-                iid_std_swd = pd.Series(
-                    [iid_stds_dict_swd[k] for k in means.index],
-                    index=means.index,
-                    name="iid_std_swd"
-                )
-
-                # Glass Δ
-                glass_delta = (means - iid_mean_swd) / iid_std_swd.replace(0, np.nan)
-        
-                global_avg_dfs[sampler]["ws_glass_delta"] = glass_delta
-                global_avg_dfs[sampler]["ws_mcmc_mean"]   = means          
-                global_avg_dfs[sampler]["ws_iid_mean"]    = iid_mean_swd   
-                global_avg_dfs[sampler]["ws_iid_std"]     = iid_std_swd 
-
-                # Plot glass delta for this sampler
-                ax_g.plot(means.index, glass_delta, "o-", label=sampler, color=color)
-
-                # Compute significance of difference in distances for MCMC vs IID and IID vs IID for each varying value
-
-                iid_distances = np.array([iid_runs_dict_swd[k] for k in means.index])
-                mcmc_distances = np.array(values)
-
-                #print(f"\nMCMC global shape = {mcmc_distances.shape}, IID global shape = {iid_distances.shape}")
-                #print(f"MCMC full array:\n{mcmc_distances}")
-                #print(f"IID full array:\n{iid_distances}\n")
-
-                tt_stats_mc_iid = {}
-                tt_pvals_mc_iid = {}
-
-                for varying_value, iid_distance, mcmc_distance in zip(means.index, iid_distances, mcmc_distances):
-
-                    #print(f"MCMC shape = {mcmc_distance.shape}, IID shape = {iid_distance.shape}")
-                    #print(f"--- {varying_value} ---")
-                    #print(f"MCMC shape = {mcmc_distance.shape}, values = {mcmc_distance}")
-                    #print(f"IID shape  = {iid_distance.shape}, values  = {iid_distance}")
-
-                    stat, p_value = ttest_ind(
-                        mcmc_distance, iid_distance, equal_var=False, nan_policy="omit"
-                    )
-                    tt_stats_mc_iid[varying_value] = stat
-                    tt_pvals_mc_iid[varying_value] = p_value
-
-                global_avg_dfs[sampler]["ws_t_stat"] = pd.Series(tt_stats_mc_iid)
-                global_avg_dfs[sampler]["ws_p_value"] = pd.Series(tt_pvals_mc_iid)
-
-                # Effect size and significance of MCMC/SMC vs MCMC/SMC
-
-                for sampler_a, sampler_b in combinations(sampler_metric_values.keys(), 2):
-
-                    key = f"{sampler_a}_vs_{sampler_b}"
-                    if key not in global_avg_dfs:
-                        global_avg_dfs[key] = {}
-
-                    values_a = sampler_metric_values[sampler_a]["values"]
-                    values_b = sampler_metric_values[sampler_b]["values"]
-                    index = sampler_metric_values[sampler_a]["index"]
-
-                    assert index.equals(sampler_metric_values[sampler_b]["index"]), \
-                        f"Sampler indices mismatch for {sampler_a} vs {sampler_b}"
-
-                    tt_stats_mc_mc = {}
-                    tt_pvals_mc_mc = {}
-                    paired_d = {}
-
-                    # Loop over each varying value
-                    for i, varying_value in enumerate(index):
-                        a_vals = values_a[i]  
-                        b_vals = values_b[i]
-
-                        # Optional: check shapes and nan
-                        if len(a_vals) != len(b_vals):
-                            print(f"WARNING: Unequal runs for {sampler_a} vs {sampler_b} at {varying_value}")
-                        
-                        # Perform t-test
-                        stat, p_value = ttest_rel(a_vals, b_vals, nan_policy="omit")
-
-                        # compute effect size (paired Cohen's d)
-                        paired_d[varying_value] = stat / np.sqrt(runs)
-
-                        tt_stats_mc_mc[varying_value] = stat
-                        tt_pvals_mc_mc[varying_value] = p_value
-
-                    # Save as DataFrame
-                    df_pairwise = pd.DataFrame({
-                        f"{varying_attribute}": index,
-                        "ws_t_stat": pd.Series(tt_stats_mc_mc, index=index),
-                        "ws_p_value": pd.Series(tt_pvals_mc_mc, index=index),
-                        "ws_paired_cohens_d": pd.Series(paired_d, index=index)
-                    })
-
-                    global_avg_dfs[key]["ws_pairwise"] = df_pairwise
-
-            elif metric == "mmd":
-                # Get IID mean and std for this varying attribute value
-
-                iid_mean_mmd = pd.Series(
-                    [iid_means_dict_mmd[k] for k in means.index],
-                    index=means.index,                    
-                    name="iid_mean_mmd"
-                )
-
-                iid_std_mmd = pd.Series(
-                    [iid_stds_dict_mmd[k] for k in means.index],
-                    index=means.index,
-                    name="iid_std_mmd"
-                )
-
-                # Glass Δ
-                glass_delta = (means - iid_mean_mmd) / iid_std_mmd.replace(0, np.nan)
-
-                global_avg_dfs[sampler]["mmd_glass_delta"] = glass_delta
-                global_avg_dfs[sampler]["mmd_mcmc_mean"] = means
-                global_avg_dfs[sampler]["mmd_iid_mean"]  = iid_mean_mmd
-                global_avg_dfs[sampler]["mmd_iid_std"]   = iid_std_mmd
-
-                # Plot glass delta for this sampler
-                ax_g_mmd.plot(means.index, glass_delta, "o-", label=sampler, color=color)
-
-                # Compute significance of difference in distances for MCMC vs IID and IID vs IID for each varying value
-                iid_distances = np.array([iid_runs_dict_mmd[k] for k in means.index])
-                mcmc_distances = np.array(values)
-
-                tt_stats_mc_iid = {}
-                tt_pvals_mc_iid = {}
-
-                for varying_value, iid_distance, mcmc_distance in zip(means.index, iid_distances, mcmc_distances):
-
-                    stat, p_value = ttest_ind(
-                        mcmc_distance, iid_distance, equal_var=False, nan_policy="omit"
-                    )
-                    tt_stats_mc_iid[varying_value] = stat
-                    tt_pvals_mc_iid[varying_value] = p_value
-
-                global_avg_dfs[sampler]["mmd_t_stat"] = pd.Series(tt_stats_mc_iid)
-                global_avg_dfs[sampler]["mmd_p_value"] = pd.Series(tt_pvals_mc_iid)
-
-                # Effect size and significance of MCMC/SMC vs MCMC/SMC
-
-                for sampler_a, sampler_b in combinations(sampler_metric_values.keys(), 2):
-
-                    key = f"{sampler_a}_vs_{sampler_b}"
-                    if key not in global_avg_dfs:
-                        global_avg_dfs[key] = {}
-
-                    values_a = sampler_metric_values[sampler_a]["values"]
-                    values_b = sampler_metric_values[sampler_b]["values"]
-                    index = sampler_metric_values[sampler_a]["index"]
-
-                    assert index.equals(sampler_metric_values[sampler_b]["index"]), \
-                        f"Sampler indices mismatch for {sampler_a} vs {sampler_b}"
-
-                    tt_stats_mc_mc = {}
-                    tt_pvals_mc_mc = {}
-                    paired_d = {}
-
-                    # Loop over each varying value
-                    for i, varying_value in enumerate(index):
-                        a_vals = values_a[i]  
-                        b_vals = values_b[i]
-
-                        # Optional: check shapes and nan
-                        if len(a_vals) != len(b_vals):
-                            print(f"WARNING: Unequal runs for {sampler_a} vs {sampler_b} at {varying_value}")
-                        
-                        # Perform t-test
-                        stat, p_value = ttest_rel(a_vals, b_vals, nan_policy="omit")
-
-                        # compute effect size (paired Cohen's d)
-                        paired_d[varying_value] = stat / np.sqrt(runs)
-
-                        tt_stats_mc_mc[varying_value] = stat
-                        tt_pvals_mc_mc[varying_value] = p_value
-
-                    # Save as DataFrame
-                    df_pairwise = pd.DataFrame({
-                        f"{varying_attribute}": index,
-                        "mmd_t_stat": pd.Series(tt_stats_mc_mc, index=index),
-                        "mmd_p_value": pd.Series(tt_pvals_mc_mc, index=index),
-                        "mmd_paired_cohens_d": pd.Series(paired_d, index=index)
-                    })
-
-                    global_avg_dfs[key]["mmd_pairwise"] = df_pairwise
-
-            elif metric == "mmd_rff":
-                # Get IID mean and std for this varying attribute value
-
-                iid_mean_mmd_rff = pd.Series(
-                    [iid_means_dict_mmd_rff[k] for k in means.index],
-                    index=means.index,                    
-                    name="iid_mean_mmd_rff"
-                )
-
-                iid_std_mmd_rff = pd.Series(
-                    [iid_stds_dict_mmd_rff[k] for k in means.index],
-                    index=means.index,
-                    name="iid_std_mmd_rff"
-                )
-
-                # Glass Δ
-                glass_delta = (means - iid_mean_mmd_rff) / iid_std_mmd_rff.replace(0, np.nan)
-
-                global_avg_dfs[sampler]["mmd_rff_glass_delta"] = glass_delta
-                global_avg_dfs[sampler]["mmd_rff_mcmc_mean"] = means
-                global_avg_dfs[sampler]["mmd_rff_iid_mean"]  = iid_mean_mmd_rff
-                global_avg_dfs[sampler]["mmd_rff_iid_std"]   = iid_std_mmd_rff
-
-                # Plot glass delta for this sampler
-                ax_g_mmd_rff.plot(means.index, glass_delta, "o-", label=sampler, color=color)
-
-                # Compute significance of difference in distances for MCMC vs IID and IID vs IID for each varying value
-                iid_distances = np.array([iid_runs_dict_mmd_rff[k] for k in means.index])
-                mcmc_distances = np.array(values)
-
-                tt_stats_mc_iid = {}
-                tt_pvals_mc_iid = {}
-
-                for varying_value, iid_distance, mcmc_distance in zip(means.index, iid_distances, mcmc_distances):
-
-                    stat, p_value = ttest_ind(
-                        mcmc_distance, iid_distance, equal_var=False, nan_policy="omit"
-                    )
-                    tt_stats_mc_iid[varying_value] = stat
-                    tt_pvals_mc_iid[varying_value] = p_value
-
-                global_avg_dfs[sampler]["mmd_rff_t_stat"] = pd.Series(tt_stats_mc_iid)
-                global_avg_dfs[sampler]["mmd_rff_p_value"] = pd.Series(tt_pvals_mc_iid)
-
-                # Effect size and significance of MCMC/SMC vs MCMC/SMC
-
-                for sampler_a, sampler_b in combinations(sampler_metric_values.keys(), 2):
-
-                    key = f"{sampler_a}_vs_{sampler_b}"
-                    if key not in global_avg_dfs:
-                        global_avg_dfs[key] = {}
-
-                    values_a = sampler_metric_values[sampler_a]["values"]
-                    values_b = sampler_metric_values[sampler_b]["values"]
-                    index = sampler_metric_values[sampler_a]["index"]
-
-                    assert index.equals(sampler_metric_values[sampler_b]["index"]), \
-                        f"Sampler indices mismatch for {sampler_a} vs {sampler_b}"
-
-                    tt_stats_mc_mc = {}
-                    tt_pvals_mc_mc = {}
-                    paired_d = {}
-
-                    # Loop over each varying value
-                    for i, varying_value in enumerate(index):
-                        a_vals = values_a[i]  
-                        b_vals = values_b[i]
-
-                        # Optional: check shapes and nan
-                        if len(a_vals) != len(b_vals):
-                            print(f"WARNING: Unequal runs for {sampler_a} vs {sampler_b} at {varying_value}")
-                        
-                        # Perform t-test
-                        stat, p_value = ttest_rel(a_vals, b_vals, nan_policy="omit")
-
-                        # compute effect size (paired Cohen's d)
-                        paired_d[varying_value] = stat / np.sqrt(runs)
-
-                        tt_stats_mc_mc[varying_value] = stat
-                        tt_pvals_mc_mc[varying_value] = p_value
-
-                    # Save as DataFrame
-                    df_pairwise = pd.DataFrame({
-                        f"{varying_attribute}": index,
-                        "mmd_rff_t_stat": pd.Series(tt_stats_mc_mc, index=index),
-                        "mmd_rff_p_value": pd.Series(tt_pvals_mc_mc, index=index),
-                        "mmd_rff_paired_cohens_d": pd.Series(paired_d, index=index)
-                    })
-
-                    global_avg_dfs[key]["mmd_rff_pairwise"] = df_pairwise
-
-
-        # Only for wasserstein_distance and mmd: Plot IID baseline once
-        if metric == "wasserstein_distance":
+            metrics_config = {
+                "wasserstein_distance": {
+                    "name": "ws",
+                    "mean": iid_means_dict_swd,
+                    "std": iid_stds_dict_swd,
+                    "runs": iid_runs_dict_swd,
+                    "ax": ax_g,
+                    "medians": iid_medians_dict_swd,
+                    "q25": iid_q25_dict_swd,
+                    "q75": iid_q75_dict_swd
+                },
+                "mean_rmse": {
+                    "name": "mean_rmse",
+                    "mean": iid_means_dict_mean_rmse,
+                    "std": iid_stds_dict_mean_rmse,
+                    "runs": iid_runs_dict_mean_rmse,
+                    "ax": ax_g_mean,
+                    "medians": iid_medians_dict_mean_rmse,
+                    "q25": iid_q25_dict_mean_rmse,
+                    "q75": iid_q75_dict_mean_rmse
+                },
+                "var_rmse": {
+                    "name": "var_rmse",
+                    "mean": iid_means_dict_var_rmse,
+                    "std": iid_stds_dict_var_rmse,
+                    "runs": iid_runs_dict_var_rmse,
+                    "ax": ax_g_var,
+                    "medians": iid_medians_dict_var_rmse,
+                    "q25": iid_q25_dict_var_rmse,
+                    "q75": iid_q75_dict_var_rmse
+                }
+            }
+
+            if do_mmd:
+                metrics_config["mmd"] = {
+                    "name": "mmd",
+                    "mean": iid_means_dict_mmd,
+                    "std": iid_stds_dict_mmd,
+                    "runs": iid_runs_dict_mmd,
+                    "ax": ax_g_mmd,
+                    "medians": iid_medians_dict_mmd,
+                    "q25": iid_q25_dict_mmd,
+                    "q75": iid_q75_dict_mmd
+                }
             
-            iid_medians = np.array([iid_medians_dict_swd[k] for k in medians.index])
-            iid_q25 = np.array([iid_q25_dict_swd[k] for k in medians.index])
-            iid_q75 = np.array([iid_q75_dict_swd[k] for k in medians.index])
+            if do_mmd_rff:
+                metrics_config["mmd_rff"] = {
+                    "name": "mmd_rff",
+                    "mean": iid_means_dict_mmd_rff,
+                    "std": iid_stds_dict_mmd_rff,
+                    "runs": iid_runs_dict_mmd_rff,
+                    "ax": ax_g_mmd_rff,
+                    "medians": iid_medians_dict_mmd_rff,
+                    "q25": iid_q25_dict_mmd_rff,
+                    "q75": iid_q75_dict_mmd_rff
+                }
 
-            iid_means = np.array([iid_means_dict_swd[k] for k in medians.index])
-            iid_stds = np.array([iid_stds_dict_swd[k] for k in medians.index])
+            if metric in metrics_config:
+                cfg = metrics_config[metric]
 
-            # Plot IID median line + IQR fill
-            ax_shaded.plot(medians.index, iid_medians, "o--", label="IID Reference", color="black")
-            ax_shaded.fill_between(
-                medians.index,
-                iid_q25,
-                iid_q75,
-                color="black",
-                alpha=0.1,
-            )
+                compute_delta_and_stats(
+                    metric_name=cfg["name"],
+                    means=means,
+                    values=values,
+                    sampler=sampler,
+                    sampler_metric_values=sampler_metric_values,
+                    iid_means_dict=cfg["mean"],
+                    iid_stds_dict=cfg["std"],
+                    iid_runs_dict=cfg["runs"],
+                    ax_g=cfg["ax"],
+                    color=color,
+                    global_avg_dfs=global_avg_dfs,
+                    varying_attribute=varying_attribute,
+                    runs=runs
+                )
 
-            # Plot IID mean line + std fill
-            ax_mean.plot(means.index, iid_means, "o--", label="IID Reference", color="black") 
-            ax_mean.fill_between(
-                means.index,
-                iid_means + iid_stds,
-                iid_means - iid_stds,
-                color="black",
-                alpha=0.1,
-            )
-
-        elif metric == "mmd":
-
-            iid_medians = np.array([iid_medians_dict_mmd[k] for k in medians.index])
-            iid_q25 = np.array([iid_q25_dict_mmd[k] for k in medians.index])
-            iid_q75 = np.array([iid_q75_dict_mmd[k] for k in medians.index])
-
-            iid_means = np.array([iid_means_dict_mmd[k] for k in medians.index])
-            iid_stds = np.array([iid_stds_dict_mmd[k] for k in medians.index])
-
-            ax_shaded.plot(medians.index, iid_medians, "o--", label="IID Reference", color="black")
-            ax_shaded.fill_between(
-                medians.index,
-                iid_q25,
-                iid_q75,
-                color="black",
-                alpha=0.1,
-            )
-
-            ax_mean.plot(means.index, iid_means, "o--", label="IID Reference", color="black")
-            ax_mean.fill_between(
-                means.index,
-                iid_means + iid_stds,
-                iid_means - iid_stds,
-                color="black",
-                alpha=0.1,
-            )
-
-        elif metric == "mmd_rff":
-
-            iid_medians = np.array([iid_medians_dict_mmd_rff[k] for k in medians.index])
-            iid_q25 = np.array([iid_q25_dict_mmd_rff[k] for k in medians.index])
-            iid_q75 = np.array([iid_q75_dict_mmd_rff[k] for k in medians.index])
-
-            iid_means = np.array([iid_means_dict_mmd_rff[k] for k in medians.index])
-            iid_stds = np.array([iid_stds_dict_mmd_rff[k] for k in medians.index])
-
-            ax_shaded.plot(medians.index, iid_medians, "o--", label="IID Reference", color="black")
-            ax_shaded.fill_between(
-                medians.index,
-                iid_q25,
-                iid_q75,
-                color="black",
-                alpha=0.1,
-            )
-
-            ax_mean.plot(means.index, iid_means, "o--", label="IID Reference", color="black")
-            ax_mean.fill_between(
-                means.index,
-                iid_means + iid_stds,
-                iid_means - iid_stds,
-                color="black",
-                alpha=0.1,
-            )
+                plot_iid_baseline(
+                    metric_name=metric,
+                    medians=medians,
+                    means=means,
+                    ax_shaded=ax_shaded,
+                    ax_mean=ax_mean,
+                    iid_medians_dict=cfg["medians"],
+                    iid_q25_dict=cfg["q25"],
+                    iid_q75_dict=cfg["q75"],
+                    iid_means_dict=cfg["mean"],
+                    iid_stds_dict=cfg["std"]
+                )
 
 
         #  scatter plot for this metric
@@ -904,94 +750,79 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
 
             # grab the x-axis values
             xvals = list(scatter_data[metric][0]["medians"].index)
+            
+            if metric in metrics_config:
+                cfg = metrics_config[metric]  # this is safe if `metric` is always valid
 
-            # pick the right IID stats dicts
-            if metric == "wasserstein_distance":
-                iid_median = [iid_medians_dict_swd[k]  for k in xvals]
-                iid_q25 = [iid_q25_dict_swd[k]         for k in xvals]
-                iid_q75 = [iid_q75_dict_swd[k]         for k in xvals]
-                iid_mean = [iid_means_dict_swd[k]      for k in xvals]
-                iid_std = [iid_stds_dict_swd[k]        for k in xvals]
-                iid_runs = [iid_runs_dict_swd[k]       for k in xvals]
+                iid_median = [cfg["medians"][k] for k in xvals]
+                iid_q25    = [cfg["q25"][k]     for k in xvals]
+                iid_q75    = [cfg["q75"][k]     for k in xvals]
+                iid_mean   = [cfg["mean"][k]    for k in xvals]
+                iid_std    = [cfg["std"][k]     for k in xvals]
+                iid_runs   = [cfg["runs"][k]    for k in xvals]
 
-            elif metric == "mmd":
-                iid_median = [iid_medians_dict_mmd[k]  for k in xvals]
-                iid_q25 = [iid_q25_dict_mmd[k]         for k in xvals]
-                iid_q75 = [iid_q75_dict_mmd[k]         for k in xvals]
-                iid_mean = [iid_means_dict_mmd[k]      for k in xvals]
-                iid_std = [iid_stds_dict_mmd[k]        for k in xvals]
-                iid_runs = [iid_runs_dict_mmd[k]       for k in xvals]
+                # Flatten xs & ys of IID runs
+                xs_iid, ys_iid = [], []
+                for x, arr in zip(xvals, iid_runs):
+                    xs_iid.extend([x] * len(arr))  
+                    ys_iid.extend(arr)               
 
-            elif metric == "mmd_rff":
-                iid_median = [iid_medians_dict_mmd_rff[k]  for k in xvals]
-                iid_q25 = [iid_q25_dict_mmd_rff[k]         for k in xvals]
-                iid_q75 = [iid_q75_dict_mmd_rff[k]         for k in xvals]
-                iid_mean = [iid_means_dict_mmd_rff[k]      for k in xvals]
-                iid_std = [iid_stds_dict_mmd_rff[k]        for k in xvals]
-                iid_runs = [iid_runs_dict_mmd_rff[k]       for k in xvals]
+                fig.add_trace(go.Scatter(
+                    x=xs_iid,
+                    y=ys_iid,
+                    mode="markers",
+                    name="IID pts",
+                    marker=dict(color="black", opacity=0.6, size=6),
+                    visible="legendonly"
+                ))
 
-            # Flatten xs & ys of IID runs
-            xs_iid, ys_iid = [], []
-            for x, arr in zip(xvals, iid_runs):
-                xs_iid.extend([x] * len(arr))  
-                ys_iid.extend(arr)               
+                # IID median line
+                fig.add_trace(go.Scatter(
+                    x=xvals,
+                    y=iid_median,
+                    mode="lines+markers",
+                    name= f"IID median",
+                    legendgroup="IID_median",                 
+                    line=dict(color="black", width=2), 
+                    marker=dict(symbol="diamond", size=8, color="black"),
+                ))
 
-            fig.add_trace(go.Scatter(
-                x=xs_iid,
-                y=ys_iid,
-                mode="markers",
-                name="IID pts",
-                marker=dict(color="black", opacity=0.6, size=6),
-                visible="legendonly"
-            ))
+                # IID IQR fill
+                fig.add_trace(go.Scatter(
+                    x=xvals + xvals[::-1],
+                    y=iid_q75 + iid_q25[::-1],
+                    fill="toself",
+                    fillcolor="rgba(100,100,100,0.3)",       
+                    line=dict(width=0),               
+                    name="IID IQR",
+                    legendgroup="IID_median",
+                    showlegend=False 
+                ))
 
-            # IID median line
-            fig.add_trace(go.Scatter(
-                x=xvals,
-                y=iid_median,
-                mode="lines+markers",
-                name= f"IID median",
-                legendgroup="IID_median",                 
-                line=dict(color="black", width=2), 
-                marker=dict(symbol="diamond", size=8, color="black"),
-            ))
+                # IID mean line
+                fig.add_trace(go.Scatter(
+                    x=xvals,
+                    y=iid_mean,  
+                    mode="lines+markers",
+                    name="IID mean",
+                    legendgroup="IID_mean",                 
+                    line=dict(dash="dash", color="black", width=2), 
+                    marker=dict(symbol="triangle-up-open", size=8, color="black"),
+                    visible="legendonly"
+                ))
 
-            # IID IQR fill
-            fig.add_trace(go.Scatter(
-                x=xvals + xvals[::-1],
-                y=iid_q75 + iid_q25[::-1],
-                fill="toself",
-                fillcolor="rgba(100,100,100,0.3)",       
-                line=dict(width=0),               
-                name="IID IQR",
-                legendgroup="IID_median",
-                showlegend=False 
-            ))
-
-            # IID mean line
-            fig.add_trace(go.Scatter(
-                x=xvals,
-                y=iid_mean,  
-                mode="lines+markers",
-                name="IID mean",
-                legendgroup="IID_mean",                 
-                line=dict(dash="dash", color="black", width=2), 
-                marker=dict(symbol="triangle-up-open", size=8, color="black"),
-                visible="legendonly"
-            ))
-
-            # IID std fill
-            fig.add_trace(go.Scatter(
-                x=xvals + xvals[::-1],
-                y=[m + s for m, s in zip(iid_mean, iid_std)] + [m - s for m, s in zip(iid_mean, iid_std)][::-1],
-                fill="toself",
-                fillcolor="rgba(0,0,0,0.25)",       
-                line=dict(width=0),             
-                name="IID ±1 SD",
-                legendgroup="IID_mean",
-                showlegend=False,
-                visible="legendonly"
-            ))
+                # IID std fill
+                fig.add_trace(go.Scatter(
+                    x=xvals + xvals[::-1],
+                    y=[m + s for m, s in zip(iid_mean, iid_std)] + [m - s for m, s in zip(iid_mean, iid_std)][::-1],
+                    fill="toself",
+                    fillcolor="rgba(0,0,0,0.25)",       
+                    line=dict(width=0),             
+                    name="IID ±1 SD",
+                    legendgroup="IID_mean",
+                    showlegend=False,
+                    visible="legendonly"
+                ))
 
             fig.update_layout(
                 title=f"All runs {metric.replace('_',' ').title()} ({runs} runs, {config_descr})",
@@ -1068,7 +899,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         
         wrote_pairwise = False
 
-        for pairwise_key in ["ws_pairwise", "mmd_pairwise", "mmd_rff_pairwise"]:
+        for pairwise_key in ["ws_pairwise", "mmd_pairwise", "mmd_rff_pairwise", "mean_rmse_pairwise", "var_rmse_pairwise"]:
             if pairwise_key in metrics_dict:
                 # Handle pairwise case: export the full df_pairwise
                 df_pairwise = metrics_dict[pairwise_key]
@@ -1094,6 +925,12 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             "ws_mcmc_mean":  metrics_dict["ws_mcmc_mean"].values,
             "ws_iid_mean":   metrics_dict["ws_iid_mean"].values,
             "ws_iid_std":    metrics_dict["ws_iid_std"].values,
+            "mean_rmse_mcmc_mean": metrics_dict["mean_rmse_mcmc_mean"].values,
+            "mean_rmse_iid_mean":  metrics_dict["mean_rmse_iid_mean"].values,
+            "mean_rmse_iid_std":   metrics_dict["mean_rmse_iid_std"].values,
+            "var_rmse_mcmc_mean": metrics_dict["var_rmse_mcmc_mean"].values,
+            "var_rmse_iid_mean":  metrics_dict["var_rmse_iid_mean"].values,
+            "var_rmse_iid_std":   metrics_dict["var_rmse_iid_std"].values,
 
             **({"mmd_mcmc_mean": metrics_dict["mmd_mcmc_mean"].values,
                 "mmd_iid_mean":  metrics_dict["mmd_iid_mean"].values,
@@ -1110,10 +947,22 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             df_global_avg["ws_glass_delta"] = metrics_dict["ws_glass_delta"].values
             df_global_avg["ws_t_stat"] = metrics_dict["ws_t_stat"].values
             df_global_avg["ws_p_value"] = metrics_dict["ws_p_value"].values
+
+        if "var_rmse_glass_delta" in metrics_dict:
+            df_global_avg["var_rmse_glass_delta"] = metrics_dict["var_rmse_glass_delta"].values
+            df_global_avg["var_rmse_t_stat"] = metrics_dict["var_rmse_t_stat"].values
+            df_global_avg["var_rmse_p_value"] = metrics_dict["var_rmse_p_value"].values
+
+        if "mean_rmse_glass_delta" in metrics_dict:
+            df_global_avg["mean_rmse_glass_delta"] = metrics_dict["mean_rmse_glass_delta"].values
+            df_global_avg["mean_rmse_t_stat"] = metrics_dict["mean_rmse_t_stat"].values
+            df_global_avg["mean_rmse_p_value"] = metrics_dict["mean_rmse_p_value"].values
+
         if "mmd_glass_delta" in metrics_dict:
             df_global_avg["mmd_glass_delta"] = metrics_dict["mmd_glass_delta"].values
             df_global_avg["mmd_t_stat"] = metrics_dict["mmd_t_stat"].values
             df_global_avg["mmd_p_value"] = metrics_dict["mmd_p_value"].values
+
         if "mmd_rff_glass_delta" in metrics_dict:
             df_global_avg["mmd_rff_glass_delta"] = metrics_dict["mmd_rff_glass_delta"].values
             df_global_avg["mmd_rff_t_stat"] = metrics_dict["mmd_rff_t_stat"].values
@@ -1126,53 +975,67 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     # Save plots
     for metric in metrics:
 
-        title_md = (f"Averaged {metric.replace('_', ' ').title()} "
-                f"({runs} Runs, config = {config_descr})")   
+        #title_md = (f"Averaged {metric.replace('_', ' ').title()} "
+        #        f"({runs} Runs, config = {config_descr})")   
         fig_shaded, ax_shaded = fig_ax_pairs_shaded[metric]
         pdf_path_md = os.path.join(global_plots_folder, f"{metric}_global_plot_shaded.pdf")
         png_path_md = os.path.join(png_folder, f"{metric}_global_plot_shaded.png")
 
-        finalize_and_save_plot(fig_shaded, ax_shaded, attribute_label, metric,
-                               title_md, save_path=pdf_path_md, save_path_png=png_path_md)
+        finalize_and_save_plot(fig_shaded, ax_shaded, attribute_label, metric, save_path=pdf_path_md, save_path_png=png_path_md)
 
-        title_me = (f"Mean {metric.replace('_', ' ').title()} "
-                      f"({runs} Runs, config = {config_descr})")
+        #title_me = (f"Mean {metric.replace('_', ' ').title()} "
+        #              f"({runs} Runs, config = {config_descr})")
         fig_mean, ax_mean = fig_ax_pairs_mean[metric]
         pdf_path_me = os.path.join(global_plots_folder, f"{metric}_global_plot_mean.pdf")
         png_path_me = os.path.join(png_folder, f"{metric}_global_plot_mean.png")
 
-        finalize_and_save_plot(fig_mean, ax_mean, attribute_label, metric,
-                               title_me, save_path=pdf_path_me, save_path_png=png_path_me)
+        finalize_and_save_plot(fig_mean, ax_mean, attribute_label, metric, save_path=pdf_path_me, save_path_png=png_path_me)
 
     # Plot Glass's Δ for wasserstein_distance
     pdf_path = os.path.join(global_plots_folder, "glass_delta_ws.pdf")
     png_path = os.path.join(png_folder, "glass_delta_ws.png")
-    title_ws= f"Glass's Δ for Wasserstein Distance ({runs} Runs, config = {config_descr})"
+    #title_ws= f"Glass's Δ for Wasserstein Distance ({runs} Runs, config = {config_descr})"
 
-    finalize_and_save_plot(fig_g, ax_g, xlabel=attribute_label, ylabel="Glass's Δ", title=title_ws,
+    finalize_and_save_plot(fig_g, ax_g, xlabel=attribute_label, ylabel="Glass's Δ",
                             save_path=pdf_path, save_path_png=png_path)
+    
+    # Plot Glass's Δ for mean_rmse
+    pdf_path_mean_rmse = os.path.join(global_plots_folder, "glass_delta_mean_rmse.pdf")
+    png_path_mean_rmse = os.path.join(png_folder, "glass_delta_mean_rmse.png")
+    #title_mean_rmse = f"Glass's Δ for Mean RMSE ({runs} Runs, config = {config_descr})"
 
+    finalize_and_save_plot(fig_g_mean, ax_g_mean, xlabel=attribute_label, ylabel="Glass's Δ",
+                            save_path=pdf_path_mean_rmse, save_path_png=png_path_mean_rmse)
+    
+    # Plot Glass's Δ for var_rmse
+    pdf_path_var_rmse = os.path.join(global_plots_folder, "glass_delta_var_rmse.pdf")
+    png_path_var_rmse = os.path.join(png_folder, "glass_delta_var_rmse.png")
+    #title_var_rmse = f"Glass's Δ for Var RMSE ({runs} Runs, config = {config_descr})"
+
+    finalize_and_save_plot(fig_g_var, ax_g_var, xlabel=attribute_label, ylabel="Glass's Δ",
+                            save_path=pdf_path_var_rmse, save_path_png=png_path_var_rmse)
+    
     if do_mmd:
         # Plot Glass's Δ for MMD
         pdf_path = os.path.join(global_plots_folder, "glass_delta_mmd.pdf")
         png_path = os.path.join(png_folder, "glass_delta_mmd.png")
-        title_mmd = f"Glass's Δ for MMD ({runs} Runs, config = {config_descr})"
+        #title_mmd = f"Glass's Δ for MMD ({runs} Runs, config = {config_descr})"
 
-        finalize_and_save_plot(fig_g_mmd, ax_g_mmd, xlabel=attribute_label, ylabel="Glass's Δ", title=title_mmd,
+        finalize_and_save_plot(fig_g_mmd, ax_g_mmd, xlabel=attribute_label, ylabel="Glass's Δ",
                             save_path=pdf_path, save_path_png=png_path)
     if do_mmd_rff:
         # Plot Glass's Δ for MMD-RFF
         pdf_path = os.path.join(global_plots_folder, "glass_delta_mmd_rff.pdf")
         png_path = os.path.join(png_folder, "glass_delta_mmd_rff.png")
-        title_mmd_rff = f"Glass's Δ for MMD-RFF ({runs} Runs, config = {config_descr})"
+        #title_mmd_rff = f"Glass's Δ for MMD-RFF ({runs} Runs, config = {config_descr})"
 
-        finalize_and_save_plot(fig_g_mmd_rff, ax_g_mmd_rff, xlabel=attribute_label, ylabel="Glass's Δ", title=title_mmd_rff,
+        finalize_and_save_plot(fig_g_mmd_rff, ax_g_mmd_rff, xlabel=attribute_label, ylabel="Glass's Δ",
                             save_path=pdf_path, save_path_png=png_path)
 
 
 
 
-def finalize_and_save_plot(fig, ax, xlabel, ylabel, title, save_path, save_path_png=None):
+def finalize_and_save_plot(fig, ax, xlabel, ylabel, save_path, save_path_png=None):
     """
     Finalizes the plot with labels, grid, and saves it to a file.
     
@@ -1181,14 +1044,14 @@ def finalize_and_save_plot(fig, ax, xlabel, ylabel, title, save_path, save_path_
     - ax: Matplotlib axis
     - xlabel: Label for x-axis
     - ylabel: Label for y-axis
-    - title: Title of the plot
     - save_path: Path to save the figure.
     """
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_title(title)
     ax.legend(title="Sampler")
     ax.grid(True)
+    #ax.spines['right'].set_visible(False)
+    #ax.spines['top'].set_visible(False)
 
     # store as pdf
     fig.savefig(save_path, bbox_inches="tight")
@@ -1279,7 +1142,7 @@ def plot_all_dims_combined(mcmc_trace, iid_samples, var_name="posterior"):
     fig_height = min(20, base_height + num_dims * height_per_dim)
 
     fig = plt.figure(figsize=(20, fig_height), constrained_layout=True)
-    outer_spec = gridspec.GridSpec(nrows=1, ncols=3, width_ratios=[1, 1, 1], figure=fig)
+    outer_spec = gridspec.GridSpec(nrows=1, ncols=3, width_ratios=[1, 1, 1.5], figure=fig)
 
     # Left: forest plot
     ax0 = fig.add_subplot(outer_spec[0, 0])
@@ -1293,7 +1156,8 @@ def plot_all_dims_combined(mcmc_trace, iid_samples, var_name="posterior"):
         subplot_spec=outer_spec[0, 2],
         height_ratios=[1, agg_height, 1]
     )
-    ax2 = fig.add_subplot(inner_spec[1, 0])  
+
+    ax2 = fig.add_subplot(inner_spec[1, 0])
 
     if iid_samples.ndim == 2:
         iid_samples = iid_samples[np.newaxis, ...] 

@@ -178,3 +178,23 @@ def compute_mmd(X, Y, rng=None):
     )
 
     return np.sqrt(mmd2)  
+
+
+
+def compute_summary_discrepancies(mcmc_samples, iid_samples):
+    """
+    Computes RMSE of mean and variance per dimension between MCMC and IID samples.
+    
+    Returns:
+        mean_rmse: RMSE between per-dimension means
+        var_rmse: RMSE between per-dimension variances
+    """
+    mcmc_mean = np.mean(mcmc_samples, axis=0)
+    iid_mean = np.mean(iid_samples, axis=0)
+    mean_rmse = np.sqrt(np.mean((mcmc_mean - iid_mean) ** 2))
+
+    mcmc_var = np.var(mcmc_samples, axis=0)
+    iid_var = np.var(iid_samples, axis=0)
+    var_rmse = np.sqrt(np.mean((mcmc_var - iid_var) ** 2))
+
+    return mean_rmse, var_rmse

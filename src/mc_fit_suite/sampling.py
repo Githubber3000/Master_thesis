@@ -7,9 +7,9 @@ import scipy.stats as sp
 import pytensor.tensor as pt
 
 from .utils         import build_correlation_cov_matrix, create_directories, get_posterior_dim, ensure_2d
-from .config        import save_adjusted_posterior_config, adjust_dimension_of_kwargs, adjust_circle_layout
+from .config        import save_adjusted_posterior_config, adjust_dimension_of_kwargs, adjust_circle_layout, adjust_mode_means
 from .reporting     import save_sample_info, plot_histogram
-from .metrics       import sliced_wasserstein_distance, compute_mmd_rff, compute_mmd
+from .metrics       import sliced_wasserstein_distance, compute_mmd_rff, compute_mmd, compute_summary_discrepancies
 
    
 logger = logging.getLogger(__name__)
@@ -277,6 +277,8 @@ def compute_and_store_iid_stats(
     ref_swd_values = []
     ref_mmd_values = []
     ref_mmd_rff_values = []
+    ref_mean_rmse_values = []
+    ref_var_rmse_values = []
     
 
     # get dimension of the first batch
@@ -288,6 +290,11 @@ def compute_and_store_iid_stats(
         x = ensure_2d(iid_batches[i])
         y = ensure_2d(iid_batches[i + 1])
 
+        mean_rmse, var_rmse = compute_summary_discrepancies(x, y)
+
+        ref_mean_rmse_values.append(mean_rmse)
+        ref_var_rmse_values.append(var_rmse)
+        
         swd = sliced_wasserstein_distance(x, y, L=projections, rng=rng)
         if do_mmd:
             mmd = compute_mmd(x, y, rng=rng)
@@ -308,7 +315,9 @@ def compute_and_store_iid_stats(
         # full lists of distances (needed for scatter plot)
         "runs_swd":      np.asarray(ref_swd_values,     dtype=float), 
         "runs_mmd":      np.asarray(ref_mmd_values,     dtype=float) if do_mmd else np.empty(0),  
-        "runs_mmd_rff":  np.asarray(ref_mmd_rff_values, dtype=float) if do_mmd_rff else np.empty(0),  
+        "runs_mmd_rff":  np.asarray(ref_mmd_rff_values, dtype=float) if do_mmd_rff else np.empty(0),
+        "runs_mean_rmse": np.asarray(ref_mean_rmse_values, dtype=float),
+        "runs_var_rmse":  np.asarray(ref_var_rmse_values, dtype=float),
 
         "mean_swd": np.mean(ref_swd_values),
         "std_swd": np.std(ref_swd_values, ddof=1),
@@ -326,7 +335,20 @@ def compute_and_store_iid_stats(
         "std_mmd_rff": np.std(ref_mmd_rff_values, ddof=1),
         "median_mmd_rff": np.median(ref_mmd_rff_values),
         "q25_mmd_rff": np.quantile(ref_mmd_rff_values, 0.25),
-        "q75_mmd_rff": np.quantile(ref_mmd_rff_values, 0.75)
+        "q75_mmd_rff": np.quantile(ref_mmd_rff_values, 0.75),
+
+        "mean_mean_rmse": np.mean(ref_mean_rmse_values),
+        "std_mean_rmse": np.std(ref_mean_rmse_values, ddof=1),
+        "median_mean_rmse": np.median(ref_mean_rmse_values),
+        "q25_mean_rmse": np.quantile(ref_mean_rmse_values, 0.25),
+        "q75_mean_rmse": np.quantile(ref_mean_rmse_values, 0.75),
+
+        "mean_var_rmse": np.mean(ref_var_rmse_values),
+        "std_var_rmse": np.std(ref_var_rmse_values, ddof=1),
+        "median_var_rmse": np.median(ref_var_rmse_values),
+        "q25_var_rmse": np.quantile(ref_var_rmse_values, 0.25),
+        "q75_var_rmse": np.quantile(ref_var_rmse_values, 0.75),
+
     }
 
     plot_histogram(
@@ -365,6 +387,9 @@ def generate_all_iid_batches(
     - iid_batches_dict: Dictionary of generated IID batches.
     - iid_ref_stats_dict: Dictionary of reference statistics for SWD and MMD.
     """
+
+    print(f"Generating IID samples for posterior type '{posterior_type}' with varying attribute '{varying_attribute}'...")
+    print(f"Varying values: {varying_values}")
     
     iid_histogram_folder = os.path.join(group_folder, "KDE and Histograms of IID Samples")
     create_directories(iid_histogram_folder)
@@ -373,6 +398,7 @@ def generate_all_iid_batches(
     # Dictionary to store generated IID batches and reference statistics
     iid_batches_dict = {}
     iid_ref_stats_dict = {}
+    direction_dict = {}
 
     component_index = posterior_kwargs.get("varying_component", None)
 
@@ -388,12 +414,38 @@ def generate_all_iid_batches(
                     iid_kwargs["weights"] = value
             elif varying_attribute == "dimension":
                 adjust_dimension_of_kwargs(posterior_type, iid_kwargs_original, iid_kwargs, target_dim=value, required_parameters=required_parameters)
+                
+                posterior_dim = get_posterior_dim(posterior_type, iid_kwargs)
+                base_delta = 3.16 
+                r = base_delta * np.sqrt(posterior_dim)
+
+                # Generate and store fixed direction
+                direction = rng.standard_normal(posterior_dim)
+                direction /= np.linalg.norm(direction)
+                direction_dict[value] = direction
+
+                adjust_mode_means(iid_kwargs["component_params"], posterior_dim, r, direction)
+
                 save_adjusted_posterior_config(
                     iid_kwargs,
                     folder=iid_posteriors_folder,
                     dim_value=value
-                )
+                    )
+            elif varying_attribute == "mm":
+                    
+                    posterior_dim = get_posterior_dim(posterior_type, iid_kwargs)
+                    
+                    # Generate and store fixed direction
+                    direction = rng.standard_normal(posterior_dim)
+                    direction /= np.linalg.norm(direction)
+                    direction_dict[value] = direction
 
+                    adjust_mode_means(iid_kwargs["component_params"], posterior_dim, value, direction)
+                    save_adjusted_posterior_config(
+                        iid_kwargs,
+                        folder=iid_posteriors_folder,
+                        dim_value=value
+                    )
             elif varying_attribute == "num_samples":
                 num_samples = value
             elif varying_attribute == "num_chains":
@@ -536,4 +588,4 @@ def generate_all_iid_batches(
                 rng=rng
             )
 
-    return iid_batches_dict, iid_ref_stats_dict
+    return iid_batches_dict, iid_ref_stats_dict, direction_dict

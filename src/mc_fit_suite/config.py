@@ -93,6 +93,22 @@ def apply_defaults_to_config(config, defaults):
     return config
 
 
+def adjust_mode_means(component_params, d, r, direction=None):
+
+    mu1 = np.zeros(d)
+    mu2 = r * np.array(direction)
+
+    print(f"Adjusting mode means for {len(component_params)} components: mu1 = {mu1}, mu2 = {mu2}")
+
+    if "mu" in component_params[0]:
+        component_params[0]["mu"] = mu1
+        component_params[1]["mu"] = mu2
+    elif "loc" in component_params[0]:
+        component_params[0]["loc"] = mu1
+        component_params[1]["loc"] = mu2
+
+
+
 def adjust_dimension_of_kwargs(posterior_type, kwargs_dict_copy, kwargs_dict, target_dim, required_parameters):
     """
     Adjusts only the required vector-like entries in the dictionary to match the given dimension.
@@ -259,7 +275,7 @@ def validate_config(config):
         "Custom": {"logp_func"}
     }
 
-    OPTIONAL_ATTRIBUTES = {"base_random_seed", "init_scheme", "varying_component", "dimension", "correlation", "circle_radius", "circle_modes"}
+    OPTIONAL_ATTRIBUTES = {"base_random_seed", "init_scheme", "varying_component", "dimension", "correlation", "circle_radius", "circle_modes", "mm"}
 
     if "config_descr" not in config:
         raise ValueError("Config is missing 'config_descr'.")

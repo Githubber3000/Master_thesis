@@ -21,6 +21,7 @@ from .config import (
     adjust_dimension_of_kwargs,
     adjust_circle_layout,
     save_adjusted_posterior_config,
+    adjust_mode_means
 )
 
 from .posteriors import SinglePosterior, MixturePosterior, CustomPosterior
@@ -33,10 +34,12 @@ from .sampling import (
 
 
 from .metrics import (
+    compute_summary_discrepancies,
     get_scalar_rhat_and_ess,
     sliced_wasserstein_distance,
     compute_mmd_rff,
-    compute_mmd
+    compute_mmd,
+    compute_summary_discrepancies
 )
 
 from .reporting import (
@@ -135,11 +138,13 @@ def eval_trace(
     # Compute Wasserstein distance and MMD if not custom posterior
     if posterior_type != "Custom":
 
+        mean_rmse, var_rmse = compute_summary_discrepancies(posterior_samples, iid_batch)
+
         dim = posterior_samples.shape[1]
         projections = 1 if dim == 1 else max(50, min(10*dim, 500))
 
         mcmc_vs_iid_swd = sliced_wasserstein_distance(posterior_samples, iid_batch, L=projections, rng=rng)
-        
+
         if do_mmd:
             mmd_value = compute_mmd(posterior_samples, iid_batch, rng=rng)
         else:
@@ -174,6 +179,8 @@ def eval_trace(
         "run_id": run_id,
         varying_attribute: value,
         "sampler": sampler_name,
+        "mean_rmse": mean_rmse,
+        "var_rmse": var_rmse,
         "wasserstein_distance": mcmc_vs_iid_swd,
         "mmd_rff": mmd_rff_value,
         "mmd": mmd_value,
@@ -260,7 +267,7 @@ def run_experiment(
     png_folder_scatter = os.path.join(png_folder, "pairwise_scatter")
     create_directories(group_folder, init_folder, runs_folder, png_folder_kde, png_folder_traces, png_folder_scatter)
 
-    if varying_attribute in ["dimension", "correlation", "circle_radius", "circle_modes"]:
+    if varying_attribute in ["dimension", "correlation", "circle_radius", "circle_modes", "mm"]:
         posterior_kwargs_original = copy.deepcopy(posterior_kwargs)
         iid_kwargs_original = copy.deepcopy(iid_kwargs)
         iid_posteriors_folder  = os.path.join(init_folder, "iid_posteriors")
@@ -302,7 +309,10 @@ def run_experiment(
     # generate iid batches (not needed for Custom posterior, since no iid samples available)
     if posterior_type != "Custom":
 
-        iid_batches_dict, iid_ref_stats_dict = generate_all_iid_batches(
+        print (f"Generating {num_total_iid_batches} IID batches for {posterior_type} posterior with varying attribute '{varying_attribute}' ")
+        print(f"with varying values {varying_values}...")
+
+        iid_batches_dict, iid_ref_stats_dict, direction_dict = generate_all_iid_batches(
             posterior_type=posterior_type,
             posterior_kwargs=posterior_kwargs,
             iid_kwargs_original=iid_kwargs_original,
@@ -390,8 +400,28 @@ def run_experiment(
 
                 if varying_attribute == "weights":
                     posterior_kwargs["weights"] = value
+                elif varying_attribute == "mm":
+                    posterior_dim = get_posterior_dim(posterior_type, posterior_kwargs)
+
+                    direction = np.array(direction_dict.get(value))
+                    adjust_mode_means(posterior_kwargs["component_params"], posterior_dim, value, direction)
+
+                    if run_id == 1:
+                        save_adjusted_posterior_config(
+                            posterior_kwargs,
+                            folder=regular_posteriors_folder,
+                            dim_value=value
+                        )
                 elif varying_attribute == "dimension":
                     adjust_dimension_of_kwargs(posterior_type, posterior_kwargs_original, posterior_kwargs, target_dim=value, required_parameters=required_parameters)
+
+                    posterior_dim = get_posterior_dim(posterior_type, posterior_kwargs)
+                    base_delta = 3.16 
+                    r = base_delta * np.sqrt(posterior_dim)
+
+                    direction = np.array(direction_dict.get(value))
+                    adjust_mode_means(posterior_kwargs["component_params"], posterior_dim, r, direction)
+                        
                     if run_id == 1:
                             save_adjusted_posterior_config(
                                 posterior_kwargs,
@@ -433,20 +463,6 @@ def run_experiment(
                 elif varying_attribute == "init_scheme":
                     init_scheme = value
                 elif varying_attribute == "correlation":
-                    posterior_dim = get_posterior_dim(posterior_type, posterior_kwargs)
-
-                    for i in range(len(posterior_kwargs["component_params"])):
-                        
-                        posterior_kwargs["component_params"][i][cov_param_key] = build_correlation_cov_matrix(posterior_dim, value)
- 
-                    
-                    if run_id == 1:
-                        save_adjusted_posterior_config(
-                                posterior_kwargs,
-                                folder=regular_posteriors_folder,
-                                dim_value=value
-                        )
-                elif varying_attribute == "distance":
                     posterior_dim = get_posterior_dim(posterior_type, posterior_kwargs)
 
                     for i in range(len(posterior_kwargs["component_params"])):

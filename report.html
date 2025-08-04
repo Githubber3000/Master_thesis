@@ -137,7 +137,7 @@
 <h1>{{ experiment_name }} – Complete Experiment Report</h1>
 
 {% set metrics = metrics or
-  ["wasserstein_distance", "mmd", "mmd_rff", "runtime", "ess", "ess_per_sec", "r_hat"] %}
+  ["mean_rmse", "var_rmse" ,"wasserstein_distance", "mmd", "mmd_rff", "runtime", "ess", "ess_per_sec", "r_hat"] %}
 
 {# --- Sampler vs IID (global, per sampler) --- #}
 {% macro render_sampler_iid_table(sampler_stats, metric_key) %}
@@ -307,6 +307,8 @@
 
         {% set metric_key_map = {
           'wasserstein_distance': 'ws',
+          'mean_rmse': 'mean_rmse',
+          'var_rmse': 'var_rmse',
           'mmd': 'mmd',
           'mmd_rff': 'mmd_rff'
         } %}
@@ -361,7 +363,28 @@
                 {% endif %}
 
                 {# extra Glass-Δ thumbnails where available #}
-                {% if m == 'wasserstein_distance' and glass_paths.ws is defined %}
+
+                {% if m == 'mean_rmse' and glass_paths.mean_rmse is defined %}
+                  <div>
+                    <div class="plot-title">Glass’s Δ Mean RMSE</div>
+                    <img src="{{ glass_paths.mean_rmse }}" alt="Glass Δ Mean RMSE">
+                        <details>
+                          <summary><b>Glass’s Δ table</b></summary>
+                          {{ render_glass_delta_table(delta_data, 'mean_rmse') }}
+                        </details>
+                  </div>
+
+                {% elif m == 'var_rmse' and glass_paths.var_rmse is defined %}
+                  <div>
+                    <div class="plot-title">Glass’s Δ Variance RMSE</div>
+                    <img src="{{ glass_paths.var_rmse }}" alt="Glass Δ Variance RMSE">
+                        <details>
+                          <summary><b>Glass’s Δ table</b></summary>
+                          {{ render_glass_delta_table(delta_data, 'var_rmse') }}
+                        </details>
+                  </div>
+
+                {% elif m == 'wasserstein_distance' and glass_paths.ws is defined %}
                   <div>
                     <div class="plot-title">Glass’s Δ WS</div>
                     <img src="{{ glass_paths.ws }}" alt="Glass Δ WS">
