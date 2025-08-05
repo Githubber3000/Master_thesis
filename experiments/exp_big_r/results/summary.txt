@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-04 18:11:29
+Finished at:                  2025-08-04 18:53:26
+Total duration:               0h 41m 57.5s
+Output folder:                experiments/exp_big_r
+Output folder size:           23.6 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

@@ -1,0 +1,14 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-05 03:43:12
+Finished at:                  2025-08-05 03:43:14
+Total duration:               0h 0m 1.5s
+Output folder:                experiments/exp_test_1d
+Output folder size:           139.3 kB
+Total configurations:         1
+Successful configuration:     0
+Failed configurations:        1
+ - Varying_only_Mode_distance: Size length is incompatible with batched dimensions of parameter 0 [0.]:
+len(size) = 0, len(batched dims [0.]) = 1. Size must be None or have length >= 1

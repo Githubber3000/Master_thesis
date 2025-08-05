@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-05 03:33:03
+Finished at:                  2025-08-05 03:39:00
+Total duration:               0h 5m 57.5s
+Output folder:                experiments/exp_dist
+Output folder size:           8.2 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

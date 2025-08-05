@@ -368,7 +368,7 @@ def plot_iid_baseline(
     iid_stds    = np.array([iid_stds_dict[k] for k in means.index])
 
     # Plot IID median line + IQR fill
-    ax_shaded.plot(medians.index, iid_medians, "o--", label=None, color="black")
+    ax_shaded.plot(medians.index, iid_medians, "o--", color="black")
     ax_shaded.fill_between(medians.index, iid_q25, iid_q75, color="black", alpha=0.1)
 
     # Plot IID mean line + std fill

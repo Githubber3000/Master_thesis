@@ -416,8 +416,9 @@ def run_experiment(
                     adjust_dimension_of_kwargs(posterior_type, posterior_kwargs_original, posterior_kwargs, target_dim=value, required_parameters=required_parameters)
 
                     posterior_dim = get_posterior_dim(posterior_type, posterior_kwargs)
-                    base_delta = 3.16 
+                    base_delta = 12
                     r = base_delta * np.sqrt(posterior_dim)
+                    #r = 8
 
                     direction = np.array(direction_dict.get(value))
                     adjust_mode_means(posterior_kwargs["component_params"], posterior_dim, r, direction)

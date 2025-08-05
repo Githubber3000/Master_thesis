@@ -416,9 +416,10 @@ def generate_all_iid_batches(
                 adjust_dimension_of_kwargs(posterior_type, iid_kwargs_original, iid_kwargs, target_dim=value, required_parameters=required_parameters)
                 
                 posterior_dim = get_posterior_dim(posterior_type, iid_kwargs)
-                base_delta = 3.16 
+                base_delta = 12
                 r = base_delta * np.sqrt(posterior_dim)
-
+                #r = 8
+                
                 # Generate and store fixed direction
                 direction = rng.standard_normal(posterior_dim)
                 direction /= np.linalg.norm(direction)
