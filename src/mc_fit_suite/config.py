@@ -96,7 +96,9 @@ def apply_defaults_to_config(config, defaults):
 def adjust_mode_means(component_params, d, r, direction=None):
 
     mu1 = np.zeros(d)
-    mu2 = r * np.array(direction)
+    mu2 = np.zeros(d)
+    mu2[0] = r
+    #mu2 = r * np.array(direction)
 
     print(f"Adjusting mode means for {len(component_params)} components: mu1 = {mu1}, mu2 = {mu2}")
 
@@ -298,17 +300,16 @@ def validate_config(config):
     if posterior_type not in POSTERIOR_ATTRIBUTES:
         raise ValueError(f"Config '{config_descr}' has an invalid 'posterior_type': '{posterior_type}'.")
 
-    if posterior_type == "Mixture" and "varying_component" in config:
-        varying_index = config["varying_component"]
-        varying_component = config["component_types"][varying_index]
-        all_valid_attributes = REQUIRED_ATTRIBUTES.union(POSTERIOR_ATTRIBUTES[posterior_type], POSTERIOR_ATTRIBUTES[varying_component], OPTIONAL_ATTRIBUTES)
-        
-    else:
-        # Ensure varying_attribute is a recognized attribute
-        all_valid_attributes = REQUIRED_ATTRIBUTES.union(POSTERIOR_ATTRIBUTES[posterior_type], OPTIONAL_ATTRIBUTES)
+    # if posterior_type == "Mixture" in config:
+    #     component_attr = config["component_types"][0]
+    #     all_valid_attributes = REQUIRED_ATTRIBUTES.union(POSTERIOR_ATTRIBUTES[posterior_type], POSTERIOR_ATTRIBUTES[component_attr], OPTIONAL_ATTRIBUTES)
 
-    if varying_attr not in all_valid_attributes:
-        raise ValueError(f"Config '{config_descr}' has an invalid 'varying_attribute': '{varying_attr}'.")
+    # else:
+    #     # Ensure varying_attribute is a recognized attribute
+    #     all_valid_attributes = REQUIRED_ATTRIBUTES.union(POSTERIOR_ATTRIBUTES[posterior_type], OPTIONAL_ATTRIBUTES)
+
+    # if varying_attr not in all_valid_attributes:
+    #     raise ValueError(f"Config '{config_descr}' has an invalid 'varying_attribute': '{varying_attr}'.")
     
     if varying_attr == "dimension":
         max_dim = max(config["varying_values"])

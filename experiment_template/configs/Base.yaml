@@ -3,11 +3,11 @@ group_name: Base
 configs:
 
   - config_descr: Base_Gaussian
-    posterior_type: Normal
+    posterior_type: MvNormal
     varying_attribute: mu
-    varying_values: [0]
-    mu: 0
-    sigma: 1
+    varying_values: [[0.0, 0.0]]
+    mu: ZERO_2
+    cov: ID_2
 
 
 

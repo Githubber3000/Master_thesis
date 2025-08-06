@@ -8,6 +8,15 @@ configs:
     mu: ZERO_2
     cov: ID_2 
 
+
+  - config_descr: Vary_Correlation_with_high_Dimension
+    posterior_type: MvNormal
+    varying_attribute: correlation
+    varying_values: [0.0, 0.3, 0.5, 0.9, 0.99]
+    mu: ZERO_30
+    cov: ID_30
+    
+
   - config_descr: Vary_Correlation_with_heavy_Tails
     posterior_type: MvStudentT
     varying_attribute: correlation
@@ -17,21 +26,13 @@ configs:
     nu: 2.1
 
 
-  - config_descr: Vary_Correlation_with_high_Dimension
-    posterior_type: MvNormal
-    varying_attribute: correlation
-    varying_values: [0.0, 0.3, 0.5, 0.9, 0.99]
-    mu: ZERO_30
-    cov: ID_30
-
-
-    - config_descr: Vary_Correlation_with_high_Multimodality
+  - config_descr: Vary_Correlation_with_high_Multimodality
     posterior_type: Mixture
     component_types: ["MvNormal", "MvNormal"]
     component_params:
       - mu: ZERO_2
         cov: ID_2
-      - mu: [10, 0]
+      - mu: [13, 0]
         cov: ID_2
     weights: [0.5, 0.5]
     varying_attribute: correlation
