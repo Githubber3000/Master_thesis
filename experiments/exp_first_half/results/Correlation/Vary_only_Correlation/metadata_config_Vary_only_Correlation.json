@@ -1,0 +1,43 @@
+{
+    "config_descr": "Vary_only_Correlation",
+    "samplers": [
+        "HMC",
+        "Metro",
+        "DEMetro_Z",
+        "SMC"
+    ],
+    "group_name": "Correlation",
+    "runs": 20,
+    "total_iid_batches": 60,
+    "iid_vs_iid_comparisons": 20,
+    "mcmc_vs_iid_comparisons": 20,
+    "num_samples": 4000,
+    "num_chains": 4,
+    "samples_per_chain": 1000,
+    "posterior_type": "MvNormal",
+    "varying_attribute": "correlation",
+    "varying_values": [
+        0.0,
+        0.3,
+        0.5,
+        0.9,
+        0.99
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-94-g3413a5085",
+    "mu": [
+        0.0,
+        0.0
+    ],
+    "cov": [
+        [
+            1.0,
+            0.0
+        ],
+        [
+            0.0,
+            1.0
+        ]
+    ]
+}
