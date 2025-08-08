@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-08 15:31:17
+Finished at:                  2025-08-08 15:34:48
+Total duration:               0h 3m 31.1s
+Output folder:                experiments/exp_tset
+Output folder size:           8.3 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

@@ -275,15 +275,44 @@ def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, var
                     marker="o", linestyle="-", label=sampler, 
                     color=sampler_colors.get(sampler, "black"))
 
-    # Set dynamic axis labels and save plots
-    attribute_label = varying_attribute.replace("_", " ").title()
+    # Define custom mapping for specific attributes
+    attribute_name_map = {
+        "mu": "Mode Distance",
+        "mm": "Mode Distance",
+        "nu": "Degrees of Freedom"
+    }
+
+    # Get label: use mapping if available, else fallback to generic formatting
+    attribute_label = attribute_name_map.get(
+        varying_attribute,
+        varying_attribute.replace("_", " ").title()
+    )
+
+    metric_name_map = {
+        "wasserstein_distance": "SWD",
+        "mmd_rff": "MMD-RFF",
+        "mmd": "MMD",
+        "mean_rmse": "Mean RMSE",
+        "var_rmse": "Variance RMSE",
+        "runtime": "Runtime (s)",
+        "ess": "ESS",
+        "ess_per_sec": "ESS/sec",
+        "r_hat": "R-hat"
+    }
+
 
     for metric in metrics:
+        # Get display label for metric
+        metric_label = metric_name_map.get(
+            metric,
+            metric.replace('_', ' ').title()
+        )
+
         fig, ax = fig_ax_pairs[metric]
-        finalize_and_save_plot(fig,ax, attribute_label, metric, 
-                               f"{metric} for Samplers (config =_{config_descr})",
+        finalize_and_save_plot(fig,ax, attribute_label, metric_label, 
                                os.path.join(plots_folder, f"{metric}_run_{run_id}.pdf"))
 
+        # f"{metric} for Samplers (config =_{config_descr})",  old title 
 
 
 def compute_delta_and_stats(metric_name, means, values, sampler, sampler_metric_values, iid_means_dict, iid_stds_dict, iid_runs_dict, ax_g, color, global_avg_dfs, varying_attribute, runs):
@@ -368,12 +397,12 @@ def plot_iid_baseline(
     iid_stds    = np.array([iid_stds_dict[k] for k in means.index])
 
     # Plot IID median line + IQR fill
-    ax_shaded.plot(medians.index, iid_medians, "o--", color="black")
-    ax_shaded.fill_between(medians.index, iid_q25, iid_q75, color="black", alpha=0.1)
+    ax_shaded.plot(medians.index, iid_medians, "--", color="gray")
+    ax_shaded.fill_between(medians.index, iid_q25, iid_q75, color="gray", alpha=0.1)
 
     # Plot IID mean line + std fill
-    ax_mean.plot(means.index, iid_means, "o--", label= "IID Reference", color="black")
-    ax_mean.fill_between(means.index, iid_means + iid_stds, iid_means - iid_stds, color="black", alpha=0.1)
+    ax_mean.plot(means.index, iid_means, "--", color="gray")
+    ax_mean.fill_between(means.index, iid_means + iid_stds, iid_means - iid_stds, color="gray", alpha=0.1)
 
 
 def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribute, varying_values, runs, num_chains, config_descr, global_results_folder, global_plots_folder, png_folder, iid_ref_stats_dict, save_extra_scatter, do_mmd, do_mmd_rff):
@@ -398,7 +427,30 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     if do_mmd_rff:
         metrics.append("mmd_rff")
 
-    attribute_label = varying_attribute.replace("_", " ").title()
+    # Define custom mapping for specific attributes
+    attribute_name_map = {
+        "mu": "Mode Distance",
+        "mm": "Mode Distance",
+        "nu": "Degrees of Freedom"
+    }
+
+    # Get label: use mapping if available, else fallback to generic formatting
+    attribute_label = attribute_name_map.get(
+        varying_attribute,
+        varying_attribute.replace("_", " ").title()
+    )
+
+    metric_name_map = {
+        "wasserstein_distance": "SWD",
+        "mmd_rff": "MMD-RFF",
+        "mmd": "MMD",
+        "mean_rmse": "Mean RMSE",
+        "var_rmse": "Variance RMSE",
+        "runtime": "Runtime (s)",
+        "ess": "ESS",
+        "ess_per_sec": "ESS/sec",
+        "r_hat": "R-hat"
+    }
 
     # Figure for shaded plots (median + IQR)
     fig_ax_pairs_shaded = {m: plt.subplots(figsize=(10, 6)) for m in metrics}
@@ -504,6 +556,12 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
 
         sampler_metric_values = {}
 
+        # Get display label for metric
+        metric_label = metric_name_map.get(
+            metric,
+            metric.replace('_', ' ').title()
+        )
+
         fig_shaded, ax_shaded = fig_ax_pairs_shaded[metric]
         fig_mean,   ax_mean   = fig_ax_pairs_mean[metric] 
 
@@ -566,11 +624,13 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
             # Plot uncertainty: interquartile range (q25–q75)
             if len(medians.index) > 1:
                 ax_shaded.fill_between(medians.index, q25, q75, color=color, alpha=0.2)
+                ax_mean.fill_between(means.index, means + stds, means - stds, color=color, alpha=0.2)
             else:
                 lower_err = medians - q25
                 upper_err = q75 - medians
                 yerr = [lower_err, upper_err]
                 ax_shaded.errorbar(medians.index, medians, yerr=yerr, fmt="o", color=color, capsize=5)
+                ax_mean.errorbar(means.index, means, yerr=stds, fmt="o", color=color, capsize=5)
 
 
             if save_extra_scatter:
@@ -826,8 +886,8 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
 
             fig.update_layout(
                 title=f"All runs {metric.replace('_',' ').title()} ({runs} runs, {config_descr})",
-                xaxis_title=attribute_label,
-                yaxis_title=metric.replace('_',' ').title(),
+                xaxis_title= attribute_label,
+                yaxis_title= metric_label,
                 legend=dict(
                     itemclick="toggle",                     
                     itemdoubleclick="toggleothers"          
@@ -975,13 +1035,19 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     # Save plots
     for metric in metrics:
 
+        # Get display label for metric
+        metric_label = metric_name_map.get(
+            metric,
+            metric.replace('_', ' ').title()
+        )
+
         #title_md = (f"Averaged {metric.replace('_', ' ').title()} "
         #        f"({runs} Runs, config = {config_descr})")   
         fig_shaded, ax_shaded = fig_ax_pairs_shaded[metric]
         pdf_path_md = os.path.join(global_plots_folder, f"{metric}_global_plot_shaded.pdf")
         png_path_md = os.path.join(png_folder, f"{metric}_global_plot_shaded.png")
 
-        finalize_and_save_plot(fig_shaded, ax_shaded, attribute_label, metric, save_path=pdf_path_md, save_path_png=png_path_md)
+        finalize_and_save_plot(fig_shaded, ax_shaded, attribute_label, metric_label, save_path=pdf_path_md, save_path_png=png_path_md)
 
         #title_me = (f"Mean {metric.replace('_', ' ').title()} "
         #              f"({runs} Runs, config = {config_descr})")
@@ -989,7 +1055,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         pdf_path_me = os.path.join(global_plots_folder, f"{metric}_global_plot_mean.pdf")
         png_path_me = os.path.join(png_folder, f"{metric}_global_plot_mean.png")
 
-        finalize_and_save_plot(fig_mean, ax_mean, attribute_label, metric, save_path=pdf_path_me, save_path_png=png_path_me)
+        finalize_and_save_plot(fig_mean, ax_mean, attribute_label, metric_label, save_path=pdf_path_me, save_path_png=png_path_me)
 
     # Plot Glass's Δ for wasserstein_distance
     pdf_path = os.path.join(global_plots_folder, "glass_delta_ws.pdf")
@@ -1048,8 +1114,8 @@ def finalize_and_save_plot(fig, ax, xlabel, ylabel, save_path, save_path_png=Non
     """
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.legend(title="Sampler")
-    ax.grid(True)
+    #ax.legend(title="Sampler")
+    ax.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
     #ax.spines['right'].set_visible(False)
     #ax.spines['top'].set_visible(False)
 

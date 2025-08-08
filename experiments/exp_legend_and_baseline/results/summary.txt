@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-07 17:24:05
+Finished at:                  2025-08-07 17:28:51
+Total duration:               0h 4m 46.1s
+Output folder:                experiments/exp_legend_and_baseline
+Output folder size:           8.3 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0
