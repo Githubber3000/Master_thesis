@@ -2,5 +2,5 @@ defaults:
   num_samples: 4000
   num_chains: 4
   base_random_seed: 42
-  runs: 15
+  runs: 5
   init_scheme: thesis_scheme           
