@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-09 14:36:12
+Finished at:                  2025-08-09 19:04:07
+Total duration:               4h 27m 54.7s
+Output folder:                experiments/exp_second_half_short
+Output folder size:           289.0 MB
+Total configurations:         12
+Successful configuration:     12
+Failed configurations:        0
