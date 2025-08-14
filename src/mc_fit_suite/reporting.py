@@ -87,6 +87,7 @@ def generate_html_report(experiment_root_folder, report_pngs_folder, experiments
         "ess",
         "ess_per_sec",
         "r_hat",
+        "mode_transitions"
     ]
 
     metrics = [
@@ -253,7 +254,7 @@ def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, var
     """
     
     # Define metric labels
-    metrics = [ "mean_rmse", "var_rmse",  "wasserstein_distance", "runtime", "ess", "ess_per_sec", "r_hat"]
+    metrics = [ "mean_rmse", "var_rmse",  "wasserstein_distance", "runtime", "ess", "ess_per_sec", "r_hat", "mode_transitions"]
 
     if do_mmd:
         metrics.append("mmd")
@@ -277,7 +278,7 @@ def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, var
 
     # Define custom mapping for specific attributes
     attribute_name_map = {
-        "mu": "Mode Distance",
+        "mu": "Mode Distance" if not config_descr.lower().startswith("base") else "Base Case (2D Gaussian)",
         "mm": "Mode Distance",
         "nu": "Degrees of Freedom"
     }
@@ -297,7 +298,8 @@ def plot_and_save_all_metrics(df_results, sampler_colors, varying_attribute, var
         "runtime": "Runtime (s)",
         "ess": "ESS",
         "ess_per_sec": "ESS/sec",
-        "r_hat": "R-hat"
+        "r_hat": "R-hat",
+        "mode_transitions": "Mode Transitions"
     }
 
 
@@ -396,13 +398,29 @@ def plot_iid_baseline(
     iid_means   = np.array([iid_means_dict[k] for k in means.index])
     iid_stds    = np.array([iid_stds_dict[k] for k in means.index])
 
+
+
+    # --- Median/IQR panel ---
+    if len(medians.index) > 1:
+        ax_shaded.plot(medians.index, iid_medians, "--", color="black")
+        ax_shaded.fill_between(medians.index, iid_q25, iid_q75, color="gray", alpha=0.1)
+        ax_mean.plot(means.index, iid_means, "--", color="black")
+        ax_mean.fill_between(means.index, iid_means + iid_stds, iid_means - iid_stds, color="gray", alpha=0.1)
+    else:
+        lower_err = iid_medians - iid_q25
+        upper_err = iid_q75 - iid_medians
+        yerr = np.vstack([lower_err, upper_err])
+        ax_shaded.errorbar(medians.index, iid_medians, yerr=yerr, fmt="o", color="black", capsize=5)
+        ax_mean.errorbar(means.index, iid_means, yerr=iid_stds, fmt="o", color="black", capsize=5)
+
+
     # Plot IID median line + IQR fill
-    ax_shaded.plot(medians.index, iid_medians, "--", color="gray")
-    ax_shaded.fill_between(medians.index, iid_q25, iid_q75, color="gray", alpha=0.1)
+    # ax_shaded.plot(medians.index, iid_medians, "--", color="black", marker="o" if len(iid_medians) == 1 else None)
+    # ax_shaded.fill_between(medians.index, iid_q25, iid_q75, color="gray", alpha=0.1)
 
     # Plot IID mean line + std fill
-    ax_mean.plot(means.index, iid_means, "--", color="gray")
-    ax_mean.fill_between(means.index, iid_means + iid_stds, iid_means - iid_stds, color="gray", alpha=0.1)
+    # ax_mean.plot(means.index, iid_means, "--", color="black", marker="o" if len(iid_means) == 1 else None)
+    # ax_mean.fill_between(means.index, iid_means + iid_stds, iid_means - iid_stds, color="gray", alpha=0.1)
 
 
 def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribute, varying_values, runs, num_chains, config_descr, global_results_folder, global_plots_folder, png_folder, iid_ref_stats_dict, save_extra_scatter, do_mmd, do_mmd_rff):
@@ -420,16 +438,21 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     """
 
     # Define metrics for aggregation
-    metrics = ["mean_rmse", "var_rmse", "wasserstein_distance","runtime", "ess", "ess_per_sec", "r_hat"]
+    metrics = ["mean_rmse", "var_rmse", "wasserstein_distance","runtime", "ess", "ess_per_sec", "r_hat", "mode_transitions"]
 
     if do_mmd:
         metrics.append("mmd")
     if do_mmd_rff:
         metrics.append("mmd_rff")
 
+    if config_descr.lower().startswith("base"):
+        is_base_case = True
+    else:
+        is_base_case = False
+
     # Define custom mapping for specific attributes
     attribute_name_map = {
-        "mu": "Mode Distance",
+        "mu": "Mode Distance" if not is_base_case else "Base Case (2D Gaussian)",
         "mm": "Mode Distance",
         "nu": "Degrees of Freedom"
     }
@@ -449,7 +472,8 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         "runtime": "Runtime (s)",
         "ess": "ESS",
         "ess_per_sec": "ESS/sec",
-        "r_hat": "R-hat"
+        "r_hat": "R-hat",
+        "mode_transitions": "Mode Transitions"
     }
 
     # Figure for shaded plots (median + IQR)
@@ -615,23 +639,55 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 "index": df_pivot.index
             }
 
-            # Plot median line
-            ax_shaded.plot(medians.index, medians, "o-", label=sampler, color=color)
+            if not is_base_case:
+                # Plot median line
+                ax_shaded.plot(medians.index, medians, "o-", label=sampler, color=color)
 
-            # Plot mean line
-            ax_mean.plot(means.index, means, "o-", label=sampler, color=color)
+                # Plot mean line
+                ax_mean.plot(means.index, means, "o-", label=sampler, color=color)
 
             # Plot uncertainty: interquartile range (q25–q75)
             if len(medians.index) > 1:
                 ax_shaded.fill_between(medians.index, q25, q75, color=color, alpha=0.2)
                 ax_mean.fill_between(means.index, means + stds, means - stds, color=color, alpha=0.2)
             else:
-                lower_err = medians - q25
-                upper_err = q75 - medians
-                yerr = [lower_err, upper_err]
-                ax_shaded.errorbar(medians.index, medians, yerr=yerr, fmt="o", color=color, capsize=5)
-                ax_mean.errorbar(means.index, means, yerr=stds, fmt="o", color=color, capsize=5)
+                # lower_err = medians - q25
+                # upper_err = q75 - medians
+                # yerr = [lower_err, upper_err]
+                # ax_shaded.errorbar(medians.index, medians, yerr=yerr, fmt="o", color=color, capsize=5)
+                # ax_mean.errorbar(means.index, means, yerr=stds, fmt="o", color=color, capsize=5)
 
+
+                names = list(sampler_colors.keys())
+                i, n = names.index(sampler), len(names)
+                width = 0.16                    
+                off = (i - (n - 1) / 2) * width
+
+                # center x (numeric); fall back to 0.0 if index is not numeric
+                try:
+                    x0 = float(np.asarray(medians.index)[0])
+                except Exception:
+                    x0 = 0.0
+
+                # scalars for error bars
+                med  = float(medians.iloc[0])
+                ql   = float(q25.iloc[0])
+                qu   = float(q75.iloc[0])
+                mean_ = float(means.iloc[0])
+                std_  = float(stds.iloc[0])
+
+                # IQR around median (shaded panel)
+                ax_shaded.errorbar([x0 + off], [med],
+                                yerr=[[med - ql], [qu - med]],
+                                fmt="o", color=color, capsize=5, zorder=2)
+
+                # mean ± std (mean panel)
+                ax_mean.errorbar([x0 + off], [mean_],
+                                yerr=[[std_], [std_]],
+                                fmt="o", color=color, capsize=5, zorder=2)
+
+                ax_mean.tick_params(axis="x", which="both", bottom=False, top=False, labelbottom=False)
+                ax_shaded.tick_params(axis="x", which="both", bottom=False, top=False, labelbottom=False)
 
             if save_extra_scatter:
                 # x = v.attr value repeated per run

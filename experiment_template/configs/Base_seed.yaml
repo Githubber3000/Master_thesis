@@ -9,6 +9,15 @@ configs:
     mu: ZERO_2
     cov: ID_2
 
+    
+  - config_descr: Base_Gaussian_Seed
+    posterior_type: MvNormal
+    varying_attribute: mu
+    varying_values: [[0, 0]]
+    mu: ZERO_2
+    cov: ID_2
+    base_random_seed: 7
+
 
 
 

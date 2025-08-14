@@ -4,12 +4,13 @@ from scipy import stats as sp
 import arviz as az
 
 
-def get_scalar_rhat_and_ess(trace):
+def get_scalar_rhat_and_ess(trace, compute_rhat=True):
     posterior_vars = [v for v in trace.posterior.data_vars if v.startswith("posterior")]
     if not posterior_vars:
         raise ValueError("No posterior variables found.")
+    
     return (
-        az.rhat(trace, var_names=posterior_vars).to_array().max().item(),
+        az.rhat(trace, var_names=posterior_vars).to_array().max().item() if compute_rhat else np.nan,
         az.ess(trace, var_names=posterior_vars).to_array().min().item()
     )
 
@@ -134,8 +135,6 @@ def compute_mmd_rff(X, Y, D=500, rng=None):
     return mmd_rff
 
 
-
-
 def compute_mmd(X, Y, rng=None):
     """
     Computes the Maximum Mean Discrepancy (MMD) 
@@ -180,7 +179,6 @@ def compute_mmd(X, Y, rng=None):
     return np.sqrt(mmd2)  
 
 
-
 def compute_summary_discrepancies(mcmc_samples, iid_samples):
     """
     Computes RMSE of mean and variance per dimension between MCMC and IID samples.
@@ -198,3 +196,54 @@ def compute_summary_discrepancies(mcmc_samples, iid_samples):
     var_rmse = np.sqrt(np.mean((mcmc_var - iid_var) ** 2))
 
     return mean_rmse, var_rmse
+
+
+
+def count_mode_transitions(trace):
+    """
+    Count cross-mode transitions for a symmetric bimodal posterior split at x1=0.
+    Fixed settings: mode_margin = ±1.0, confirm_steps = 3 consecutive samples.
+    """
+    MODE_MARGIN   = 1.0   # distance from 0 required to be considered inside a mode
+    CONFIRM_STEPS = 3     # need this many consecutive samples in the new mode to confirm
+
+    x = np.asarray(trace)
+    s = x if x.ndim == 1 else x[:, 0]  # use first coordinate as separating axis
+
+    # mode_labels: -1 = left mode, 0 = between modes (margin), +1 = right mode
+    mode_labels = np.zeros(len(s), dtype=int)
+    mode_labels[s >=  MODE_MARGIN] =  1
+    mode_labels[s <= -MODE_MARGIN] = -1
+
+    current_mode = None
+    candidate_mode = None
+    candidate_streak = 0
+    transitions = 0
+
+    for sample_mode in mode_labels:
+        if current_mode is None:
+            if sample_mode != 0:
+                current_mode = sample_mode
+            continue
+
+        if sample_mode == 0 or sample_mode == current_mode:
+            # still in same mode or in-between: cancel any pending switch
+            candidate_mode = None
+            candidate_streak = 0
+            continue
+
+        # sample_mode is the opposite mode
+        if candidate_mode == sample_mode:
+            candidate_streak += 1
+        else:
+            candidate_mode = sample_mode
+            candidate_streak = 1
+
+        if candidate_streak >= CONFIRM_STEPS:
+            transitions += 1
+            current_mode = sample_mode
+            candidate_mode = None
+            candidate_streak = 0
+
+    return transitions
+

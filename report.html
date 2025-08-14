@@ -137,7 +137,7 @@
 <h1>{{ experiment_name }} – Complete Experiment Report</h1>
 
 {% set metrics = metrics or
-  ["mean_rmse", "var_rmse" ,"wasserstein_distance", "mmd", "mmd_rff", "runtime", "ess", "ess_per_sec", "r_hat"] %}
+  ["mean_rmse", "var_rmse" ,"wasserstein_distance", "mmd", "mmd_rff", "runtime", "ess", "ess_per_sec", "r_hat", "mode_transitions"] %}
 
 {# --- Sampler vs IID (global, per sampler) --- #}
 {% macro render_sampler_iid_table(sampler_stats, metric_key) %}

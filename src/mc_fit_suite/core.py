@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-
 from .utils import (
     set_logging_level,
     create_directories,
@@ -32,14 +31,14 @@ from .sampling import (
     get_initvals
 )
 
-
 from .metrics import (
     compute_summary_discrepancies,
     get_scalar_rhat_and_ess,
     sliced_wasserstein_distance,
     compute_mmd_rff,
     compute_mmd,
-    compute_summary_discrepancies
+    compute_summary_discrepancies,
+    count_mode_transitions
 )
 
 from .reporting import (
@@ -161,18 +160,18 @@ def eval_trace(
         mmd_value = np.nan
         mmd_rff_value = np.nan
         
-
     if eval_level == "pooled":
         # Compute R-hat and ESS
         r_hat, ess = get_scalar_rhat_and_ess(trace)
+        mode_transitions = np.nan
     else:
         # For single chain, we can only compute ESS
-        r_hat = np.nan
-        ess = np.nan
-        #ess = az.ess(trace)
+        r_hat, ess = get_scalar_rhat_and_ess(trace, compute_rhat=False)
+        if posterior_type == "Mixture" and not sampler_name == "SMC":
+            mode_transitions = count_mode_transitions(posterior_samples)
+        else:
+            mode_transitions = np.nan
 
-    #print(f"R-hat for sampler {sampler_name}: {r_hat}")
-    #print(f"ESS for sampler {sampler_name}: {ess}")
 
     results.append({
         "eval_level": eval_level,
@@ -187,7 +186,8 @@ def eval_trace(
         "runtime": runtime,
         "ess": ess,
         "ess_per_sec": ess / runtime,
-        "r_hat": r_hat
+        "r_hat": r_hat,
+        "mode_transitions": mode_transitions
     })
 
 
