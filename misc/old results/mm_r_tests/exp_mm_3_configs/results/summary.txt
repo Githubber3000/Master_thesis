@@ -1,0 +1,13 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-05 02:03:07
+Finished at:                  2025-08-05 03:51:55
+Total duration:               1h 48m 48.0s
+Output folder:                experiments/exp_mm_3_configs
+Output folder size:           41.4 MB
+Total configurations:         3
+Successful configuration:     2
+Failed configurations:        1
+ - Varying_only_Mode_distance: [Errno 17] File exists: 'experiments/exp_mm_3_configs/results/z_html_pngs/Multimodal_Distance/Varying_only_Mode_distance'

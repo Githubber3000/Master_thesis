@@ -208,12 +208,16 @@ def count_mode_transitions(trace):
     CONFIRM_STEPS = 3     # need this many consecutive samples in the new mode to confirm
 
     x = np.asarray(trace)
+
     s = x if x.ndim == 1 else x[:, 0]  # use first coordinate as separating axis
 
     # mode_labels: -1 = left mode, 0 = between modes (margin), +1 = right mode
     mode_labels = np.zeros(len(s), dtype=int)
     mode_labels[s >=  MODE_MARGIN] =  1
     mode_labels[s <= -MODE_MARGIN] = -1
+
+    print("min(s):", np.min(s), "max(s):", np.max(s))
+    print("unique labels:", np.unique(mode_labels, return_counts=True))
 
     current_mode = None
     candidate_mode = None

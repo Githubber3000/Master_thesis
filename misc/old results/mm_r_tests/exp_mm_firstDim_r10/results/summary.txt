@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-06 01:55:31
+Finished at:                  2025-08-06 02:12:34
+Total duration:               0h 17m 3.1s
+Output folder:                experiments/exp_mm_firstDim_r10
+Output folder size:           15.4 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

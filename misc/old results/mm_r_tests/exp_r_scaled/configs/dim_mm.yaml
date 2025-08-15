@@ -1,0 +1,25 @@
+group_name: Multimodal_Distance
+configs:
+
+  - config_descr: Varying_only_Dimension
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal"]
+    component_params:
+      - mu: ZERO_50
+        cov: ID_50
+      - mu: ZERO_50
+        cov: ID_50
+    weights: [0.5, 0.5]
+    varying_attribute: "dimension"
+    varying_values: [2,3,10,30,50]
+
+
+
+
+
+
+
+
+
+
+  

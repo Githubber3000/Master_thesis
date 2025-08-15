@@ -96,8 +96,9 @@ def apply_defaults_to_config(config, defaults):
 def adjust_mode_means(component_params, d, r, direction=None):
 
     mu1 = np.zeros(d)
+    mu1[0] = -r / 2
     mu2 = np.zeros(d)
-    mu2[0] = r
+    mu2[0] = r / 2
     #mu2 = r * np.array(direction)
 
     print(f"Adjusting mode means for {len(component_params)} components: mu1 = {mu1}, mu2 = {mu2}")

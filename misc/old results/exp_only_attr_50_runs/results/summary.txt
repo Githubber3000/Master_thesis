@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-07-23 16:06:50
+Finished at:                  2025-07-24 10:33:59
+Total duration:               18h 27m 9.1s
+Output folder:                experiments/exp_only_attr_50_runs
+Output folder size:           76.8 MB
+Total configurations:         11
+Successful configuration:     11
+Failed configurations:        0

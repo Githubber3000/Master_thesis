@@ -601,9 +601,9 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
 
             if df_pivot.empty or df_pivot.shape[1] == 0:
                 print(f"No data for sampler '{sampler}' and metric '{metric}' – skipping.")
-                ax_shaded.annotate("'DEMetropolis' r-hat skipped due to invalid values", 
-                       xy=(0.98, 0.02), xycoords='axes fraction',
-                       ha="right", va="bottom", fontsize=9, color="red")
+                # ax_shaded.annotate("'DEMetropolis' r-hat skipped due to invalid values", 
+                #        xy=(0.98, 0.02), xycoords='axes fraction',
+                #        ha="right", va="bottom", fontsize=9, color="red")
                 continue
 
             if metric == "r_hat":
@@ -1170,6 +1170,7 @@ def finalize_and_save_plot(fig, ax, xlabel, ylabel, save_path, save_path_png=Non
     """
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
+    ax.set_yscale('log')
     #ax.legend(title="Sampler")
     ax.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
     #ax.spines['right'].set_visible(False)

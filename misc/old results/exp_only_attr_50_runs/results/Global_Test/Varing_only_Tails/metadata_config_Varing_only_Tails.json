@@ -1,0 +1,32 @@
+{
+    "config_descr": "Varing_only_Tails",
+    "runs": 50,
+    "total_iid_batches": 150,
+    "iid_vs_iid_comparisons": 50,
+    "mcmc_vs_iid_comparisons": 50,
+    "num_samples": 4000,
+    "num_chains": 4,
+    "samples_per_chain": 1000,
+    "posterior_type": "StudentT",
+    "varying_attribute": "nu",
+    "varying_values": [
+        1.1,
+        1.5,
+        1.8,
+        2.1,
+        2.5,
+        3,
+        3.5,
+        4,
+        5,
+        10,
+        30,
+        120
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-78-gfc638207a",
+    "nu": "varies",
+    "mu": 0,
+    "sigma": 1
+}

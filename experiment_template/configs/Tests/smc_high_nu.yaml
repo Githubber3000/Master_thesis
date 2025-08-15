@@ -1,0 +1,24 @@
+group_name: SMC_Test
+configs:
+
+
+  - config_descr: Varing_only_Tails
+    posterior_type: StudentT
+    varying_attribute: nu
+    varying_values: [2.1,5,30, 60, 120]
+    sigma: 1
+    mu: 0
+
+  - config_descr: Varing_Tails_with_high_Dimension
+    posterior_type: MvStudentT
+    varying_attribute: nu
+    varying_values: [2.1,5,30, 60, 120]
+    scale: ID_30
+    mu: ZERO_30
+
+
+
+
+
+
+
