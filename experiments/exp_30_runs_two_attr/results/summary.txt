@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-16 00:36:41
+Finished at:                  2025-08-16 16:23:24
+Total duration:               15h 46m 42.4s
+Output folder:                experiments/exp_30_runs_two_attr
+Output folder size:           245.4 MB
+Total configurations:         12
+Successful configuration:     12
+Failed configurations:        0
