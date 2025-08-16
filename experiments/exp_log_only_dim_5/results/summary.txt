@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-16 14:47:40
+Finished at:                  2025-08-16 15:07:31
+Total duration:               0h 19m 50.5s
+Output folder:                experiments/exp_log_only_dim_5
+Output folder size:           22.8 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

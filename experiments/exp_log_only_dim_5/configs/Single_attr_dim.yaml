@@ -1,0 +1,18 @@
+group_name: Only_attr_dim
+configs:
+
+  - config_descr: Vary_only_Dimension
+    posterior_type: MvNormal
+    varying_attribute: dimension
+    varying_values: [2,5,8,12, 15,30]
+    mu: ZERO_30
+    cov: ID_30
+
+
+
+
+
+
+
+
+

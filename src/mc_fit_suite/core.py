@@ -161,12 +161,20 @@ def eval_trace(
         mmd_rff_value = np.nan
         
     if eval_level == "pooled":
-        # Compute R-hat and ESS
-        r_hat, ess = get_scalar_rhat_and_ess(trace)
+        # Compute R-hat and ESS (if not SMC)
+        if not sampler_name == "SMC":
+            r_hat, ess = get_scalar_rhat_and_ess(trace)
+        else:
+            r_hat = np.nan
+            ess = np.nan
         mode_transitions = np.nan
     else:
-        # For single chain, we can only compute ESS
-        r_hat, ess = get_scalar_rhat_and_ess(trace, compute_rhat=False)
+        # For single chain, we can only compute ESS (if not SMC)
+        if not sampler_name == "SMC":
+            r_hat, ess = get_scalar_rhat_and_ess(trace, compute_rhat=False)
+        else:
+            r_hat = np.nan
+            ess = np.nan
         if posterior_type == "Mixture" and not sampler_name == "SMC":
             mode_transitions = count_mode_transitions(posterior_samples)
         else:
@@ -725,6 +733,7 @@ def run_experiment(
     create_directories(pooled_results_folder, pooled_plots_folder, png_folder_pooled)
 
     save_extra_scatter = experiment_settings.get("save_extra_scatter", False)
+    log_scaled_plots = experiment_settings.get("log_scaled_plots", False)
     
     compute_and_save_global_metrics(
         df_all_runs=df_pooled,
@@ -740,7 +749,8 @@ def run_experiment(
         iid_ref_stats_dict=iid_ref_stats_dict,
         save_extra_scatter=save_extra_scatter,
         do_mmd=do_mmd,
-        do_mmd_rff=do_mmd_rff
+        do_mmd_rff=do_mmd_rff,
+        log_scaled_plots= log_scaled_plots
     )
 
     chain_results_folder = os.path.join(global_folder, "chain_results")
@@ -762,7 +772,8 @@ def run_experiment(
         iid_ref_stats_dict=iid_ref_stats_dict,
         save_extra_scatter= save_extra_scatter,
         do_mmd=do_mmd,
-        do_mmd_rff=do_mmd_rff
+        do_mmd_rff=do_mmd_rff,
+        log_scaled_plots= log_scaled_plots
     )
 
     logger.info(f"===== Config {config_descr} completed successfully. =====")
