@@ -1170,7 +1170,7 @@ def finalize_and_save_plot(fig, ax, xlabel, ylabel, save_path, save_path_png=Non
     """
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_yscale('log')
+    #ax.set_yscale('log')
     #ax.legend(title="Sampler")
     ax.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
     #ax.spines['right'].set_visible(False)
