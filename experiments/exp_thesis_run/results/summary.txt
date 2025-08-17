@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-16 20:09:45
+Finished at:                  2025-08-17 16:00:13
+Total duration:               19h 50m 28.0s
+Output folder:                experiments/exp_thesis_run
+Output folder size:           337.8 MB
+Total configurations:         18
+Successful configuration:     18
+Failed configurations:        0
