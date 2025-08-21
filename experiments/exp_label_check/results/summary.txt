@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-21 22:28:25
+Finished at:                  2025-08-21 22:36:03
+Total duration:               0h 7m 38.0s
+Output folder:                experiments/exp_label_check
+Output folder size:           8.5 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

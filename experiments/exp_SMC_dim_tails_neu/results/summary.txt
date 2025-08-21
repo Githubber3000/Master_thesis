@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-21 20:09:39
+Finished at:                  2025-08-21 20:18:13
+Total duration:               0h 8m 34.3s
+Output folder:                experiments/exp_SMC_dim_tails_neu
+Output folder size:           14.4 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

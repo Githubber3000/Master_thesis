@@ -27,7 +27,7 @@ def get_uniform_prior_bounds(means_array, iid_samples=None, quantile_mass=0.9999
         border = (high - low) * expansion_factor
         low = low - border
         high = high + border
-        print(f"Computed bounds from iid_samples: low={low}, high={high}, min_mode={min_mode}, max_mode={max_mode}, border={border}")
+        
         return low, high, min_mode, max_mode, border
 
     if not (len(means_array) == 1):

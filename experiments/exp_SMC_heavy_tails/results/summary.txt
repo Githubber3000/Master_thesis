@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-21 18:24:18
+Finished at:                  2025-08-21 18:26:58
+Total duration:               0h 2m 40.1s
+Output folder:                experiments/exp_SMC_heavy_tails
+Output folder size:           5.0 MB
+Total configurations:         1
+Successful configuration:     1
+Failed configurations:        0

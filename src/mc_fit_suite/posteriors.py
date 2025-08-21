@@ -158,15 +158,21 @@ class SinglePosterior(PosteriorExample):
             self.low = low
             self.high = high
 
+        # choose q (independent Student-t or multivariate — both work)
+        nu_q, mu_q, sigma_q = 3.0, 0.0, 10.0  # hard-coded reference, adjust sigma if needed
+
         with pm.Model() as model:
             if self.use_smc:
-                x = pm.Uniform("posterior", lower=self.low, upper=self.high, shape=shape)
-                pm.Potential("logp", logp_func(x))
+                #x = pm.Uniform("posterior", lower=self.low, upper=self.high, shape=shape)
+                x      = pm.StudentT("posterior", nu=nu_q, mu=mu_q, sigma=sigma_q, shape=shape)
+                q_dist = pm.StudentT.dist(nu=nu_q, mu=mu_q, sigma=sigma_q, shape=shape)
+                logq   = pm.logp(q_dist, x).sum()
+                pm.Potential("target", logp_func(x) - logq)
+                #pm.Potential("logp", logp_func(x))
             else:
                 dist_class("posterior", **self.dist_params, shape=shape)
             
             #graph = pm.model_to_graphviz(model)
-
             #display(graph)      
         return model
         

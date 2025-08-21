@@ -15,6 +15,7 @@ import matplotlib.gridspec as gridspec
 import pprint
 import pandas as pd
 import arviz as az
+from matplotlib.ticker import LogLocator, FuncFormatter, NullFormatter
 
 from .utils   import extract_varying_value_from_json, safe_json_dump, build_trace_groups, load_pairwise_sampler_stats, load_selected_global_stats
 
@@ -1124,7 +1125,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     png_path = os.path.join(png_folder, "glass_delta_ws.png")
     #title_ws= f"Glass's Δ for Wasserstein Distance ({runs} Runs, config = {config_descr})"
 
-    finalize_and_save_plot(fig_g, ax_g, xlabel=attribute_label, ylabel="Glass's Δ",
+    finalize_and_save_plot(fig_g, ax_g, xlabel=attribute_label, ylabel="SWD Glass's Δ",
                             save_path=pdf_path, save_path_png=png_path)
 
     # Plot Glass's Δ for mean_rmse
@@ -1132,7 +1133,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     png_path_mean_rmse = os.path.join(png_folder, "glass_delta_mean_rmse.png")
     #title_mean_rmse = f"Glass's Δ for Mean RMSE ({runs} Runs, config = {config_descr})"
 
-    finalize_and_save_plot(fig_g_mean, ax_g_mean, xlabel=attribute_label, ylabel="Glass's Δ",
+    finalize_and_save_plot(fig_g_mean, ax_g_mean, xlabel=attribute_label, ylabel="Mean Glass's Δ",
                             save_path=pdf_path_mean_rmse, save_path_png=png_path_mean_rmse)
 
     # Plot Glass's Δ for var_rmse
@@ -1140,7 +1141,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     png_path_var_rmse = os.path.join(png_folder, "glass_delta_var_rmse.png")
     #title_var_rmse = f"Glass's Δ for Var RMSE ({runs} Runs, config = {config_descr})"
 
-    finalize_and_save_plot(fig_g_var, ax_g_var, xlabel=attribute_label, ylabel="Glass's Δ",
+    finalize_and_save_plot(fig_g_var, ax_g_var, xlabel=attribute_label, ylabel="Var Glass's Δ",
                             save_path=pdf_path_var_rmse, save_path_png=png_path_var_rmse)
 
     if do_mmd:
@@ -1149,7 +1150,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         png_path = os.path.join(png_folder, "glass_delta_mmd.png")
         #title_mmd = f"Glass's Δ for MMD ({runs} Runs, config = {config_descr})"
 
-        finalize_and_save_plot(fig_g_mmd, ax_g_mmd, xlabel=attribute_label, ylabel="Glass's Δ",
+        finalize_and_save_plot(fig_g_mmd, ax_g_mmd, xlabel=attribute_label, ylabel="MMD Glass’s Δ",
                             save_path=pdf_path, save_path_png=png_path)
     if do_mmd_rff:
         # Plot Glass's Δ for MMD-RFF
@@ -1157,8 +1158,8 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         png_path = os.path.join(png_folder, "glass_delta_mmd_rff.png")
         #title_mmd_rff = f"Glass's Δ for MMD-RFF ({runs} Runs, config = {config_descr})"
 
-        finalize_and_save_plot(fig_g_mmd_rff, ax_g_mmd_rff, xlabel=attribute_label, ylabel="Glass's Δ",
-                            save_path=pdf_path, save_path_png=png_path, log_scaled_plots=log_scaled_plots)
+        finalize_and_save_plot(fig_g_mmd_rff, ax_g_mmd_rff, xlabel=attribute_label, ylabel="MMD-RFF Glass’s Δ",
+                            save_path=pdf_path, save_path_png=png_path)
 
 
 
@@ -1176,8 +1177,8 @@ def finalize_and_save_plot(fig, ax, xlabel, ylabel, save_path, save_path_png=Non
     """
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-
-    ax.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
+  
+    #ax.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
 
     if save_path:
         fig.savefig(save_path, bbox_inches="tight")
@@ -1186,6 +1187,15 @@ def finalize_and_save_plot(fig, ax, xlabel, ylabel, save_path, save_path_png=Non
         base, ext = os.path.splitext(save_path)
         save_path_log = f"{base}_log{ext}"
         ax.set_yscale('log')
+        ax.yaxis.set_major_locator(LogLocator(base=10))
+        ax.yaxis.set_minor_locator(LogLocator(base=10, subs=(2,5)))  # nur 2·10^k, 5·10^k
+
+        # Formatter: „normale“ Zahlen statt 10^x / 6×10^0
+        fmt = FuncFormatter(lambda y, _: f"{y:g}")   # oder z.B. f"{y:.3g}" für begrenzte Stellen
+        ax.yaxis.set_major_formatter(fmt)
+        ax.yaxis.set_minor_formatter(fmt)            # oder: NullFormatter() falls zu voll
+
+        ax.set_ylabel(f"{ylabel} (log₁₀)")
 
         if save_path:
             fig.savefig(save_path_log, bbox_inches="tight")
