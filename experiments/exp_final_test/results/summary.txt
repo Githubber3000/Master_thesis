@@ -1,0 +1,12 @@
+
+============================
+Experiment Summary
+============================
+Started at:                   2025-08-21 20:53:25
+Finished at:                  2025-08-22 04:31:21
+Total duration:               7h 37m 56.5s
+Output folder:                experiments/exp_final_test
+Output folder size:           333.2 MB
+Total configurations:         18
+Successful configuration:     18
+Failed configurations:        0

@@ -1,0 +1,74 @@
+{
+    "config_descr": "Varying_Mode_Distance_with_heavy_Tails",
+    "samplers": [
+        "HMC",
+        "Metro",
+        "DEMetro_Z",
+        "SMC"
+    ],
+    "group_name": "two_attr_mm",
+    "runs": 12,
+    "total_iid_batches": 36,
+    "iid_vs_iid_comparisons": 12,
+    "mcmc_vs_iid_comparisons": 12,
+    "num_samples": 4000,
+    "num_chains": 4,
+    "samples_per_chain": 1000,
+    "posterior_type": "Mixture",
+    "varying_attribute": "mm",
+    "varying_values": [
+        5,
+        8,
+        10,
+        12,
+        15,
+        18
+    ],
+    "init_scheme": "thesis_scheme",
+    "base_random_seed": 42,
+    "git_tag": "v1.5-113-g6c1896c26",
+    "component_types": [
+        "MvStudentT",
+        "MvStudentT"
+    ],
+    "component_params": [
+        {
+            "mu": [
+                0.0,
+                0.0
+            ],
+            "scale": [
+                [
+                    1.0,
+                    0.0
+                ],
+                [
+                    0.0,
+                    1.0
+                ]
+            ],
+            "nu": 2.1
+        },
+        {
+            "mu": [
+                16,
+                0
+            ],
+            "scale": [
+                [
+                    1.0,
+                    0.0
+                ],
+                [
+                    0.0,
+                    1.0
+                ]
+            ],
+            "nu": 2.1
+        }
+    ],
+    "weights": [
+        0.5,
+        0.5
+    ]
+}
