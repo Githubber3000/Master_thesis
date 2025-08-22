@@ -418,14 +418,14 @@ def generate_all_iid_batches(
                 posterior_dim = get_posterior_dim(posterior_type, iid_kwargs)
                 #base_delta = 4
                 #r = base_delta * np.sqrt(posterior_dim)
-                r = 12
+                delta = 8
                 
                 # Generate and store fixed direction
                 direction = rng.standard_normal(posterior_dim)
                 direction /= np.linalg.norm(direction)
                 direction_dict[value] = direction
 
-                adjust_mode_means(iid_kwargs["component_params"], posterior_dim, r, direction)
+                adjust_mode_means(iid_kwargs["component_params"], posterior_dim, delta)
 
                 save_adjusted_posterior_config(
                     iid_kwargs,
@@ -441,7 +441,7 @@ def generate_all_iid_batches(
                     direction /= np.linalg.norm(direction)
                     direction_dict[value] = direction
 
-                    adjust_mode_means(iid_kwargs["component_params"], posterior_dim, value, direction)
+                    adjust_mode_means(iid_kwargs["component_params"], posterior_dim, value)
                     save_adjusted_posterior_config(
                         iid_kwargs,
                         folder=iid_posteriors_folder,
@@ -490,6 +490,9 @@ def generate_all_iid_batches(
                 for i, comp_params in enumerate(iid_kwargs["component_params"]):
                     
                     iid_kwargs["component_params"][i][cov_param_key] = build_correlation_cov_matrix(posterior_dim, value)
+
+                delta = 8
+                adjust_mode_means(iid_kwargs["component_params"], posterior_dim, value)
 
                 save_adjusted_posterior_config(
                         iid_kwargs,

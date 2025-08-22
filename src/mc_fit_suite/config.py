@@ -2,6 +2,7 @@ from __future__ import annotations
 import yaml, os
 from .utils import safe_json_dump
 import numpy as np
+from scipy.linalg import cho_factor, cho_solve
 
 
 def load_config_file(path):
@@ -93,22 +94,53 @@ def apply_defaults_to_config(config, defaults):
     return config
 
 
-def adjust_mode_means(component_params, d, r, direction=None):
 
-    mu1 = np.zeros(d)
-    mu1[0] = -r / 2
-    mu2 = np.zeros(d)
-    mu2[0] = r / 2
-    #mu2 = r * np.array(direction)
+def adjust_mode_means(component_params, dim, delta, direction=None, jitter=1e-9):
 
-    print(f"Adjusting mode means for {len(component_params)} components: mu1 = {mu1}, mu2 = {mu2}")
+    key = 'cov' if 'cov' in component_params[0] else 'scale'
+    G = component_params[0].get(key, None)
+    G = np.asarray(G)
+    if G.shape != (dim, dim):
+        raise ValueError(f"Matrix shape {G.shape} does not match d={dim}.")
 
-    if "mu" in component_params[0]:
-        component_params[0]["mu"] = mu1
-        component_params[1]["mu"] = mu2
-    elif "loc" in component_params[0]:
-        component_params[0]["loc"] = mu1
-        component_params[1]["loc"] = mu2
+    G = G + jitter * np.eye(dim)
+
+    # Compute Mjj = e_axis^T G^{-1} e_axis without forming the full inverse
+    e = np.zeros(dim); e[0] = 1.0
+    c, low = cho_factor(G, lower=True, check_finite=False)
+    x = cho_solve((c, low), e, check_finite=False)   
+    Mjj = float(e @ x)
+
+    if Mjj <= 0:
+        raise RuntimeError("Non-positive Mjj — G may not be positive definite.")
+
+    r_euc = float(delta / np.sqrt(Mjj))
+
+    print(f"Mode distance adjustment: r_euc = {r_euc}, Mjj = {Mjj}, delta = {delta}")
+
+    mu1 = np.zeros(dim); mu2 = np.zeros(dim)
+    mu1[0] = -0.5 * r_euc
+    mu2[0] = +0.5 * r_euc
+
+    component_params[0]["mu"] = mu1
+    component_params[1]["mu"] = mu2
+
+
+
+    # mu1 = np.zeros(dim)
+    # mu1[0] = -r / 2
+    # mu2 = np.zeros(dim)
+    # mu2[0] = r / 2
+    # #mu2 = r * np.array(direction)
+
+    # print(f"Adjusting mode means for {len(component_params)} components: mu1 = {mu1}, mu2 = {mu2}")
+
+    # if "mu" in component_params[0]:
+    #     component_params[0]["mu"] = mu1
+    #     component_params[1]["mu"] = mu2
+    # elif "loc" in component_params[0]:
+    #     component_params[0]["loc"] = mu1
+    #     component_params[1]["loc"] = mu2
 
 
 
@@ -242,7 +274,7 @@ def parse_cov_entry(cov_entry):
     
     if cov_entry.startswith("HIGH_"):
             n = int(cov_entry.split("_")[1])
-            rho = 0.9
+            rho = 0.95
             cov = np.full((n, n), rho)
             np.fill_diagonal(cov, 1.0)
             return cov.tolist()

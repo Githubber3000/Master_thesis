@@ -412,7 +412,7 @@ def run_experiment(
                     posterior_dim = get_posterior_dim(posterior_type, posterior_kwargs)
 
                     direction = np.array(direction_dict.get(value))
-                    adjust_mode_means(posterior_kwargs["component_params"], posterior_dim, value, direction)
+                    adjust_mode_means(posterior_kwargs["component_params"], posterior_dim, value)
 
                     if run_id == 1:
                         save_adjusted_posterior_config(
@@ -426,10 +426,10 @@ def run_experiment(
                     posterior_dim = get_posterior_dim(posterior_type, posterior_kwargs)
                     #base_delta = 4
                     #r = base_delta * np.sqrt(posterior_dim)
-                    r = 12
+                    delta = 8
 
-                    direction = np.array(direction_dict.get(value))
-                    adjust_mode_means(posterior_kwargs["component_params"], posterior_dim, r, direction)
+                    #direction = np.array(direction_dict.get(value))
+                    adjust_mode_means(posterior_kwargs["component_params"], posterior_dim, delta)
                         
                     if run_id == 1:
                             save_adjusted_posterior_config(
@@ -477,7 +477,9 @@ def run_experiment(
                     for i in range(len(posterior_kwargs["component_params"])):
                         
                         posterior_kwargs["component_params"][i][cov_param_key] = build_correlation_cov_matrix(posterior_dim, value)
- 
+
+                    delta = 8
+                    adjust_mode_means(posterior_kwargs["component_params"], posterior_dim, delta)
                     if run_id == 1:
                         save_adjusted_posterior_config(
                                 posterior_kwargs,
