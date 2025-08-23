@@ -22,7 +22,7 @@ configs:
       - mu: ZERO_2
         scale: ID_2
         nu: 2.1
-      - mu: [16, 0]
+      - mu: [8, 0]
         scale: ID_2
         nu: 2.1
     weights: [0.5, 0.5]

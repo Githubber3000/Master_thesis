@@ -500,6 +500,10 @@ def generate_all_iid_batches(
                         dim_value=value
                 )
             else:
+                
+                delta=8
+                posterior_dim = get_posterior_dim(posterior_type, iid_kwargs)
+                adjust_mode_means(iid_kwargs["component_params"], posterior_dim, delta)
 
                 if component_index is None:
                     target_indices = range(len(posterior_kwargs["component_params"]))

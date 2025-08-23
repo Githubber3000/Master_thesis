@@ -125,8 +125,6 @@ def adjust_mode_means(component_params, dim, delta, direction=None, jitter=1e-9)
     component_params[0]["mu"] = mu1
     component_params[1]["mu"] = mu2
 
-
-
     # mu1 = np.zeros(dim)
     # mu1[0] = -r / 2
     # mu2 = np.zeros(dim)

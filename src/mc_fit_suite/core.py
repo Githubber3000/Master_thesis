@@ -424,8 +424,6 @@ def run_experiment(
                     adjust_dimension_of_kwargs(posterior_type, posterior_kwargs_original, posterior_kwargs, target_dim=value, required_parameters=required_parameters)
 
                     posterior_dim = get_posterior_dim(posterior_type, posterior_kwargs)
-                    #base_delta = 4
-                    #r = base_delta * np.sqrt(posterior_dim)
                     delta = 8
 
                     #direction = np.array(direction_dict.get(value))
@@ -491,7 +489,9 @@ def run_experiment(
                 elif varying_attribute == "num_chains":
                     num_chains = value
                 else:
-
+                    delta=8
+                    posterior_dim = get_posterior_dim(posterior_type, posterior_kwargs)
+                    adjust_mode_means(posterior_kwargs["component_params"], posterior_dim, delta)
                     if component_index is None:
                         target_indices = range(len(posterior_kwargs["component_params"]))
                     else:
