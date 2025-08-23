@@ -492,7 +492,7 @@ def generate_all_iid_batches(
                     iid_kwargs["component_params"][i][cov_param_key] = build_correlation_cov_matrix(posterior_dim, value)
 
                 delta = 8
-                adjust_mode_means(iid_kwargs["component_params"], posterior_dim, value)
+                adjust_mode_means(iid_kwargs["component_params"], posterior_dim, delta)
 
                 save_adjusted_posterior_config(
                         iid_kwargs,
