@@ -11,7 +11,7 @@ configs:
   - config_descr: Vary_only_Dimension
     posterior_type: MvNormal
     varying_attribute: dimension
-    varying_values: [2,5,8,12, 15,30]
+    varying_values: [2, 3, 5, 8, 15, 30]
     mu: ZERO_30
     cov: ID_30
 
@@ -32,7 +32,7 @@ configs:
         cov: ID_2
     weights: [0.5, 0.5]
     varying_attribute: "mm"
-    varying_values: [5, 8, 10, 12, 15, 18]
+    varying_values: [0, 4, 6, 8, 10, 12]
 
 
 

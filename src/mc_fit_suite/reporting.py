@@ -477,6 +477,11 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         "mode_transitions": "Mode Transitions"
     }
 
+    if varying_attribute == "nu":
+        inverse = True
+    else:
+        inverse = False
+
     # Figure for shaded plots (median + IQR)
     fig_ax_pairs_shaded = {m: plt.subplots(figsize=(10, 6)) for m in metrics}
     # Figure for mean of samplers and mean + sd of IID baseline
@@ -622,10 +627,12 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
                 custom_order = [str(t) for t in varying_values]
                 df_pivot = df_pivot.reindex(custom_order)
 
-            # # reverse order for tail wei
-            # if varying_attribute == "nu":
-            #     custom_order = sorted(varying_values, reverse=True)
-            #     df_pivot = df_pivot.reindex(custom_order)   
+            # reverse order for tail weight
+            #if varying_attribute == "nu":
+                #custom_order = sorted(varying_values, reverse=False)
+                #print(f"Reversing order for {varying_attribute} to {custom_order}")
+                #df_pivot = df_pivot.reindex(custom_order)  
+              #  df_pivot = df_pivot.sort_index(ascending=False)
 
             # Compute mean+std and median+quantiles
             means = df_pivot.mean(axis=1)
@@ -1105,9 +1112,9 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         png_path_md = os.path.join(png_folder, f"{metric}_global_plot_shaded.png")
 
         if metric == "mode_transitions":
-            finalize_and_save_plot(fig_shaded, ax_shaded, attribute_label, metric_label, save_path=pdf_path_md, save_path_png=png_path_md)
+            finalize_and_save_plot(fig_shaded, ax_shaded, attribute_label, metric_label, save_path=pdf_path_md, save_path_png=png_path_md, inverse=inverse)
         else:
-            finalize_and_save_plot(fig_shaded, ax_shaded, attribute_label, metric_label, save_path=pdf_path_md, save_path_png=png_path_md, log_scaled_plots= log_scaled_plots)
+            finalize_and_save_plot(fig_shaded, ax_shaded, attribute_label, metric_label, save_path=pdf_path_md, save_path_png=png_path_md, log_scaled_plots= log_scaled_plots, inverse=inverse)
 
         #title_me = (f"Mean {metric.replace('_', ' ').title()} "
         #              f"({runs} Runs, config = {config_descr})")
@@ -1116,9 +1123,9 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         png_path_me = os.path.join(png_folder, f"{metric}_global_plot_mean.png")
 
         if metric == "mode_transitions":
-            finalize_and_save_plot(fig_mean, ax_mean, attribute_label, metric_label, save_path=pdf_path_me, save_path_png=png_path_me)
+            finalize_and_save_plot(fig_mean, ax_mean, attribute_label, metric_label, save_path=pdf_path_me, save_path_png=png_path_me, inverse=inverse)
         else:
-            finalize_and_save_plot(fig_mean, ax_mean, attribute_label, metric_label, save_path=pdf_path_me, save_path_png=png_path_me, log_scaled_plots=log_scaled_plots)
+            finalize_and_save_plot(fig_mean, ax_mean, attribute_label, metric_label, save_path=pdf_path_me, save_path_png=png_path_me, log_scaled_plots=log_scaled_plots, inverse=inverse)
 
     # Plot Glass's Δ for wasserstein_distance
     pdf_path = os.path.join(global_plots_folder, "glass_delta_ws.pdf")
@@ -1126,7 +1133,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     #title_ws= f"Glass's Δ for Wasserstein Distance ({runs} Runs, config = {config_descr})"
 
     finalize_and_save_plot(fig_g, ax_g, xlabel=attribute_label, ylabel="SWD Glass's Δ",
-                            save_path=pdf_path, save_path_png=png_path)
+                            save_path=pdf_path, save_path_png=png_path, inverse=inverse)
 
     # Plot Glass's Δ for mean_rmse
     pdf_path_mean_rmse = os.path.join(global_plots_folder, "glass_delta_mean_rmse.pdf")
@@ -1134,7 +1141,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     #title_mean_rmse = f"Glass's Δ for Mean RMSE ({runs} Runs, config = {config_descr})"
 
     finalize_and_save_plot(fig_g_mean, ax_g_mean, xlabel=attribute_label, ylabel="Mean Glass's Δ",
-                            save_path=pdf_path_mean_rmse, save_path_png=png_path_mean_rmse)
+                            save_path=pdf_path_mean_rmse, save_path_png=png_path_mean_rmse, inverse=inverse)
 
     # Plot Glass's Δ for var_rmse
     pdf_path_var_rmse = os.path.join(global_plots_folder, "glass_delta_var_rmse.pdf")
@@ -1142,7 +1149,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
     #title_var_rmse = f"Glass's Δ for Var RMSE ({runs} Runs, config = {config_descr})"
 
     finalize_and_save_plot(fig_g_var, ax_g_var, xlabel=attribute_label, ylabel="Var Glass's Δ",
-                            save_path=pdf_path_var_rmse, save_path_png=png_path_var_rmse)
+                            save_path=pdf_path_var_rmse, save_path_png=png_path_var_rmse, inverse=inverse)
 
     if do_mmd:
         # Plot Glass's Δ for MMD
@@ -1151,7 +1158,7 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         #title_mmd = f"Glass's Δ for MMD ({runs} Runs, config = {config_descr})"
 
         finalize_and_save_plot(fig_g_mmd, ax_g_mmd, xlabel=attribute_label, ylabel="MMD Glass’s Δ",
-                            save_path=pdf_path, save_path_png=png_path)
+                            save_path=pdf_path, save_path_png=png_path, inverse=inverse)
     if do_mmd_rff:
         # Plot Glass's Δ for MMD-RFF
         pdf_path = os.path.join(global_plots_folder, "glass_delta_mmd_rff.pdf")
@@ -1159,12 +1166,12 @@ def compute_and_save_global_metrics(df_all_runs, sampler_colors, varying_attribu
         #title_mmd_rff = f"Glass's Δ for MMD-RFF ({runs} Runs, config = {config_descr})"
 
         finalize_and_save_plot(fig_g_mmd_rff, ax_g_mmd_rff, xlabel=attribute_label, ylabel="MMD-RFF Glass’s Δ",
-                            save_path=pdf_path, save_path_png=png_path)
+                            save_path=pdf_path, save_path_png=png_path, inverse=inverse)
 
 
 
 
-def finalize_and_save_plot(fig, ax, xlabel, ylabel, save_path, save_path_png=None, log_scaled_plots=False):
+def finalize_and_save_plot(fig, ax, xlabel, ylabel, save_path, save_path_png=None, log_scaled_plots=False, inverse=False):
     """
     Finalizes the plot with labels, grid, and saves it to a file.
     
@@ -1175,6 +1182,9 @@ def finalize_and_save_plot(fig, ax, xlabel, ylabel, save_path, save_path_png=Non
     - ylabel: Label for y-axis
     - save_path: Path to save the figure.
     """
+
+    if inverse:
+        ax.invert_xaxis()
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
   
