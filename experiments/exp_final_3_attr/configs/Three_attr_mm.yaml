@@ -1,0 +1,50 @@
+group_name: three_attr_mm
+configs:
+
+  - config_descr: Varying_Mode_Distance_with_Dim_and_Corr
+    posterior_type: Mixture
+    component_types: ["MvNormal", "MvNormal"]
+    component_params:
+      - mu: ZERO_30
+        cov: HIGH_30
+      - mu: ZERO_30
+        cov: HIGH_30
+    weights: [0.5, 0.5]
+    varying_attribute: "mm"
+    varying_values: [0, 4, 6, 8, 10, 12]
+
+  - config_descr: Varying_Mode_Distance_with_Dim_and_Tails
+    posterior_type: Mixture
+    component_types: ["MvStudentT", "MvStudentT"]
+    component_params:
+      - mu: ZERO_30
+        scale: ID_30
+        nu: 2.1
+      - mu: ZERO_30
+        scale: ID_30
+        nu: 2.1
+    weights: [0.5, 0.5]
+    varying_attribute: "mm"
+    varying_values: [0, 4, 6, 8, 10, 12]
+
+  - config_descr: Varying_Mode_Distance_with_Corr_and_Tails
+    posterior_type: Mixture
+    component_types: ["MvStudentT", "MvStudentT"]
+    component_params:
+      - mu: ZERO_2
+        scale: HIGH_2
+        nu: 2.1
+      - mu: ZERO_2
+        scale: HIGH_2
+        nu: 2.1
+    weights: [0.5, 0.5]
+    varying_attribute: "mm"
+    varying_values: [0, 4, 6, 8, 10, 12]
+
+
+
+
+
+
+
+
