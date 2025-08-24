@@ -1,0 +1,7 @@
+Row,Metropolis,DEMetropolisZ,HMC,SMC
+Corr ↔ MM,2/2,2/2,2/2,0/2
+Corr ↔ Tail,2/2,2/2,2/2,0/2
+Dim ↔ Corr,2/2,2/2,2/2,0/2
+Dim ↔ MM,2/2,2/2,2/2,0/2
+Dim ↔ Tail,2/2,2/2,2/2,0/2
+Tail ↔ MM,2/2,2/2,2/2,0/2

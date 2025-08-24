@@ -1,0 +1,11 @@
+combos:
+  # ----- THREE-ATTRIBUTE (Triplets) -----
+  "Triplet(d, ρ, ν)":
+    directions:
+      "Dimension|Correlation,Tail weight (ν)":
+        - "*three_attr_dim*/Vary_Dimension_with_high_correlation_and_heavy_Tails/*"
+      "Correlation|Dimension,Tail weight (ν)":
+        - "*three_attr_corr*/Vary_Correlation_with_high_dimension_and_heavy_Tails/*"
+      "Tail weight (ν)|Dimension,Correlation":
+        - "*three_attr_tail*/Vary_Tails_with_high_dimension_and_high_correlation/*"
+

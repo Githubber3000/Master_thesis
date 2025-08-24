@@ -1,0 +1,12 @@
+combos:
+  # ----- FOUR-ATTRIBUTE (Quadruplets) -----
+  "Quad(d, ρ, ν, δ)":
+    directions:
+      "Dimension|Correlation,Tail weight (ν),Mode distance":
+        - "*four_attr_dim*/Vary_Dimension_with_high_corr_heavy_tails_high_mm/*"
+      "Correlation|Dimension,Tail weight (ν),Mode distance":
+        - "*four_attr_corr*/Vary_Correlation_with_high_dim_heavy_tails_high_mm/*"
+      "Tail weight (ν)|Dimension,Correlation,Mode distance":
+        - "*four_attr_tail*/Vary_Tails_with_high_dim_high_corr_high_mm/*"
+      "Mode distance|Dimension,Correlation,Tail weight (ν)":
+        - "*four_attr_mm*/Vary_Modes_with_high_dim_high_corr_heavy_tails/*"

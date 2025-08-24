@@ -1,0 +1,7 @@
+Row,Best Sampler,Best Value
+Correlation ↔ Mode distance,DEMetropolisZ,1.0354157388210297
+Correlation ↔ Tail weight (ν),DEMetropolisZ,0.6460392594337463
+Dimension ↔ Correlation,DEMetropolisZ,0.5945719480514526
+Dimension ↔ Mode distance,DEMetropolisZ,1.0388566215833028
+Dimension ↔ Tail weight (ν),DEMetropolisZ,0.6468279957771301
+Tail weight (ν) ↔ Mode distance,DEMetropolisZ,1.1128572523593903

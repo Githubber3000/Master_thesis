@@ -1,0 +1,7 @@
+Row,Best Sampler,Best Value
+Correlation ↔ Mode distance,SMC,0.08280114467984495
+Correlation ↔ Tail weight (ν),HMC,0.11578539848202275
+Dimension ↔ Correlation,SMC,0.02506843338137404
+Dimension ↔ Mode distance,SMC,0.043429344108934016
+Dimension ↔ Tail weight (ν),HMC,0.12789213720227094
+Tail weight (ν) ↔ Mode distance,SMC,0.346312080531332

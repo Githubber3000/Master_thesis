@@ -1,0 +1,43 @@
+combos:
+  # ----- TWO-ATTRIBUTE (Paare) -----
+  "Dim ↔ Corr":
+    directions:
+      "Dimension|Correlation":
+        - "*two_attr_dim*/vary_dimension_with_high_correlation/*"
+      "Correlation|Dimension":
+        - "*two_attr_corr*/vary_correlation_with_high_dimension/*"
+
+  "Dim ↔ Tail":
+    directions:
+      "Dimension|Tail weight (ν)":
+        - "*two_attr_dim*/vary_dimension_with_heavy_tails/*"
+      "Tail weight (ν)|Dimension":
+        - "*two_attr_tails*/varying_tails_with_high_dimension/*"
+
+  "Dim ↔ MM":
+    directions:
+      "Dimension|Mode distance":
+        - "*two_attr_dim*/vary_dimension_with_high_multimodality/*"
+      "Mode distance|Dimension":
+        - "*two_attr_mm*/varying_mode_distance_with_high_dimension/*"
+
+  "Corr ↔ Tail":
+    directions:
+      "Correlation|Tail weight (ν)":
+        - "*two_attr_corr*/vary_correlation_with_heavy_tails/*"
+      "Tail weight (ν)|Correlation":
+        - "*two_attr_tails*/varying_tails_with_high_correlation/*"
+
+  "Corr ↔ MM":
+    directions:
+      "Correlation|Mode distance":
+        - "*two_attr_corr*/vary_correlation_with_high_multimodality/*"
+      "Mode distance|Correlation":
+        - "*two_attr_mm*/varying_mode_distance_with_high_correlation/*"
+
+  "Tail ↔ MM":
+    directions:
+      "Tail weight (ν)|Mode distance":
+        - "*two_attr_tails*/vary_tails_with_high_multimodality/*"
+      "Mode distance|Tail weight (ν)":
+        - "*two_attr_mm*/varying_mode_distance_with_heavy_tails/*"
