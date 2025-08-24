@@ -1,4 +1,4 @@
-name: pymc_immo_env
+name: mc_fit_env
 channels:
   - bioconda
   - conda-forge
