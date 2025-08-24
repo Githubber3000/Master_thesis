@@ -1,0 +1,39 @@
+group_name: two_attr_tails
+configs:
+
+  - config_descr: Varying_Tails_with_high_Dimension
+    posterior_type: MvStudentT
+    varying_attribute: nu
+    varying_values: [2.1, 2.5, 3, 4, 10, 50]
+    scale: ID_30
+    mu: ZERO_30
+
+  - config_descr: Varying_Tails_with_high_Correlation
+    posterior_type: MvStudentT
+    varying_attribute: nu
+    varying_values: [2.1, 2.5, 3, 4, 10, 50]
+    scale: HIGH_2
+    mu: ZERO_2
+
+  - config_descr: Vary_Tails_with_high_Multimodality
+    posterior_type: Mixture
+    component_types: ["MvStudentT", "MvStudentT"]
+    component_params:
+      - mu: ZERO_2
+        scale: ID_2
+        nu: 2.1
+      - mu: [16, 0]
+        scale: ID_2
+        nu: 2.1
+    weights: [0.5, 0.5]
+    varying_attribute: nu
+    varying_values: [2.1, 2.5, 3, 4, 10, 50]
+
+
+
+
+
+
+
+
+
