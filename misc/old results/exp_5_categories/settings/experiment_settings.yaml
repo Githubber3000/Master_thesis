@@ -1,8 +1,0 @@
-save_plots_and_csv_per_run: true                           # if True, save plots for each run 
-save_traces: false                                         # if True, save traces to NetCDF files
-trace_plots: all                                           # options: "none", "first_run_only", "all"
-save_individual_traceplots_per_dim: false                  # if True and posterior multidimensional, save individual trace plots for each dimension
-plot_traces_in_notebook: false                             # if True, plot traces in notebook  
-samplers: ["Metro", "HMC", "DEMetro"]                      # options: "Metro", "HMC", "DEMetro", "DEMetro_Z", "Slice"
-logging_level: ERROR                                       # options: DEBUG, INFO, ERROR
-plot_first_sample: true                                    # if True, plot the first sample of each chain
