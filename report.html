@@ -198,8 +198,6 @@
         </thead>
         <tbody>
         
-
-        
         {% for pair, cols in pairwise_stats[metric_base_key].items() %}
           {% set n = (cols.get(metric_base_key ~ "_t_stat") or []) | length %}
           {% for i in range(n) %}

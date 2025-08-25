@@ -1,0 +1,7 @@
+Row,Best Sampler,Best Value
+Corr ↔ MM,DEMetropolisZ,1.0182391901810965
+Corr ↔ Tail,DEMetropolisZ,0.6463826100031536
+Dim ↔ Corr,DEMetropolisZ,0.5971803565820057
+Dim ↔ MM,DEMetropolisZ,1.0241384506225586
+Dim ↔ Tail,DEMetropolisZ,0.646953284740448
+Tail ↔ MM,DEMetropolisZ,1.0980104406674704
